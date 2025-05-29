@@ -2,7 +2,7 @@ import paypalrestsdk
 import os
 from datetime import datetime, timedelta
 from pymongo import MongoClient
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import uuid
 import logging
 
