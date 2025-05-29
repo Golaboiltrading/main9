@@ -13,6 +13,10 @@ function App() {
   const [marketData, setMarketData] = useState({});
   const [listings, setListings] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
+  const [userAnalytics, setUserAnalytics] = useState({});
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentType, setPaymentType] = useState(''); // 'subscription' or 'featured'
+  const [selectedTier, setSelectedTier] = useState('');
 
   useEffect(() => {
     if (token) {
