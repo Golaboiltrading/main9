@@ -4,7 +4,7 @@ from email.mime.text import MimeText
 from email.mime.multipart import MimeMultipart
 from typing import Optional, Dict, Any
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
