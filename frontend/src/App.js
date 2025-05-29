@@ -42,6 +42,20 @@ function App() {
     }
   };
 
+  const fetchUserAnalytics = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/analytics/user`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUserAnalytics(data);
+      }
+    } catch (error) {
+      console.error('Error fetching user analytics:', error);
+    }
+  };
+
   const fetchStats = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/stats`);
