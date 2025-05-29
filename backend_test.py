@@ -13,6 +13,8 @@ class OilGasFinderAPITester:
         self.tests_passed = 0
         self.user_id = None
         self.listing_id = None
+        self.payment_id = None
+        self.subscription_id = None
         self.test_results = {}
 
     def run_test(self, name, method, endpoint, expected_status, data=None, auth=False):
@@ -201,6 +203,88 @@ class OilGasFinderAPITester:
         """Test getting user connections"""
         return self.run_test("Get Connections", "GET", "connections", 200, auth=True)
 
+    # New Payment API Tests
+    def test_create_subscription_payment(self, tier="premium_basic"):
+        """Test creating a subscription payment"""
+        data = {"tier": tier}
+        success, response = self.run_test("Create Subscription Payment", "POST", "payments/create-subscription", 200, data, auth=True)
+        if success and 'subscription_id' in response:
+            self.subscription_id = response['subscription_id']
+            self.payment_id = response.get('payment_id')
+        return success, response
+
+    def test_create_featured_payment(self, listing_type="standard"):
+        """Test creating a featured listing payment"""
+        data = {"listing_type": listing_type}
+        success, response = self.run_test("Create Featured Payment", "POST", "payments/create-featured-payment", 200, data, auth=True)
+        if success and 'payment_id' in response:
+            self.payment_id = response['payment_id']
+        return success, response
+
+    def test_execute_payment(self, payment_type="payment"):
+        """Test executing a payment"""
+        if not self.payment_id:
+            print("❌ Cannot test payment execution - no payment created")
+            return False, {}
+            
+        data = {
+            "payment_id": self.payment_id,
+            "payer_id": "TESTPAYERID12345",
+            "payment_type": payment_type
+        }
+        return self.run_test("Execute Payment", "POST", "payments/execute", 200, data, auth=True)
+
+    def test_get_payment_status(self):
+        """Test getting payment status"""
+        if not self.payment_id:
+            print("❌ Cannot test payment status - no payment created")
+            return False, {}
+            
+        return self.run_test("Get Payment Status", "GET", f"payments/status/{self.payment_id}", 200, auth=True)
+
+    def test_cancel_subscription(self):
+        """Test cancelling a subscription"""
+        if not self.subscription_id:
+            print("❌ Cannot test subscription cancellation - no subscription created")
+            return False, {}
+            
+        return self.run_test("Cancel Subscription", "DELETE", f"payments/cancel-subscription/{self.subscription_id}", 200, auth=True)
+
+    def test_get_payment_history(self):
+        """Test getting payment history"""
+        return self.run_test("Get Payment History", "GET", "payments/history", 200, auth=True)
+
+    # New Analytics API Tests
+    def test_get_platform_analytics(self):
+        """Test getting platform analytics"""
+        return self.run_test("Get Platform Analytics", "GET", "analytics/platform", 200, auth=True)
+
+    def test_get_user_analytics(self):
+        """Test getting user analytics"""
+        return self.run_test("Get User Analytics", "GET", "analytics/user", 200, auth=True)
+
+    def test_get_market_analytics(self):
+        """Test getting market analytics"""
+        return self.run_test("Get Market Analytics", "GET", "analytics/market", 200)
+
+    def test_get_revenue_analytics(self):
+        """Test getting revenue analytics"""
+        return self.run_test("Get Revenue Analytics", "GET", "analytics/revenue", 200, auth=True)
+
+    def test_get_listing_analytics(self):
+        """Test getting listing analytics"""
+        if not self.listing_id:
+            print("❌ Cannot test listing analytics - no listing created")
+            return False, {}
+            
+        return self.run_test("Get Listing Analytics", "GET", f"analytics/listing/{self.listing_id}", 200, auth=True)
+
+    # Email Notification Test
+    def test_email_notification(self, email="test@example.com"):
+        """Test email notification system"""
+        data = {"email": email}
+        return self.run_test("Test Email Notification", "POST", "notifications/test-email", 200, data, auth=True)
+
     def print_summary(self):
         """Print test summary"""
         print("\n" + "="*50)
@@ -269,6 +353,25 @@ def main():
     # Test connections
     tester.test_create_connection()
     tester.test_get_connections()
+    
+    # Test new payment features
+    tester.test_create_subscription_payment("premium_basic")
+    tester.test_get_payment_status()
+    tester.test_execute_payment("subscription")
+    tester.test_create_featured_payment("standard")
+    tester.test_execute_payment()
+    tester.test_get_payment_history()
+    tester.test_cancel_subscription()
+    
+    # Test new analytics features
+    tester.test_get_user_analytics()
+    tester.test_get_market_analytics()
+    tester.test_get_platform_analytics()
+    tester.test_get_revenue_analytics()
+    tester.test_get_listing_analytics()
+    
+    # Test email notification
+    tester.test_email_notification()
     
     # Test listing deletion (do this last)
     tester.test_delete_listing()
