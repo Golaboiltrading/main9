@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import PayPalButton from './PayPalButton';
+import BusinessGrowthDashboard from './BusinessGrowthDashboard';
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
