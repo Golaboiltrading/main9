@@ -15,6 +15,9 @@ class OilGasFinderAPITester:
         self.listing_id = None
         self.payment_id = None
         self.subscription_id = None
+        self.referral_code = None
+        self.lead_magnet_id = None
+        self.article_id = None
         self.test_results = {}
 
     def run_test(self, name, method, endpoint, expected_status, data=None, auth=False):
@@ -203,7 +206,7 @@ class OilGasFinderAPITester:
         """Test getting user connections"""
         return self.run_test("Get Connections", "GET", "connections", 200, auth=True)
 
-    # New Payment API Tests
+    # Payment API Tests
     def test_create_subscription_payment(self, tier="premium_basic"):
         """Test creating a subscription payment"""
         success, response = self.run_test("Create Subscription Payment", "POST", f"payments/create-subscription?tier={tier}", 200, auth=True)
@@ -252,7 +255,7 @@ class OilGasFinderAPITester:
         """Test getting payment history"""
         return self.run_test("Get Payment History", "GET", "payments/history", 200, auth=True)
 
-    # New Analytics API Tests
+    # Analytics API Tests
     def test_get_platform_analytics(self):
         """Test getting platform analytics"""
         return self.run_test("Get Platform Analytics", "GET", "analytics/platform", 200, auth=True)
@@ -282,6 +285,129 @@ class OilGasFinderAPITester:
         """Test email notification system"""
         return self.run_test("Test Email Notification", "POST", f"notifications/test-email?email={email}", 200, auth=True)
 
+    # Business Growth API Tests
+    def test_create_referral_program(self):
+        """Test creating a referral program"""
+        data = {
+            "referral_type": "standard"
+        }
+        success, response = self.run_test("Create Referral Program", "POST", "referrals/create", 200, data, auth=True)
+        if success and 'referral_code' in response:
+            self.referral_code = response['referral_code']
+        return success, response
+
+    def test_process_referral_signup(self):
+        """Test processing a referral signup"""
+        if not self.referral_code:
+            print("❌ Cannot test referral signup - no referral code created")
+            return False, {}
+            
+        data = {
+            "referral_code": self.referral_code
+        }
+        return self.run_test("Process Referral Signup", "POST", "referrals/signup", 200, data, auth=True)
+
+    def test_process_referral_conversion(self):
+        """Test processing a referral conversion"""
+        if not self.user_id:
+            print("❌ Cannot test referral conversion - no user ID available")
+            return False, {}
+            
+        data = {
+            "conversion_type": "subscription"
+        }
+        return self.run_test("Process Referral Conversion", "POST", f"referrals/convert/{self.user_id}", 200, data, auth=True)
+
+    def test_get_conversion_metrics(self):
+        """Test getting conversion metrics"""
+        return self.run_test("Get Conversion Metrics", "GET", "referrals/metrics", 200, auth=True)
+
+    def test_get_user_acquisition_dashboard(self):
+        """Test getting user acquisition dashboard"""
+        return self.run_test("Get User Acquisition Dashboard", "GET", "acquisition/dashboard", 200, auth=True)
+
+    # Content Marketing API Tests
+    def test_create_market_insight_article(self):
+        """Test creating a market insight article"""
+        data = {
+            "title": f"Test Market Insight Article {uuid.uuid4().hex[:8]}",
+            "content": "This is a test market insight article for API testing.",
+            "category": "oil_market"
+        }
+        success, response = self.run_test("Create Market Insight Article", "POST", "content/article", 200, data, auth=True)
+        if success and 'article_id' in response:
+            self.article_id = response['article_id']
+        return success, response
+
+    def test_generate_weekly_market_report(self):
+        """Test generating a weekly market report"""
+        return self.run_test("Generate Weekly Market Report", "POST", "content/market-report", 200, auth=True)
+
+    def test_create_seo_content(self):
+        """Test creating SEO-optimized content"""
+        data = {
+            "topic": "Oil Price Trends 2025",
+            "target_keywords": ["oil price forecast", "crude oil trends", "energy market outlook"],
+            "content_type": "article"
+        }
+        return self.run_test("Create SEO Content", "POST", "content/seo-content", 200, data, auth=True)
+
+    def test_generate_industry_whitepaper(self):
+        """Test generating an industry whitepaper"""
+        data = {
+            "title": "Future of LNG Trading in Global Markets",
+            "research_topic": "lng_market_trends"
+        }
+        return self.run_test("Generate Industry Whitepaper", "POST", "content/whitepaper", 200, data, auth=True)
+
+    def test_get_content_performance(self):
+        """Test getting content performance metrics"""
+        return self.run_test("Get Content Performance", "GET", "content/performance", 200, auth=True)
+
+    def test_get_content_marketing_dashboard(self):
+        """Test getting content marketing dashboard"""
+        return self.run_test("Get Content Marketing Dashboard", "GET", "content/dashboard", 200, auth=True)
+
+    # Lead Generation API Tests
+    def test_create_lead_magnet(self):
+        """Test creating a lead magnet"""
+        data = {
+            "title": f"Test Lead Magnet {uuid.uuid4().hex[:8]}",
+            "content_type": "whitepaper",
+            "target_audience": "oil_traders"
+        }
+        success, response = self.run_test("Create Lead Magnet", "POST", "leads/magnet", 200, data, auth=True)
+        if success and 'lead_magnet_id' in response:
+            self.lead_magnet_id = response['lead_magnet_id']
+        return success, response
+
+    def test_track_lead_generation(self):
+        """Test tracking lead generation"""
+        if not self.lead_magnet_id:
+            print("❌ Cannot test lead tracking - no lead magnet created")
+            return False, {}
+            
+        data = {
+            "lead_magnet_id": self.lead_magnet_id,
+            "user_email": f"lead{uuid.uuid4().hex[:8]}@example.com",
+            "source": "organic"
+        }
+        return self.run_test("Track Lead Generation", "POST", "leads/track", 200, data, auth=True)
+
+    # Partnership API Tests
+    def test_create_partnership_program(self):
+        """Test creating a partnership program"""
+        data = {
+            "partner_type": "affiliate",
+            "commission_rate": 20.0
+        }
+        return self.run_test("Create Partnership Program", "POST", "partnerships/create", 200, data, auth=True)
+
+    # Enhanced Market Intelligence API Test
+    def test_get_market_intelligence(self):
+        """Test getting enhanced market intelligence"""
+        return self.run_test("Get Market Intelligence", "GET", "market-intelligence", 200)
+
     def print_summary(self):
         """Print test summary"""
         print("\n" + "="*50)
@@ -303,7 +429,7 @@ class OilGasFinderAPITester:
         return self.tests_passed == self.tests_run
 
 def main():
-    # Get the backend URL from environment variable
+    # Get the backend URL
     backend_url = "https://2feb79c7-fd63-4021-b0db-9197e62ab3af.preview.emergentagent.com"
     
     print(f"Testing API at: {backend_url}")
@@ -314,22 +440,25 @@ def main():
     # Test API status
     tester.test_status()
     
-    # Test authentication
-    # First try with existing user
-    success, _ = tester.test_login("john.doe@petroltrade.com", "password123")
+    # Test authentication - try with enterprise user first
+    success, _ = tester.test_login("enterprise@oilfinder.com", "password123")
     
     if not success:
-        # If login fails, try registering a new user
-        test_email = f"test.user{uuid.uuid4().hex[:8]}@example.com"
-        tester.test_register(
-            email=test_email,
-            password="TestPassword123!",
-            first_name="Test",
-            last_name="User",
-            company_name="Test Oil Trading Co",
-            country="United States",
-            trading_role="both"
-        )
+        # If enterprise login fails, try with regular user
+        success, _ = tester.test_login("john.doe@petroltrade.com", "password123")
+        
+        if not success:
+            # If all logins fail, register a new user
+            test_email = f"test.user{uuid.uuid4().hex[:8]}@example.com"
+            tester.test_register(
+                email=test_email,
+                password="TestPassword123!",
+                first_name="Test",
+                last_name="User",
+                company_name="Test Oil Trading Co",
+                country="United States",
+                trading_role="both"
+            )
     
     # Test user profile
     tester.test_get_profile()
@@ -351,24 +480,51 @@ def main():
     tester.test_create_connection()
     tester.test_get_connections()
     
-    # Test new payment features
+    # Test payment features
     tester.test_create_subscription_payment("premium_basic")
     tester.test_get_payment_status()
     tester.test_execute_payment("subscription")
     tester.test_create_featured_payment("standard")
     tester.test_execute_payment()
     tester.test_get_payment_history()
-    tester.test_cancel_subscription()
     
-    # Test new analytics features
+    # Test analytics features
     tester.test_get_user_analytics()
     tester.test_get_market_analytics()
     tester.test_get_platform_analytics()
     tester.test_get_revenue_analytics()
     tester.test_get_listing_analytics()
     
+    # Test business growth features
+    tester.test_create_referral_program()
+    tester.test_process_referral_signup()
+    tester.test_process_referral_conversion()
+    tester.test_get_conversion_metrics()
+    tester.test_get_user_acquisition_dashboard()
+    
+    # Test content marketing features
+    tester.test_create_market_insight_article()
+    tester.test_generate_weekly_market_report()
+    tester.test_create_seo_content()
+    tester.test_generate_industry_whitepaper()
+    tester.test_get_content_performance()
+    tester.test_get_content_marketing_dashboard()
+    
+    # Test lead generation features
+    tester.test_create_lead_magnet()
+    tester.test_track_lead_generation()
+    
+    # Test partnership features
+    tester.test_create_partnership_program()
+    
+    # Test enhanced market intelligence
+    tester.test_get_market_intelligence()
+    
     # Test email notification
     tester.test_email_notification()
+    
+    # Test subscription cancellation
+    tester.test_cancel_subscription()
     
     # Test listing deletion (do this last)
     tester.test_delete_listing()
