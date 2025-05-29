@@ -778,6 +778,277 @@ async def test_email_notification(
     success = await email_service.send_welcome_email(email, user["first_name"])
     return {"success": success, "message": "Test email sent" if success else "Failed to send email"}
 
+# Business Growth and User Acquisition Endpoints
+
+@app.post("/api/referrals/create")
+async def create_referral_program(
+    referral_type: str = "standard",
+    user_id: str = Depends(get_current_user)
+):
+    """Create referral program for user"""
+    if not business_growth_service:
+        raise HTTPException(status_code=503, detail="Business growth service not available")
+    
+    result = await business_growth_service.create_referral_program(user_id, referral_type)
+    if not result:
+        raise HTTPException(status_code=500, detail="Failed to create referral program")
+    
+    return result
+
+@app.post("/api/referrals/signup")
+async def process_referral_signup(
+    referral_code: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Process new user signup through referral"""
+    if not business_growth_service:
+        raise HTTPException(status_code=503, detail="Business growth service not available")
+    
+    result = await business_growth_service.process_referral_signup(referral_code, user_id)
+    return result
+
+@app.post("/api/referrals/convert/{user_id}")
+async def process_referral_conversion(
+    user_id: str,
+    conversion_type: str = "subscription",
+    current_user_id: str = Depends(get_current_user)
+):
+    """Process referral conversion (internal use)"""
+    if not business_growth_service:
+        raise HTTPException(status_code=503, detail="Business growth service not available")
+    
+    success = await business_growth_service.process_referral_conversion(user_id, conversion_type)
+    return {"success": success}
+
+@app.get("/api/referrals/metrics")
+async def get_conversion_metrics(user_id: str = Depends(get_current_user)):
+    """Get user acquisition and conversion metrics"""
+    if not business_growth_service:
+        raise HTTPException(status_code=503, detail="Business growth service not available")
+    
+    metrics = await business_growth_service.calculate_conversion_metrics()
+    return metrics
+
+@app.get("/api/acquisition/dashboard")
+async def get_user_acquisition_dashboard(user_id: str = Depends(get_current_user)):
+    """Get comprehensive user acquisition dashboard"""
+    user = users_collection.find_one({"user_id": user_id})
+    if not user or user.get("role") not in ["enterprise", "admin"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    if not business_growth_service:
+        return {"message": "Business growth service not available"}
+    
+    dashboard = await business_growth_service.get_user_acquisition_dashboard()
+    return dashboard
+
+# Content Marketing and SEO Endpoints
+
+@app.post("/api/content/article")
+async def create_market_insight_article(
+    title: str,
+    content: str,
+    category: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Create market insight article for thought leadership"""
+    if not content_marketing_service:
+        raise HTTPException(status_code=503, detail="Content marketing service not available")
+    
+    article = await content_marketing_service.create_market_insight_article(title, content, category, user_id)
+    if not article:
+        raise HTTPException(status_code=500, detail="Failed to create article")
+    
+    return article
+
+@app.post("/api/content/market-report")
+async def generate_weekly_market_report(user_id: str = Depends(get_current_user)):
+    """Generate comprehensive weekly market report"""
+    user = users_collection.find_one({"user_id": user_id})
+    if not user or user.get("role") not in ["enterprise", "admin"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    if not content_marketing_service:
+        raise HTTPException(status_code=503, detail="Content marketing service not available")
+    
+    report = await content_marketing_service.generate_weekly_market_report()
+    return report
+
+@app.post("/api/content/seo-content")
+async def create_seo_content(
+    topic: str,
+    target_keywords: List[str],
+    content_type: str = "article",
+    user_id: str = Depends(get_current_user)
+):
+    """Create SEO-optimized content for organic traffic"""
+    user = users_collection.find_one({"user_id": user_id})
+    if not user or user.get("role") not in ["enterprise", "admin"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    if not content_marketing_service:
+        raise HTTPException(status_code=503, detail="Content marketing service not available")
+    
+    content = await content_marketing_service.create_seo_optimized_content(topic, target_keywords, content_type)
+    return content
+
+@app.post("/api/content/whitepaper")
+async def generate_industry_whitepaper(
+    title: str,
+    research_topic: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Generate comprehensive industry whitepapers for lead generation"""
+    user = users_collection.find_one({"user_id": user_id})
+    if not user or user.get("role") not in ["enterprise", "admin"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    if not content_marketing_service:
+        raise HTTPException(status_code=503, detail="Content marketing service not available")
+    
+    whitepaper = await content_marketing_service.generate_industry_whitepaper(title, research_topic)
+    return whitepaper
+
+@app.get("/api/content/performance")
+async def get_content_performance(user_id: str = Depends(get_current_user)):
+    """Get content marketing performance and ROI"""
+    user = users_collection.find_one({"user_id": user_id})
+    if not user or user.get("role") not in ["enterprise", "admin"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    if not content_marketing_service:
+        return {"message": "Content marketing service not available"}
+    
+    performance = await content_marketing_service.track_content_performance()
+    return performance
+
+@app.get("/api/content/dashboard")
+async def get_content_marketing_dashboard(user_id: str = Depends(get_current_user)):
+    """Get comprehensive content marketing dashboard"""
+    user = users_collection.find_one({"user_id": user_id})
+    if not user or user.get("role") not in ["enterprise", "admin"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    if not content_marketing_service:
+        return {"message": "Content marketing service not available"}
+    
+    dashboard = await content_marketing_service.get_content_marketing_dashboard()
+    return dashboard
+
+# Lead Generation Endpoints
+
+@app.post("/api/leads/magnet")
+async def create_lead_magnet(
+    title: str,
+    content_type: str,
+    target_audience: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Create lead magnets for user acquisition"""
+    user = users_collection.find_one({"user_id": user_id})
+    if not user or user.get("role") not in ["enterprise", "admin"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    if not business_growth_service:
+        raise HTTPException(status_code=503, detail="Business growth service not available")
+    
+    lead_magnet = await business_growth_service.create_lead_magnet(title, content_type, target_audience)
+    return lead_magnet
+
+@app.post("/api/leads/track")
+async def track_lead_generation(
+    lead_magnet_id: str,
+    user_email: EmailStr,
+    source: str = "organic"
+):
+    """Track lead generation from lead magnets"""
+    if not business_growth_service:
+        raise HTTPException(status_code=503, detail="Business growth service not available")
+    
+    success = await business_growth_service.track_lead_generation(lead_magnet_id, user_email, source)
+    return {"success": success}
+
+# Partnership and Affiliate Program Endpoints
+
+@app.post("/api/partnerships/create")
+async def create_partnership_program(
+    partner_type: str,
+    commission_rate: float,
+    user_id: str = Depends(get_current_user)
+):
+    """Create partnership and affiliate programs"""
+    user = users_collection.find_one({"user_id": user_id})
+    if not user or user.get("role") not in ["enterprise", "admin"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    if not business_growth_service:
+        raise HTTPException(status_code=503, detail="Business growth service not available")
+    
+    program = await business_growth_service.create_partnership_program(partner_type, commission_rate)
+    return program
+
+# Enhanced market data with business intelligence
+
+@app.get("/api/market-intelligence")
+async def get_market_intelligence():
+    """Get comprehensive market intelligence and business insights"""
+    # Enhanced market data with business insights
+    intelligence = {
+        "market_overview": {
+            "oil_markets": {
+                "wti_crude": {"price": 78.45, "trend": "bullish", "support": 75.00, "resistance": 82.00},
+                "brent_crude": {"price": 82.15, "trend": "bullish", "support": 79.00, "resistance": 85.00},
+                "dubai_crude": {"price": 81.23, "trend": "neutral", "support": 78.00, "resistance": 84.00}
+            },
+            "gas_markets": {
+                "natural_gas": {"price": 2.85, "trend": "bearish", "support": 2.70, "resistance": 3.00},
+                "lng_asia": {"price": 12.45, "trend": "bullish", "support": 11.50, "resistance": 13.50}
+            }
+        },
+        "trading_opportunities": [
+            {
+                "market": "WTI Crude",
+                "opportunity": "Bullish breakout above $80",
+                "risk_reward": "1:3",
+                "time_horizon": "2-4 weeks",
+                "confidence": "High"
+            },
+            {
+                "market": "Natural Gas",
+                "opportunity": "Seasonal winter demand support",
+                "risk_reward": "1:2",
+                "time_horizon": "1-3 months",
+                "confidence": "Medium"
+            }
+        ],
+        "risk_factors": [
+            "OPEC+ production policy changes",
+            "US Federal Reserve interest rate decisions",
+            "Geopolitical tensions in Middle East",
+            "Winter weather patterns in Northern Hemisphere"
+        ],
+        "industry_insights": {
+            "supply_demand": "Tight supply conditions support oil prices",
+            "inventory_levels": "Below 5-year average for crude oil",
+            "refining_margins": "Strong crack spreads indicate healthy demand",
+            "transportation": "Shipping costs elevated due to supply chain issues"
+        },
+        "weekly_outlook": {
+            "key_events": [
+                "EIA Weekly Petroleum Status Report (Wednesday)",
+                "OPEC+ Technical Committee Meeting",
+                "Chinese economic data release",
+                "US inflation data (CPI)"
+            ],
+            "price_targets": {
+                "wti_crude": {"bull_target": 85.00, "bear_target": 72.00},
+                "natural_gas": {"bull_target": 3.20, "bear_target": 2.50}
+            }
+        }
+    }
+    
+    return intelligence
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
