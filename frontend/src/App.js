@@ -21,6 +21,7 @@ function App() {
   useEffect(() => {
     if (token) {
       fetchUserProfile();
+      fetchUserAnalytics();
     }
     fetchStats();
     fetchMarketData();
