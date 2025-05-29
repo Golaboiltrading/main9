@@ -214,7 +214,10 @@ class OilGasFinderAPITester:
 
     def test_create_featured_payment(self, listing_type="standard"):
         """Test creating a featured listing payment"""
-        return self.run_test("Create Featured Payment", "POST", f"payments/create-featured-payment?listing_type={listing_type}", 200, auth=True)
+        success, response = self.run_test("Create Featured Payment", "POST", f"payments/create-featured-payment?listing_type={listing_type}", 200, auth=True)
+        if success and 'payment_id' in response:
+            self.payment_id = response['payment_id']
+        return success, response
 
     def test_execute_payment(self, payment_type="payment"):
         """Test executing a payment"""
