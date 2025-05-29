@@ -1,0 +1,281 @@
+
+import requests
+import sys
+import json
+import uuid
+from datetime import datetime
+
+class OilGasFinderAPITester:
+    def __init__(self, base_url):
+        self.base_url = base_url
+        self.token = None
+        self.tests_run = 0
+        self.tests_passed = 0
+        self.user_id = None
+        self.listing_id = None
+        self.test_results = {}
+
+    def run_test(self, name, method, endpoint, expected_status, data=None, auth=False):
+        """Run a single API test"""
+        url = f"{self.base_url}/api/{endpoint}"
+        headers = {'Content-Type': 'application/json'}
+        if auth and self.token:
+            headers['Authorization'] = f'Bearer {self.token}'
+
+        self.tests_run += 1
+        print(f"\n🔍 Testing {name}...")
+        
+        try:
+            if method == 'GET':
+                response = requests.get(url, headers=headers)
+            elif method == 'POST':
+                response = requests.post(url, json=data, headers=headers)
+            elif method == 'PUT':
+                response = requests.put(url, json=data, headers=headers)
+            elif method == 'DELETE':
+                response = requests.delete(url, headers=headers)
+
+            success = response.status_code == expected_status
+            
+            # Store test result
+            self.test_results[name] = {
+                'success': success,
+                'expected_status': expected_status,
+                'actual_status': response.status_code
+            }
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    return success, response.json()
+                except:
+                    return success, {}
+            else:
+                print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
+                try:
+                    error_data = response.json()
+                    print(f"Error details: {error_data}")
+                    return success, error_data
+                except:
+                    return success, {}
+
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            self.test_results[name] = {
+                'success': False,
+                'error': str(e)
+            }
+            return False, {}
+
+    def test_status(self):
+        """Test API status endpoint"""
+        return self.run_test("API Status", "GET", "status", 200)
+
+    def test_register(self, email, password, first_name, last_name, company_name, country, trading_role):
+        """Test user registration"""
+        data = {
+            "email": email,
+            "password": password,
+            "first_name": first_name,
+            "last_name": last_name,
+            "company_name": company_name,
+            "country": country,
+            "trading_role": trading_role
+        }
+        success, response = self.run_test("User Registration", "POST", "auth/register", 200, data)
+        if success and 'access_token' in response:
+            self.token = response['access_token']
+            self.user_id = response['user']['user_id']
+        return success, response
+
+    def test_login(self, email, password):
+        """Test user login"""
+        data = {
+            "email": email,
+            "password": password
+        }
+        success, response = self.run_test("User Login", "POST", "auth/login", 200, data)
+        if success and 'access_token' in response:
+            self.token = response['access_token']
+            self.user_id = response['user']['user_id']
+        return success, response
+
+    def test_get_profile(self):
+        """Test getting user profile"""
+        return self.run_test("Get User Profile", "GET", "user/profile", 200, auth=True)
+
+    def test_get_stats(self):
+        """Test getting platform statistics"""
+        return self.run_test("Get Platform Stats", "GET", "stats", 200)
+
+    def test_get_market_data(self):
+        """Test getting market data"""
+        return self.run_test("Get Market Data", "GET", "market-data", 200)
+
+    def test_get_listings(self):
+        """Test getting all listings"""
+        return self.run_test("Get All Listings", "GET", "listings", 200)
+
+    def test_create_listing(self):
+        """Test creating a listing"""
+        data = {
+            "title": f"Test Listing {uuid.uuid4()}",
+            "product_type": "crude_oil",
+            "quantity": 100000,
+            "unit": "barrels",
+            "price_range": "$70-75 per barrel",
+            "location": "Houston, TX",
+            "trading_hub": "Houston, TX",
+            "description": "Test listing for API testing",
+            "contact_person": "Test Contact",
+            "contact_email": "test@example.com",
+            "contact_phone": "+1234567890",
+            "is_featured": False
+        }
+        success, response = self.run_test("Create Listing", "POST", "listings", 200, data, auth=True)
+        if success and 'listing_id' in response:
+            self.listing_id = response['listing_id']
+        return success, response
+
+    def test_get_my_listings(self):
+        """Test getting user's listings"""
+        return self.run_test("Get My Listings", "GET", "listings/my", 200, auth=True)
+
+    def test_update_listing(self):
+        """Test updating a listing"""
+        if not self.listing_id:
+            print("❌ Cannot test update - no listing created")
+            return False, {}
+            
+        data = {
+            "title": f"Updated Test Listing {uuid.uuid4()}",
+            "product_type": "crude_oil",
+            "quantity": 150000,
+            "unit": "barrels",
+            "price_range": "$72-77 per barrel",
+            "location": "Houston, TX",
+            "trading_hub": "Houston, TX",
+            "description": "Updated test listing for API testing",
+            "contact_person": "Test Contact",
+            "contact_email": "test@example.com",
+            "contact_phone": "+1234567890",
+            "is_featured": True
+        }
+        return self.run_test("Update Listing", "PUT", f"listings/{self.listing_id}", 200, data, auth=True)
+
+    def test_delete_listing(self):
+        """Test deleting a listing"""
+        if not self.listing_id:
+            print("❌ Cannot test delete - no listing created")
+            return False, {}
+            
+        return self.run_test("Delete Listing", "DELETE", f"listings/{self.listing_id}", 200, auth=True)
+
+    def test_search_companies(self):
+        """Test searching companies"""
+        return self.run_test("Search Companies", "GET", "search/companies", 200)
+
+    def test_create_connection(self):
+        """Test creating a connection to a listing"""
+        # First, get a listing that's not owned by the current user
+        success, response = self.run_test("Get Listings for Connection", "GET", "listings", 200)
+        if not success or not response.get('listings'):
+            print("❌ No listings available for connection test")
+            return False, {}
+            
+        # Find a listing not owned by current user
+        other_listing = None
+        for listing in response.get('listings', []):
+            if listing.get('user_id') != self.user_id:
+                other_listing = listing
+                break
+                
+        if not other_listing:
+            print("❌ No listings from other users available for connection test")
+            return False, {}
+            
+        return self.run_test("Create Connection", "POST", f"connections/{other_listing['listing_id']}", 200, auth=True)
+
+    def test_get_connections(self):
+        """Test getting user connections"""
+        return self.run_test("Get Connections", "GET", "connections", 200, auth=True)
+
+    def print_summary(self):
+        """Print test summary"""
+        print("\n" + "="*50)
+        print(f"🔍 API TESTING SUMMARY")
+        print("="*50)
+        print(f"✅ Tests passed: {self.tests_passed}/{self.tests_run} ({self.tests_passed/self.tests_run*100:.1f}%)")
+        
+        # Print details of failed tests
+        if self.tests_passed < self.tests_run:
+            print("\n❌ Failed tests:")
+            for name, result in self.test_results.items():
+                if not result.get('success'):
+                    if 'expected_status' in result:
+                        print(f"  - {name}: Expected status {result['expected_status']}, got {result['actual_status']}")
+                    else:
+                        print(f"  - {name}: {result.get('error', 'Unknown error')}")
+        
+        print("="*50)
+        return self.tests_passed == self.tests_run
+
+def main():
+    # Get the backend URL from environment variable
+    backend_url = "https://2feb79c7-fd63-4021-b0db-9197e62ab3af.preview.emergentagent.com"
+    
+    print(f"Testing API at: {backend_url}")
+    
+    # Initialize tester
+    tester = OilGasFinderAPITester(backend_url)
+    
+    # Test API status
+    tester.test_status()
+    
+    # Test authentication
+    # First try with existing user
+    success, _ = tester.test_login("john.doe@petroltrade.com", "password123")
+    
+    if not success:
+        # If login fails, try registering a new user
+        test_email = f"test.user{uuid.uuid4().hex[:8]}@example.com"
+        tester.test_register(
+            email=test_email,
+            password="TestPassword123!",
+            first_name="Test",
+            last_name="User",
+            company_name="Test Oil Trading Co",
+            country="United States",
+            trading_role="both"
+        )
+    
+    # Test user profile
+    tester.test_get_profile()
+    
+    # Test platform data
+    tester.test_get_stats()
+    tester.test_get_market_data()
+    tester.test_get_listings()
+    
+    # Test listing operations
+    tester.test_create_listing()
+    tester.test_get_my_listings()
+    tester.test_update_listing()
+    
+    # Test search
+    tester.test_search_companies()
+    
+    # Test connections
+    tester.test_create_connection()
+    tester.test_get_connections()
+    
+    # Test listing deletion (do this last)
+    tester.test_delete_listing()
+    
+    # Print summary
+    success = tester.print_summary()
+    return 0 if success else 1
+
+if __name__ == "__main__":
+    sys.exit(main())
