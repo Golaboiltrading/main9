@@ -738,6 +738,84 @@ function App() {
                   )}
                 </div>
               )}
+
+              {activeTab === 'analytics' && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-6">Your Trading Analytics</h3>
+                  
+                  {userAnalytics.listings && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                      <div className="bg-blue-50 p-6 rounded-lg">
+                        <h4 className="text-lg font-semibold text-blue-900">Listing Performance</h4>
+                        <div className="mt-4 space-y-2">
+                          <div className="flex justify-between">
+                            <span>Total Listings:</span>
+                            <span className="font-bold">{userAnalytics.listings.total_listings}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Active:</span>
+                            <span className="font-bold text-green-600">{userAnalytics.listings.active_listings}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Featured:</span>
+                            <span className="font-bold text-orange-600">{userAnalytics.listings.featured_listings}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-green-50 p-6 rounded-lg">
+                        <h4 className="text-lg font-semibold text-green-900">Connection Metrics</h4>
+                        <div className="mt-4 space-y-2">
+                          <div className="flex justify-between">
+                            <span>Received:</span>
+                            <span className="font-bold">{userAnalytics.connections?.connections_received || 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Made:</span>
+                            <span className="font-bold">{userAnalytics.connections?.connections_made || 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Success Rate:</span>
+                            <span className="font-bold text-green-600">{userAnalytics.connections?.connection_success_rate || 0}%</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-purple-50 p-6 rounded-lg">
+                        <h4 className="text-lg font-semibold text-purple-900">Financial Summary</h4>
+                        <div className="mt-4 space-y-2">
+                          <div className="flex justify-between">
+                            <span>Total Spent:</span>
+                            <span className="font-bold">${userAnalytics.financial?.total_spent || 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Subscription:</span>
+                            <span className="font-bold capitalize">{userAnalytics.financial?.subscription_status || 'Basic'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Payments:</span>
+                            <span className="font-bold">{userAnalytics.financial?.payment_history?.length || 0}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {userAnalytics.listings?.product_breakdown && (
+                    <div className="bg-white p-6 rounded-lg border">
+                      <h4 className="text-lg font-semibold mb-4">Product Distribution</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {Object.entries(userAnalytics.listings.product_breakdown).map(([product, count]) => (
+                          <div key={product} className="text-center p-3 bg-gray-50 rounded">
+                            <div className="text-2xl font-bold text-blue-600">{count}</div>
+                            <div className="text-sm text-gray-600 capitalize">{product.replace('_', ' ')}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -745,7 +823,242 @@ function App() {
     );
   };
 
-  const CreateListingPage = () => {
+  const PremiumPage = () => {
+    const subscriptionPlans = [
+      {
+        id: 'premium_basic',
+        name: 'Premium Basic',
+        price: 10,
+        features: [
+          'Enhanced listing visibility',
+          'Basic analytics dashboard',
+          'Priority customer support',
+          'Remove platform branding',
+          'Up to 20 listings per month'
+        ]
+      },
+      {
+        id: 'premium_advanced',
+        name: 'Premium Advanced',
+        price: 25,
+        popular: true,
+        features: [
+          'Everything in Premium Basic',
+          'Advanced analytics & reporting',
+          'Unlimited featured listings',
+          'Market intelligence reports',
+          'Connection recommendations',
+          'Bulk listing management'
+        ]
+      },
+      {
+        id: 'enterprise',
+        name: 'Enterprise',
+        price: 45,
+        features: [
+          'Everything in Premium Advanced',
+          'API access for integration',
+          'Custom branding options',
+          'Dedicated account manager',
+          'Advanced market insights',
+          'White-label solutions'
+        ]
+      }
+    ];
+
+    const handleSubscriptionSelect = (planId) => {
+      setSelectedTier(planId);
+      setPaymentType('subscription');
+      setShowPaymentModal(true);
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold mb-4">Choose Your Premium Plan</h1>
+            <p className="text-xl text-gray-600">Unlock advanced features and grow your oil & gas trading business</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {subscriptionPlans.map((plan) => (
+              <div key={plan.id} className={`relative bg-white rounded-lg shadow-lg p-8 ${plan.popular ? 'ring-2 ring-blue-500' : ''}`}>
+                {plan.popular && (
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-semibold">Most Popular</span>
+                  </div>
+                )}
+                
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                  <div className="text-4xl font-bold text-blue-600 mb-2">${plan.price}</div>
+                  <div className="text-gray-600">per month</div>
+                </div>
+
+                <ul className="space-y-4 mb-8">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-start">
+                      <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={() => handleSubscriptionSelect(plan.id)}
+                  className={`w-full py-3 px-6 rounded-lg font-semibold ${
+                    plan.popular 
+                      ? 'bg-blue-600 hover:bg-blue-500 text-white' 
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                  }`}
+                >
+                  {user?.role === 'basic' ? 'Upgrade Now' : 'Switch Plan'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-gray-600 mb-4">All plans include a 30-day money-back guarantee</p>
+            <button
+              onClick={() => setCurrentPage('dashboard')}
+              className="text-blue-600 hover:text-blue-500 font-semibold"
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Payment Modal Component
+  const PaymentModal = () => {
+    const [paymentStep, setPaymentStep] = useState('confirm'); // 'confirm', 'processing', 'success'
+
+    const handlePaymentSuccess = (details) => {
+      console.log('Payment successful:', details);
+      setPaymentStep('success');
+      // Refresh user data and close modal after delay
+      setTimeout(() => {
+        setShowPaymentModal(false);
+        setPaymentStep('confirm');
+        fetchUserProfile();
+        fetchUserAnalytics();
+      }, 3000);
+    };
+
+    const handlePaymentError = (error) => {
+      console.error('Payment error:', error);
+      alert('Payment failed. Please try again.');
+      setPaymentStep('confirm');
+    };
+
+    const getPaymentAmount = () => {
+      if (paymentType === 'subscription') {
+        const prices = { premium_basic: 10, premium_advanced: 25, enterprise: 45 };
+        return prices[selectedTier] || 0;
+      }
+      return paymentType === 'featured_premium' ? 10 : 5;
+    };
+
+    const getPaymentDescription = () => {
+      if (paymentType === 'subscription') {
+        return `${selectedTier.replace('_', ' ').toUpperCase()} Monthly Subscription`;
+      }
+      return paymentType === 'featured_premium' ? 'Premium Featured Listing' : 'Standard Featured Listing';
+    };
+
+    if (!showPaymentModal) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold">Complete Payment</h3>
+            <button
+              onClick={() => setShowPaymentModal(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+
+          {paymentStep === 'confirm' && (
+            <div>
+              <div className="mb-6">
+                <h4 className="font-semibold mb-2">Payment Details</h4>
+                <p className="text-gray-600">{getPaymentDescription()}</p>
+                <p className="text-2xl font-bold text-blue-600">${getPaymentAmount()}</p>
+              </div>
+
+              <div className="mb-6">
+                <PayPalButton
+                  amount={getPaymentAmount()}
+                  description={getPaymentDescription()}
+                  onSuccess={handlePaymentSuccess}
+                  onError={handlePaymentError}
+                  onCancel={() => setShowPaymentModal(false)}
+                />
+              </div>
+
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="w-full bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+
+          {paymentStep === 'success' && (
+            <div className="text-center">
+              <div className="text-green-500 text-6xl mb-4">✓</div>
+              <h4 className="text-xl font-bold mb-2">Payment Successful!</h4>
+              <p className="text-gray-600">Your account has been upgraded. You will be redirected shortly.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Render current page
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case 'home':
+        return <HomePage />;
+      case 'login':
+        return <LoginPage />;
+      case 'register':
+        return <RegisterPage />;
+      case 'dashboard':
+        return user ? <DashboardPage /> : <LoginPage />;
+      case 'create-listing':
+        return user ? <CreateListingPage /> : <LoginPage />;
+      case 'browse':
+        return <BrowsePage />;
+      case 'market':
+        return <MarketDataPage />;
+      case 'premium':
+        return user ? <PremiumPage /> : <LoginPage />;
+      default:
+        return <HomePage />;
+    }
+  };
+
+  return (
+    <div className="App">
+      <Header />
+      {renderCurrentPage()}
+      <PaymentModal />
+    </div>
+  );
+}
+
+export default App;
     const [formData, setFormData] = useState({
       title: '',
       product_type: 'crude_oil',
