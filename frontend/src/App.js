@@ -207,6 +207,14 @@ function App() {
               >
                 Market Data
               </button>
+              {user && user.role === 'enterprise' && (
+                <button 
+                  onClick={() => setCurrentPage('business-growth')}
+                  className={`hover:text-blue-200 ${currentPage === 'business-growth' ? 'text-blue-200' : ''}`}
+                >
+                  Business Growth
+                </button>
+              )}
             </nav>
           </div>
           <div className="flex items-center space-x-4">
