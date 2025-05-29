@@ -661,6 +661,19 @@ function App() {
                       <div><strong>Country:</strong> {user.country}</div>
                       <div><strong>Phone:</strong> {user.phone || 'Not provided'}</div>
                     </div>
+                    
+                    {user.role === 'basic' && (
+                      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h4 className="text-lg font-semibold text-blue-900 mb-2">Upgrade to Premium</h4>
+                        <p className="text-blue-700 mb-4">Unlock advanced features and grow your trading business</p>
+                        <button
+                          onClick={() => setCurrentPage('premium')}
+                          className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg"
+                        >
+                          View Premium Plans
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
