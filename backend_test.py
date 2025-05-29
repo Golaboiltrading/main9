@@ -206,12 +206,7 @@ class OilGasFinderAPITester:
     # New Payment API Tests
     def test_create_subscription_payment(self, tier="premium_basic"):
         """Test creating a subscription payment"""
-        data = {"tier": tier}
-        success, response = self.run_test("Create Subscription Payment", "POST", "payments/create-subscription", 200, data, auth=True)
-        if success and 'subscription_id' in response:
-            self.subscription_id = response['subscription_id']
-            self.payment_id = response.get('payment_id')
-        return success, response
+        return self.run_test("Create Subscription Payment", "POST", f"payments/create-subscription?tier={tier}", 200, auth=True)
 
     def test_create_featured_payment(self, listing_type="standard"):
         """Test creating a featured listing payment"""
