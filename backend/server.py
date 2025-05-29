@@ -526,6 +526,175 @@ async def get_market_data():
     
     return mock_data
 
+# PayPal Payment Endpoints
+
+@app.post("/api/payments/create-subscription")
+async def create_subscription_payment(
+    tier: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Create PayPal subscription for premium plans"""
+    if tier not in ["premium_basic", "premium_advanced", "enterprise"]:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    # Create billing plan if needed (in production, this would be done once)
+    plan_id = await PayPalService.create_subscription_plan(tier)
+    if not plan_id:
+        raise HTTPException(status_code=500, detail="Failed to create subscription plan")
+    
+    # Create subscription
+    result = await PayPalService.create_subscription(plan_id, user_id)
+    if not result:
+        raise HTTPException(status_code=500, detail="Failed to create subscription")
+    
+    return {
+        "approval_url": result["approval_url"],
+        "subscription_id": result["agreement_id"],
+        "payment_id": result["payment_id"]
+    }
+
+@app.post("/api/payments/create-featured-payment")
+async def create_featured_payment(
+    listing_type: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Create PayPal payment for featured listing"""
+    if listing_type not in ["standard", "premium"]:
+        raise HTTPException(status_code=400, detail="Invalid listing type")
+    
+    result = await PayPalService.create_payment(listing_type, user_id)
+    if not result:
+        raise HTTPException(status_code=500, detail="Failed to create payment")
+    
+    return {
+        "approval_url": result["approval_url"],
+        "payment_id": result["payment_id"],
+        "internal_payment_id": result["internal_payment_id"]
+    }
+
+@app.post("/api/payments/execute")
+async def execute_payment(
+    payment_id: str,
+    payer_id: str,
+    payment_type: str = "payment"  # "payment" or "subscription"
+):
+    """Execute PayPal payment after user approval"""
+    if payment_type == "subscription":
+        success = await PayPalService.execute_agreement(payment_id)
+    else:
+        success = await PayPalService.execute_payment(payment_id, payer_id)
+    
+    if not success:
+        raise HTTPException(status_code=400, detail="Payment execution failed")
+    
+    # Get payment details for confirmation email
+    payment_details = await PayPalService.get_payment_status(payment_id)
+    if payment_details and payment_details.get("status") == "completed":
+        # Get user info for email
+        user = users_collection.find_one({"user_id": payment_details.get("user_id")})
+        if user:
+            if payment_type == "subscription":
+                await email_service.send_subscription_confirmation(
+                    user["email"],
+                    user["first_name"],
+                    {
+                        "tier": payment_details.get("subscription_tier", "premium"),
+                        "monthly_price": payment_details.get("amount", "N/A")
+                    }
+                )
+            else:
+                await email_service.send_payment_confirmation(
+                    user["email"],
+                    user["first_name"],
+                    payment_details
+                )
+    
+    return {"message": "Payment executed successfully", "status": "completed"}
+
+@app.get("/api/payments/status/{payment_id}")
+async def get_payment_status(payment_id: str, user_id: str = Depends(get_current_user)):
+    """Get payment status"""
+    status = await PayPalService.get_payment_status(payment_id)
+    if not status:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    
+    return status
+
+@app.delete("/api/payments/cancel-subscription/{agreement_id}")
+async def cancel_subscription(agreement_id: str, user_id: str = Depends(get_current_user)):
+    """Cancel PayPal subscription"""
+    success = await PayPalService.cancel_subscription(agreement_id, user_id)
+    if not success:
+        raise HTTPException(status_code=400, detail="Failed to cancel subscription")
+    
+    return {"message": "Subscription cancelled successfully"}
+
+@app.get("/api/payments/history")
+async def get_payment_history(user_id: str = Depends(get_current_user)):
+    """Get user's payment history"""
+    payments = await PayPalService.get_user_payments(user_id)
+    return {"payments": payments}
+
+# Advanced Analytics Endpoints
+
+@app.get("/api/analytics/platform")
+async def get_platform_analytics(user_id: str = Depends(get_current_user)):
+    """Get platform overview analytics (admin only)"""
+    user = users_collection.find_one({"user_id": user_id})
+    if not user or user.get("role") not in ["enterprise", "admin"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    analytics = await analytics_service.get_platform_overview()
+    return analytics
+
+@app.get("/api/analytics/user")
+async def get_user_analytics_endpoint(user_id: str = Depends(get_current_user)):
+    """Get user-specific analytics"""
+    analytics = await analytics_service.get_user_analytics(user_id)
+    return analytics
+
+@app.get("/api/analytics/market")
+async def get_market_analytics():
+    """Get market analytics and trends"""
+    analytics = await analytics_service.get_market_analytics()
+    return analytics
+
+@app.get("/api/analytics/revenue")
+async def get_revenue_analytics(user_id: str = Depends(get_current_user)):
+    """Get revenue analytics (admin only)"""
+    user = users_collection.find_one({"user_id": user_id})
+    if not user or user.get("role") not in ["enterprise", "admin"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    analytics = await analytics_service.get_revenue_analytics()
+    return analytics
+
+@app.get("/api/analytics/listing/{listing_id}")
+async def get_listing_analytics(listing_id: str, user_id: str = Depends(get_current_user)):
+    """Get analytics for a specific listing"""
+    # Verify user owns the listing
+    listing = listings_collection.find_one({"listing_id": listing_id, "user_id": user_id})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found or access denied")
+    
+    analytics = await analytics_service.get_listing_performance(listing_id)
+    return analytics
+
+# Enhanced notification endpoints
+
+@app.post("/api/notifications/test-email")
+async def test_email_notification(
+    email: EmailStr,
+    user_id: str = Depends(get_current_user)
+):
+    """Test email notification system"""
+    user = users_collection.find_one({"user_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    success = await email_service.send_welcome_email(email, user["first_name"])
+    return {"success": success, "message": "Test email sent" if success else "Failed to send email"}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
