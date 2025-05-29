@@ -206,7 +206,11 @@ async def register_user(user_data: UserCreate):
     )
     
     # Send welcome email
-    await email_service.send_welcome_email(user_data.email, user_data.first_name)
+    if email_service:
+        try:
+            await email_service.send_welcome_email(user_data.email, user_data.first_name)
+        except Exception as e:
+            print(f"Failed to send welcome email: {e}")
     
     return {
         "message": "User registered successfully",
