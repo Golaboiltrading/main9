@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Depends, status, BackgroundTasks, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -14,6 +14,11 @@ import uuid
 from passlib.context import CryptContext
 import logging
 from enum import Enum
+
+# Import our new services
+from paypal_service import PayPalService
+from email_service import email_service
+from analytics_service import analytics_service
 
 # Initialize FastAPI app
 app = FastAPI(title="Oil & Gas Finder API", version="1.0.0")
