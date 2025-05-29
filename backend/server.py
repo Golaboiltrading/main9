@@ -417,16 +417,20 @@ async def create_connection(listing_id: str, user_id: str = Depends(get_current_
     connections_collection.insert_one(connection_doc)
     
     # Send connection request email to listing owner
-    listing_owner = users_collection.find_one({"user_id": listing["user_id"]})
-    requester = users_collection.find_one({"user_id": user_id})
-    
-    if listing_owner and requester:
-        await email_service.send_connection_request(
-            listing_owner["email"],
-            listing_owner["first_name"],
-            f"{requester['first_name']} {requester['last_name']} ({requester['company_name']})",
-            listing["title"]
-        )
+    if email_service:
+        try:
+            listing_owner = users_collection.find_one({"user_id": listing["user_id"]})
+            requester = users_collection.find_one({"user_id": user_id})
+            
+            if listing_owner and requester:
+                await email_service.send_connection_request(
+                    listing_owner["email"],
+                    listing_owner["first_name"],
+                    f"{requester['first_name']} {requester['last_name']} ({requester['company_name']})",
+                    listing["title"]
+                )
+        except Exception as e:
+            print(f"Failed to send connection request email: {e}")
     
     return {
         "message": "Connection request sent successfully",
