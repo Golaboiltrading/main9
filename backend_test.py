@@ -273,8 +273,7 @@ class OilGasFinderAPITester:
     # Email Notification Test
     def test_email_notification(self, email="test@example.com"):
         """Test email notification system"""
-        data = {"email": email}
-        return self.run_test("Test Email Notification", "POST", "notifications/test-email", 200, data, auth=True)
+        return self.run_test("Test Email Notification", "POST", f"notifications/test-email?email={email}", 200, auth=True)
 
     def print_summary(self):
         """Print test summary"""
