@@ -572,6 +572,9 @@ async def create_subscription_payment(
     user_id: str = Depends(get_current_user)
 ):
     """Create PayPal subscription for premium plans"""
+    if not PayPalService:
+        raise HTTPException(status_code=503, detail="Payment service not available")
+    
     if tier not in ["premium_basic", "premium_advanced", "enterprise"]:
         raise HTTPException(status_code=400, detail="Invalid subscription tier")
     
@@ -597,6 +600,9 @@ async def create_featured_payment(
     user_id: str = Depends(get_current_user)
 ):
     """Create PayPal payment for featured listing"""
+    if not PayPalService:
+        raise HTTPException(status_code=503, detail="Payment service not available")
+    
     if listing_type not in ["standard", "premium"]:
         raise HTTPException(status_code=400, detail="Invalid listing type")
     
