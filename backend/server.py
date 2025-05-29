@@ -20,11 +20,15 @@ try:
     from paypal_service import PayPalService
     from email_service import email_service
     from analytics_service import analytics_service
+    from business_growth_service import business_growth_service
+    from content_marketing_service import content_marketing_service
 except ImportError as e:
     print(f"Warning: Could not import advanced services: {e}")
     PayPalService = None
     email_service = None
     analytics_service = None
+    business_growth_service = None
+    content_marketing_service = None
 
 # Initialize FastAPI app
 app = FastAPI(title="Oil & Gas Finder API", version="1.0.0")
