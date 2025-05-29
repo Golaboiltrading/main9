@@ -1406,6 +1406,10 @@ function App() {
         return <MarketDataPage />;
       case 'premium':
         return user ? <PremiumPage /> : <LoginPage />;
+      case 'business-growth':
+        return user && user.role === 'enterprise' ? 
+          <BusinessGrowthDashboard token={token} API_BASE_URL={API_BASE_URL} /> : 
+          <LoginPage />;
       default:
         return <HomePage />;
     }
