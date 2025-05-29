@@ -454,5 +454,215 @@ class EmailService:
         
         return await self.send_email(user_email, subject, html_body)
 
+    async def send_referral_welcome_email(self, user_email: str, user_name: str, discount_amount: float, referrer_company: str) -> bool:
+        """Send welcome email to referred user"""
+        subject = f"Welcome to Oil & Gas Finder - ${discount_amount} Credit Applied!"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Welcome via Referral</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .content {{ background: #f8fafc; padding: 30px; border-radius: 0 0 8px 8px; }}
+                .credit-highlight {{ background: #10b981; color: white; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🎉 Welcome to Oil & Gas Finder!</h1>
+                    <p>You've been referred by {referrer_company}</p>
+                </div>
+                <div class="content">
+                    <h2>Hello {user_name},</h2>
+                    <p>Congratulations! You've joined Oil & Gas Finder through a referral from <strong>{referrer_company}</strong>, and we've applied a special credit to your account.</p>
+                    
+                    <div class="credit-highlight">
+                        <h3>💰 ${discount_amount} Account Credit Applied!</h3>
+                        <p>Use this credit towards premium subscriptions or featured listings</p>
+                    </div>
+
+                    <p>As a referred member, you're already connected to a trusted network of oil and gas professionals. Start exploring trading opportunities and connect with verified industry partners.</p>
+                    
+                    <a href="{self.platform_url}/dashboard" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0;">Start Trading Now</a>
+                    
+                    <p>Your account credit expires in 30 days, so make sure to use it soon!</p>
+                    
+                    <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+                    <p style="font-size: 14px; color: #6b7280;">
+                        Welcome to the community!<br>
+                        The Oil & Gas Finder Team
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(user_email, subject, html_body)
+
+    async def send_referral_notification_email(self, referrer_email: str, referrer_name: str, referee_name: str, referee_company: str) -> bool:
+        """Send notification to referrer about successful referral"""
+        subject = f"Great News! {referee_name} Joined Through Your Referral"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Referral Success</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: #3b82f6; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .content {{ background: #f8fafc; padding: 30px; border-radius: 0 0 8px 8px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🎯 Referral Success!</h1>
+                    <p>Your referral is now part of the Oil & Gas Finder community</p>
+                </div>
+                <div class="content">
+                    <h2>Hello {referrer_name},</h2>
+                    <p>Excellent news! <strong>{referee_name}</strong> from <strong>{referee_company}</strong> has successfully joined Oil & Gas Finder using your referral.</p>
+                    
+                    <p>Your referral reward will be processed once they complete their first transaction or upgrade to a premium subscription.</p>
+                    
+                    <p>Keep sharing Oil & Gas Finder with your professional network to earn more rewards and help grow the trading community!</p>
+                    
+                    <a href="{self.platform_url}/referrals" style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0;">View Referral Dashboard</a>
+                    
+                    <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+                    <p style="font-size: 14px; color: #6b7280;">
+                        Thank you for growing our community!<br>
+                        The Oil & Gas Finder Team
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(referrer_email, subject, html_body)
+
+    async def send_referral_reward_email(self, referrer_email: str, referrer_name: str, reward_amount: float, referee_company: str, conversion_type: str) -> bool:
+        """Send referral reward notification"""
+        subject = f"Referral Reward Earned - ${reward_amount}!"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Referral Reward</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .content {{ background: #f8fafc; padding: 30px; border-radius: 0 0 8px 8px; }}
+                .reward-amount {{ font-size: 32px; font-weight: bold; color: #f59e0b; text-align: center; margin: 20px 0; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>💰 Referral Reward Earned!</h1>
+                    <p>Your referral converted to a paying customer</p>
+                </div>
+                <div class="content">
+                    <h2>Congratulations {referrer_name}!</h2>
+                    <p>Great news! Your referral from <strong>{referee_company}</strong> has {conversion_type.replace('_', ' ')}d, which means you've earned a referral reward!</p>
+                    
+                    <div class="reward-amount">${reward_amount}</div>
+                    
+                    <p>This credit has been added to your account and can be used towards:</p>
+                    <ul>
+                        <li>Premium subscription upgrades</li>
+                        <li>Featured listing enhancements</li>
+                        <li>Future platform services</li>
+                    </ul>
+                    
+                    <p>Keep referring quality professionals to continue earning rewards and building the Oil & Gas Finder community!</p>
+                    
+                    <a href="{self.platform_url}/account/credits" style="background: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0;">View Account Credits</a>
+                    
+                    <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+                    <p style="font-size: 14px; color: #6b7280;">
+                        Thank you for being a valued partner!<br>
+                        The Oil & Gas Finder Team
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(referrer_email, subject, html_body)
+
+    async def send_lead_magnet_email(self, user_email: str, content_title: str, content_description: str, download_url: str) -> bool:
+        """Send lead magnet content to prospects"""
+        subject = f"Your Free Download: {content_title}"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Lead Magnet Delivery</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: #6366f1; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .content {{ background: #f8fafc; padding: 30px; border-radius: 0 0 8px 8px; }}
+                .download-section {{ background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border: 2px solid #6366f1; text-align: center; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>📊 Your Content is Ready!</h1>
+                    <p>Thank you for your interest in our industry insights</p>
+                </div>
+                <div class="content">
+                    <h2>Your Free Download</h2>
+                    <h3>{content_title}</h3>
+                    <p>{content_description}</p>
+                    
+                    <div class="download-section">
+                        <h4>🎯 Download Your Content</h4>
+                        <a href="{self.platform_url}{download_url}" style="background: #6366f1; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 10px 0; font-weight: bold;">Download Now</a>
+                    </div>
+
+                    <p>While you're here, explore Oil & Gas Finder - the leading B2B platform for oil and gas professionals:</p>
+                    
+                    <ul>
+                        <li>🔍 <strong>Find Trading Partners:</strong> Connect with verified oil and gas traders worldwide</li>
+                        <li>📈 <strong>Market Intelligence:</strong> Access real-time pricing and market analysis</li>
+                        <li>🤝 <strong>Business Opportunities:</strong> Discover new trading opportunities daily</li>
+                        <li>💡 <strong>Industry Insights:</strong> Stay ahead with expert analysis and reports</li>
+                    </ul>
+                    
+                    <a href="{self.platform_url}/register" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0;">Join Oil & Gas Finder Free</a>
+                    
+                    <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+                    <p style="font-size: 14px; color: #6b7280;">
+                        Stay informed with industry-leading insights<br>
+                        The Oil & Gas Finder Team
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return await self.send_email(user_email, subject, html_body)
+
 # Create global email service instance
 email_service = EmailService()
