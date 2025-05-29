@@ -298,12 +298,16 @@ async def create_listing(listing_data: TradingListing, user_id: str = Depends(ge
     listings_collection.insert_one(listing_doc)
     
     # Send listing approval email
-    await email_service.send_listing_approval(
-        user["email"],
-        user["first_name"],
-        listing_data.title,
-        listing_data.is_featured
-    )
+    if email_service:
+        try:
+            await email_service.send_listing_approval(
+                user["email"],
+                user["first_name"],
+                listing_data.title,
+                listing_data.is_featured
+            )
+        except Exception as e:
+            print(f"Failed to send listing approval email: {e}")
     
     return {
         "message": "Listing created successfully",
