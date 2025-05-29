@@ -199,6 +199,9 @@ async def register_user(user_data: UserCreate):
         data={"sub": user_id}, expires_delta=access_token_expires
     )
     
+    # Send welcome email
+    await email_service.send_welcome_email(user_data.email, user_data.first_name)
+    
     return {
         "message": "User registered successfully",
         "access_token": access_token,
