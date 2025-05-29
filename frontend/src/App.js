@@ -1059,6 +1059,9 @@ function App() {
 }
 
 export default App;
+
+// Create Listing Page Component
+const CreateListingPage = () => {
     const [formData, setFormData] = useState({
       title: '',
       product_type: 'crude_oil',
