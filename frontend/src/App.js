@@ -24,6 +24,33 @@ function App() {
   const [paymentType, setPaymentType] = useState(''); // 'subscription' or 'featured'
   const [selectedTier, setSelectedTier] = useState('');
 
+  // Analytics hook
+  const analytics = useAnalytics();
+
+  // URL routing
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path === '/terms') setCurrentPage('terms');
+    else if (path === '/privacy') setCurrentPage('privacy');
+    else if (path === '/disclaimer') setCurrentPage('disclaimer');
+    else if (path === '/blog') setCurrentPage('blog');
+    else if (path.startsWith('/blog/')) setCurrentPage('blog-post');
+    else if (path.startsWith('/locations/')) setCurrentPage('location');
+    else if (path.startsWith('/products/')) setCurrentPage('product');
+    else if (path === '/browse') setCurrentPage('browse');
+    else if (path === '/premium') setCurrentPage('premium');
+    else if (path === '/register') setCurrentPage('register');
+    else if (path === '/login') setCurrentPage('login');
+    else setCurrentPage('home');
+  }, []);
+
+  // Update page and URL
+  const navigateToPage = (page) => {
+    setCurrentPage(page);
+    window.history.pushState({}, '', `/${page === 'home' ? '' : page}`);
+    analytics.trackPageView(`/${page === 'home' ? '' : page}`);
+  };
+
   useEffect(() => {
     if (token) {
       fetchUserProfile();
