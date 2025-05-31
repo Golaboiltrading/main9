@@ -19,7 +19,7 @@ async def generate_sitemap():
     urlset.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
     urlset.set("xsi:schemaLocation", "http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd")
     
-    base_url = "https://your-domain.com"  # Replace with actual domain
+    base_url = "https://oilgasfinder.com"  # Updated domain
     
     # Static pages
     static_pages = [
