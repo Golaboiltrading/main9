@@ -1442,6 +1442,23 @@ function App() {
         return user && user.role === 'enterprise' ? 
           <BusinessGrowthDashboard token={token} API_BASE_URL={API_BASE_URL} /> : 
           <LoginPage />;
+      case 'terms':
+        return <TermsOfService />;
+      case 'privacy':
+        return <PrivacyPolicy />;
+      case 'disclaimer':
+        return <Disclaimer />;
+      case 'blog':
+        return <BlogSystem />;
+      case 'blog-post':
+        const slug = window.location.pathname.split('/blog/')[1];
+        return <BlogPost slug={slug} />;
+      case 'location':
+        const location = window.location.pathname.split('/locations/')[1];
+        return <LocationLandingPage location={location} />;
+      case 'product':
+        const product = window.location.pathname.split('/products/')[1];
+        return <ProductLandingPage productType={product} />;
       default:
         return <HomePage />;
     }
