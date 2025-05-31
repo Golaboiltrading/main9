@@ -35,6 +35,10 @@ except ImportError as e:
 # Initialize FastAPI app
 app = FastAPI(title="Oil & Gas Finder API", version="1.0.0")
 
+# Include SEO router if available
+if seo_router:
+    app.include_router(seo_router, tags=["SEO"])
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
