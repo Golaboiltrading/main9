@@ -41,6 +41,10 @@ app = FastAPI(title="Oil & Gas Finder API", version="1.0.0")
 if seo_router:
     app.include_router(seo_router, tags=["SEO"])
 
+# Include Analytics router if available
+if analytics_router:
+    app.include_router(analytics_router, tags=["Analytics"])
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
