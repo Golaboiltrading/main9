@@ -1279,7 +1279,7 @@ async def track_pageview(pageview_data: dict):
     """Track page views for analytics"""
     try:
         # Store in database
-        await analytics_pageviews.insert_one({
+        analytics_pageviews.insert_one({
             **pageview_data,
             "created_at": datetime.utcnow()
         })
@@ -1293,7 +1293,7 @@ async def track_event(event_data: dict):
     """Track custom events for analytics"""
     try:
         # Store in database
-        await analytics_events.insert_one({
+        analytics_events.insert_one({
             **event_data,
             "created_at": datetime.utcnow()
         })
@@ -1309,11 +1309,11 @@ async def capture_lead(lead_data: dict):
         email = lead_data.get("email")
         
         # Check if lead already exists
-        existing_lead = await leads_collection.find_one({"email": email})
+        existing_lead = leads_collection.find_one({"email": email})
         
         if existing_lead:
             # Update existing lead
-            await leads_collection.update_one(
+            leads_collection.update_one(
                 {"email": email},
                 {
                     "$set": {
@@ -1333,7 +1333,7 @@ async def capture_lead(lead_data: dict):
                 "interaction_count": 1,
                 "status": "new"
             }
-            await leads_collection.insert_one(lead_doc)
+            leads_collection.insert_one(lead_doc)
         
         return {"status": "success"}
     except Exception as e:
@@ -1347,10 +1347,10 @@ async def newsletter_subscribe(data: dict):
         source = data.get("source", "newsletter")
         
         # Check if already subscribed
-        existing = await newsletter_subscribers.find_one({"email": email})
+        existing = newsletter_subscribers.find_one({"email": email})
         
         if not existing:
-            await newsletter_subscribers.insert_one({
+            newsletter_subscribers.insert_one({
                 "email": email,
                 "source": source,
                 "subscribed_at": datetime.utcnow(),
