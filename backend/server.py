@@ -47,6 +47,10 @@ if seo_router:
 if analytics_router:
     app.include_router(analytics_router, tags=["Analytics"])
 
+# Include Content router if available  
+if content_router:
+    app.include_router(content_router, tags=["Content"])
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
