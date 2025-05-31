@@ -1,0 +1,29 @@
+User-agent: *
+Allow: /
+
+# Allow all crawlers access to key pages
+Allow: /api/listings
+Allow: /browse
+Allow: /market-data
+Allow: /premium
+
+# Block sensitive areas
+Disallow: /api/auth/
+Disallow: /api/user/
+Disallow: /api/connections/
+Disallow: /dashboard/
+
+# XML Sitemap location
+Sitemap: https://your-domain.com/sitemap.xml
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1
+
+# Special rules for specific bots
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
