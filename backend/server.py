@@ -15,16 +15,36 @@ from passlib.context import CryptContext
 import logging
 from enum import Enum
 
-# Import our new services
+# Import our new services separately to handle missing dependencies better
+seo_router = None
+analytics_router = None
+content_router = None
+
+try:
+    from seo_routes import router as seo_router
+except ImportError as e:
+    print(f"Warning: Could not import SEO routes: {e}")
+    seo_router = None
+
+try:
+    from analytics_routes import router as analytics_router
+except ImportError as e:
+    print(f"Warning: Could not import Analytics routes: {e}")
+    analytics_router = None
+
+try:
+    from content_routes import router as content_router
+except ImportError as e:
+    print(f"Warning: Could not import Content routes: {e}")
+    content_router = None
+
+# Import other services
 try:
     from paypal_service import PayPalService
     from email_service import email_service
     from analytics_service import analytics_service
     from business_growth_service import business_growth_service
     from content_marketing_service import content_marketing_service
-    from seo_routes import router as seo_router
-    from analytics_routes import router as analytics_router
-    from content_routes import router as content_router
 except ImportError as e:
     print(f"Warning: Could not import advanced services: {e}")
     PayPalService = None
@@ -32,9 +52,6 @@ except ImportError as e:
     analytics_service = None
     business_growth_service = None
     content_marketing_service = None
-    seo_router = None
-    analytics_router = None
-    content_router = None
 
 # Initialize FastAPI app
 app = FastAPI(title="Oil & Gas Finder API", version="1.0.0")
