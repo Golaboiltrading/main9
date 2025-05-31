@@ -302,7 +302,7 @@ Disallow: /api/connections/
 Disallow: /dashboard/
 
 # XML Sitemap location
-Sitemap: https://your-domain.com/sitemap.xml
+Sitemap: https://oilgasfinder.com/sitemap.xml
 
 # Crawl delay for respectful crawling
 Crawl-delay: 1
