@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status, BackgroundTasks, Request
+from fastapi import FastAPI, HTTPException, Depends, status, BackgroundTasks, Request, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -14,6 +14,8 @@ import uuid
 from passlib.context import CryptContext
 import logging
 from enum import Enum
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
 
 # Import our new services separately to handle missing dependencies better
 seo_router = None
