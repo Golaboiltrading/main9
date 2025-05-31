@@ -1140,6 +1140,227 @@ async def get_revenue_dashboard(user_id: str = Depends(get_current_user)):
         "last_updated": datetime.utcnow()
     }
 
+# SEO ROUTES - Added directly to avoid import issues
+
+@app.get("/sitemap.xml", response_class=Response)
+async def generate_sitemap():
+    """Generate dynamic XML sitemap for better SEO indexing"""
+    
+    # Create root sitemap element
+    urlset = ET.Element("urlset")
+    urlset.set("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9")
+    urlset.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+    urlset.set("xsi:schemaLocation", "http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd")
+    
+    base_url = "https://oilgasfinder.com"
+    
+    # Static pages
+    static_pages = [
+        {"url": "/", "priority": "1.0", "changefreq": "daily"},
+        {"url": "/browse", "priority": "0.9", "changefreq": "daily"},
+        {"url": "/market-data", "priority": "0.8", "changefreq": "hourly"},
+        {"url": "/premium", "priority": "0.7", "changefreq": "weekly"},
+        {"url": "/register", "priority": "0.6", "changefreq": "monthly"},
+        {"url": "/login", "priority": "0.5", "changefreq": "monthly"},
+    ]
+    
+    for page in static_pages:
+        url_elem = ET.SubElement(urlset, "url")
+        loc = ET.SubElement(url_elem, "loc")
+        loc.text = f"{base_url}{page['url']}"
+        
+        lastmod = ET.SubElement(url_elem, "lastmod")
+        lastmod.text = datetime.utcnow().strftime("%Y-%m-%d")
+        
+        changefreq = ET.SubElement(url_elem, "changefreq")
+        changefreq.text = page['changefreq']
+        
+        priority = ET.SubElement(url_elem, "priority")
+        priority.text = page['priority']
+    
+    # Dynamic product pages
+    product_types = [
+        "crude-oil", "natural-gas", "lng", "lpg", 
+        "gasoline", "diesel", "jet-fuel", "gas-condensate"
+    ]
+    
+    for product in product_types:
+        url_elem = ET.SubElement(urlset, "url")
+        loc = ET.SubElement(url_elem, "loc")
+        loc.text = f"{base_url}/products/{product}"
+        
+        lastmod = ET.SubElement(url_elem, "lastmod")
+        lastmod.text = datetime.utcnow().strftime("%Y-%m-%d")
+        
+        changefreq = ET.SubElement(url_elem, "changefreq")
+        changefreq.text = "weekly"
+        
+        priority = ET.SubElement(url_elem, "priority")
+        priority.text = "0.8"
+    
+    # Location-based pages
+    locations = [
+        "houston-tx", "dubai-uae", "singapore", "london-uk", 
+        "rotterdam-netherlands", "cushing-ok"
+    ]
+    
+    for location in locations:
+        url_elem = ET.SubElement(urlset, "url")
+        loc = ET.SubElement(url_elem, "loc")
+        loc.text = f"{base_url}/locations/{location}"
+        
+        lastmod = ET.SubElement(url_elem, "lastmod")
+        lastmod.text = datetime.utcnow().strftime("%Y-%m-%d")
+        
+        changefreq = ET.SubElement(url_elem, "changefreq")
+        changefreq.text = "weekly"
+        
+        priority = ET.SubElement(url_elem, "priority")
+        priority.text = "0.7"
+    
+    # Convert to pretty XML
+    rough_string = ET.tostring(urlset, 'utf-8')
+    reparsed = minidom.parseString(rough_string)
+    pretty_xml = reparsed.toprettyxml(indent="  ")
+    
+    # Remove empty lines and return
+    clean_xml = '\n'.join([line for line in pretty_xml.split('\n') if line.strip()])
+    
+    return Response(
+        content=clean_xml,
+        media_type="application/xml",
+        headers={"Cache-Control": "public, max-age=3600"}
+    )
+
+@app.get("/robots.txt", response_class=Response)
+async def get_robots_txt():
+    """Generate robots.txt file"""
+    
+    robots_content = """User-agent: *
+Allow: /
+
+# Allow all crawlers access to key pages
+Allow: /api/listings
+Allow: /browse
+Allow: /market-data
+Allow: /premium
+
+# Block sensitive areas
+Disallow: /api/auth/
+Disallow: /api/user/
+Disallow: /api/connections/
+Disallow: /dashboard/
+
+# XML Sitemap location
+Sitemap: https://oilgasfinder.com/sitemap.xml
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1
+
+# Special rules for specific bots
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1"""
+    
+    return Response(
+        content=robots_content,
+        media_type="text/plain",
+        headers={"Cache-Control": "public, max-age=86400"}
+    )
+
+# ANALYTICS ROUTES
+
+@app.post("/api/analytics/pageview")
+async def track_pageview(pageview_data: dict):
+    """Track page views for analytics"""
+    try:
+        # Store in database
+        await analytics_pageviews.insert_one({
+            **pageview_data,
+            "created_at": datetime.utcnow()
+        })
+        
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/analytics/event")
+async def track_event(event_data: dict):
+    """Track custom events for analytics"""
+    try:
+        # Store in database
+        await analytics_events.insert_one({
+            **event_data,
+            "created_at": datetime.utcnow()
+        })
+        
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/leads")
+async def capture_lead(lead_data: dict):
+    """Capture and store lead information"""
+    try:
+        email = lead_data.get("email")
+        
+        # Check if lead already exists
+        existing_lead = await leads_collection.find_one({"email": email})
+        
+        if existing_lead:
+            # Update existing lead
+            await leads_collection.update_one(
+                {"email": email},
+                {
+                    "$set": {
+                        "last_interaction": datetime.utcnow(),
+                        "last_form_type": lead_data.get("formType"),
+                        "last_source": lead_data.get("source")
+                    },
+                    "$inc": {"interaction_count": 1}
+                }
+            )
+        else:
+            # Create new lead
+            lead_doc = {
+                **lead_data,
+                "created_at": datetime.utcnow(),
+                "last_interaction": datetime.utcnow(),
+                "interaction_count": 1,
+                "status": "new"
+            }
+            await leads_collection.insert_one(lead_doc)
+        
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/newsletter/subscribe")
+async def newsletter_subscribe(data: dict):
+    """Newsletter subscription endpoint"""
+    try:
+        email = data.get("email")
+        source = data.get("source", "newsletter")
+        
+        # Check if already subscribed
+        existing = await newsletter_subscribers.find_one({"email": email})
+        
+        if not existing:
+            await newsletter_subscribers.insert_one({
+                "email": email,
+                "source": source,
+                "subscribed_at": datetime.utcnow(),
+                "status": "active"
+            })
+        
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
