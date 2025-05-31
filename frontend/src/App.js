@@ -222,26 +222,32 @@ function App() {
             </h1>
             <nav className="hidden md:flex space-x-6">
               <button 
-                onClick={() => setCurrentPage('home')}
+                onClick={() => navigateToPage('home')}
                 className={`hover:text-blue-200 ${currentPage === 'home' ? 'text-blue-200' : ''}`}
               >
                 Home
               </button>
               <button 
-                onClick={() => setCurrentPage('browse')}
+                onClick={() => navigateToPage('browse')}
                 className={`hover:text-blue-200 ${currentPage === 'browse' ? 'text-blue-200' : ''}`}
               >
                 Browse Traders
               </button>
               <button 
-                onClick={() => setCurrentPage('market')}
+                onClick={() => navigateToPage('market')}
                 className={`hover:text-blue-200 ${currentPage === 'market' ? 'text-blue-200' : ''}`}
               >
                 Market Data
               </button>
+              <button 
+                onClick={() => navigateToPage('blog')}
+                className={`hover:text-blue-200 ${currentPage === 'blog' ? 'text-blue-200' : ''}`}
+              >
+                Blog
+              </button>
               {user && user.role === 'enterprise' && (
                 <button 
-                  onClick={() => setCurrentPage('business-growth')}
+                  onClick={() => navigateToPage('business-growth')}
                   className={`hover:text-blue-200 ${currentPage === 'business-growth' ? 'text-blue-200' : ''}`}
                 >
                   Business Growth
