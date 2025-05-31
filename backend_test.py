@@ -4,28 +4,25 @@ import sys
 import json
 import uuid
 from datetime import datetime
+import xml.etree.ElementTree as ET
+import re
 
-class OilGasFinderAPITester:
+class OilGasFinderSEOTester:
     def __init__(self, base_url):
         self.base_url = base_url
-        self.token = None
         self.tests_run = 0
         self.tests_passed = 0
-        self.user_id = None
-        self.listing_id = None
-        self.payment_id = None
-        self.subscription_id = None
-        self.referral_code = None
-        self.lead_magnet_id = None
-        self.article_id = None
         self.test_results = {}
-
-    def run_test(self, name, method, endpoint, expected_status, data=None, auth=False):
+        self.session_id = f"test_session_{uuid.uuid4().hex[:8]}"
+        
+    def run_test(self, name, method, endpoint, expected_status, data=None, is_api=True, check_content=None):
         """Run a single API test"""
-        url = f"{self.base_url}/api/{endpoint}"
+        if is_api:
+            url = f"{self.base_url}/api/{endpoint}"
+        else:
+            url = f"{self.base_url}/{endpoint}"
+            
         headers = {'Content-Type': 'application/json'}
-        if auth and self.token:
-            headers['Authorization'] = f'Bearer {self.token}'
 
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
@@ -35,35 +32,49 @@ class OilGasFinderAPITester:
                 response = requests.get(url, headers=headers)
             elif method == 'POST':
                 response = requests.post(url, json=data, headers=headers)
-            elif method == 'PUT':
-                response = requests.put(url, json=data, headers=headers)
-            elif method == 'DELETE':
-                response = requests.delete(url, headers=headers)
 
             success = response.status_code == expected_status
+            
+            # Additional content check if provided
+            content_check_result = True
+            content_check_details = None
+            if check_content and success:
+                content_check_result, content_check_details = check_content(response)
+                success = success and content_check_result
             
             # Store test result
             self.test_results[name] = {
                 'success': success,
                 'expected_status': expected_status,
-                'actual_status': response.status_code
+                'actual_status': response.status_code,
+                'content_check': content_check_details if check_content else None
             }
             
             if success:
                 self.tests_passed += 1
                 print(f"✅ Passed - Status: {response.status_code}")
+                if content_check_details:
+                    print(f"   Content check: {content_check_details}")
                 try:
-                    return success, response.json()
+                    if 'application/json' in response.headers.get('Content-Type', ''):
+                        return success, response.json()
+                    else:
+                        return success, response.text
                 except:
-                    return success, {}
+                    return success, response.text
             else:
                 print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
+                if content_check_details:
+                    print(f"   Content check failed: {content_check_details}")
                 try:
-                    error_data = response.json()
-                    print(f"Error details: {error_data}")
-                    return success, error_data
+                    if 'application/json' in response.headers.get('Content-Type', ''):
+                        error_data = response.json()
+                        print(f"Error details: {error_data}")
+                        return success, error_data
+                    else:
+                        return success, response.text
                 except:
-                    return success, {}
+                    return success, response.text
 
         except Exception as e:
             print(f"❌ Failed - Error: {str(e)}")
@@ -73,345 +84,158 @@ class OilGasFinderAPITester:
             }
             return False, {}
 
-    def test_status(self):
-        """Test API status endpoint"""
-        return self.run_test("API Status", "GET", "status", 200)
-
-    def test_register(self, email, password, first_name, last_name, company_name, country, trading_role):
-        """Test user registration"""
-        data = {
-            "email": email,
-            "password": password,
-            "first_name": first_name,
-            "last_name": last_name,
-            "company_name": company_name,
-            "country": country,
-            "trading_role": trading_role
-        }
-        success, response = self.run_test("User Registration", "POST", "auth/register", 200, data)
-        if success and 'access_token' in response:
-            self.token = response['access_token']
-            self.user_id = response['user']['user_id']
-        return success, response
-
-    def test_login(self, email, password):
-        """Test user login"""
-        data = {
-            "email": email,
-            "password": password
-        }
-        success, response = self.run_test("User Login", "POST", "auth/login", 200, data)
-        if success and 'access_token' in response:
-            self.token = response['access_token']
-            self.user_id = response['user']['user_id']
-        return success, response
-
-    def test_get_profile(self):
-        """Test getting user profile"""
-        return self.run_test("Get User Profile", "GET", "user/profile", 200, auth=True)
-
-    def test_get_stats(self):
-        """Test getting platform statistics"""
-        return self.run_test("Get Platform Stats", "GET", "stats", 200)
-
-    def test_get_market_data(self):
-        """Test getting market data"""
-        return self.run_test("Get Market Data", "GET", "market-data", 200)
-
-    def test_get_listings(self):
-        """Test getting all listings"""
-        return self.run_test("Get All Listings", "GET", "listings", 200)
-
-    def test_create_listing(self):
-        """Test creating a listing"""
-        data = {
-            "title": f"Test Listing {uuid.uuid4()}",
-            "product_type": "crude_oil",
-            "quantity": 100000,
-            "unit": "barrels",
-            "price_range": "$70-75 per barrel",
-            "location": "Houston, TX",
-            "trading_hub": "Houston, TX",
-            "description": "Test listing for API testing",
-            "contact_person": "Test Contact",
-            "contact_email": "test@example.com",
-            "contact_phone": "+1234567890",
-            "is_featured": False
-        }
-        success, response = self.run_test("Create Listing", "POST", "listings", 200, data, auth=True)
-        if success and 'listing_id' in response:
-            self.listing_id = response['listing_id']
-        return success, response
-
-    def test_get_my_listings(self):
-        """Test getting user's listings"""
-        return self.run_test("Get My Listings", "GET", "listings/my", 200, auth=True)
-
-    def test_update_listing(self):
-        """Test updating a listing"""
-        if not self.listing_id:
-            print("❌ Cannot test update - no listing created")
-            return False, {}
-            
-        data = {
-            "title": f"Updated Test Listing {uuid.uuid4()}",
-            "product_type": "crude_oil",
-            "quantity": 150000,
-            "unit": "barrels",
-            "price_range": "$72-77 per barrel",
-            "location": "Houston, TX",
-            "trading_hub": "Houston, TX",
-            "description": "Updated test listing for API testing",
-            "contact_person": "Test Contact",
-            "contact_email": "test@example.com",
-            "contact_phone": "+1234567890",
-            "is_featured": True
-        }
-        return self.run_test("Update Listing", "PUT", f"listings/{self.listing_id}", 200, data, auth=True)
-
-    def test_delete_listing(self):
-        """Test deleting a listing"""
-        if not self.listing_id:
-            print("❌ Cannot test delete - no listing created")
-            return False, {}
-            
-        return self.run_test("Delete Listing", "DELETE", f"listings/{self.listing_id}", 200, auth=True)
-
-    def test_search_companies(self):
-        """Test searching companies"""
-        return self.run_test("Search Companies", "GET", "search/companies", 200)
-
-    def test_create_connection(self):
-        """Test creating a connection to a listing"""
-        # First, get a listing that's not owned by the current user
-        success, response = self.run_test("Get Listings for Connection", "GET", "listings", 200)
-        if not success or not response.get('listings'):
-            print("❌ No listings available for connection test")
-            return False, {}
-            
-        # Find a listing not owned by current user
-        other_listing = None
-        for listing in response.get('listings', []):
-            if listing.get('user_id') != self.user_id:
-                other_listing = listing
-                break
+    # SEO Infrastructure Tests
+    def test_sitemap_xml(self):
+        """Test sitemap.xml generation"""
+        def check_sitemap_content(response):
+            try:
+                # Check if it's valid XML
+                root = ET.fromstring(response.text)
                 
-        if not other_listing:
-            print("❌ No listings from other users available for connection test")
-            return False, {}
+                # Check if it has the correct namespace
+                if root.tag != '{http://www.sitemaps.org/schemas/sitemap/0.9}urlset':
+                    return False, "Invalid sitemap root element"
+                
+                # Check if it contains URLs
+                urls = root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}url')
+                if not urls:
+                    return False, "No URLs found in sitemap"
+                
+                # Check if URLs contain oilgasfinder.com domain
+                domain_check = True
+                for url in urls:
+                    loc = url.find('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc')
+                    if loc is not None and 'oilgasfinder.com' not in loc.text:
+                        domain_check = False
+                        break
+                
+                if not domain_check:
+                    return False, "URLs don't contain oilgasfinder.com domain"
+                
+                return True, f"Valid sitemap with {len(urls)} URLs"
+            except Exception as e:
+                return False, f"XML parsing error: {str(e)}"
+        
+        return self.run_test("Sitemap XML", "GET", "sitemap.xml", 200, is_api=False, check_content=check_sitemap_content)
+
+    def test_robots_txt(self):
+        """Test robots.txt file"""
+        def check_robots_content(response):
+            content = response.text
             
-        return self.run_test("Create Connection", "POST", f"connections/{other_listing['listing_id']}", 200, auth=True)
-
-    def test_get_connections(self):
-        """Test getting user connections"""
-        return self.run_test("Get Connections", "GET", "connections", 200, auth=True)
-
-    # Payment API Tests
-    def test_create_subscription_payment(self, tier="premium_basic"):
-        """Test creating a subscription payment"""
-        success, response = self.run_test("Create Subscription Payment", "POST", f"payments/create-subscription?tier={tier}", 200, auth=True)
-        if success and 'subscription_id' in response:
-            self.subscription_id = response['subscription_id']
-            self.payment_id = response.get('payment_id')
-        return success, response
-
-    def test_create_featured_payment(self, listing_type="standard"):
-        """Test creating a featured listing payment"""
-        success, response = self.run_test("Create Featured Payment", "POST", f"payments/create-featured-payment?listing_type={listing_type}", 200, auth=True)
-        if success and 'payment_id' in response:
-            self.payment_id = response['payment_id']
-        return success, response
-
-    def test_execute_payment(self, payment_type="payment"):
-        """Test executing a payment"""
-        if not self.payment_id:
-            print("❌ Cannot test payment execution - no payment created")
-            return False, {}
+            # Check if it contains basic directives
+            if 'User-agent: *' not in content:
+                return False, "Missing User-agent directive"
             
-        data = {
-            "payment_id": self.payment_id,
-            "payer_id": "TESTPAYERID12345",
-            "payment_type": payment_type
-        }
-        return self.run_test("Execute Payment", "POST", "payments/execute", 200, data, auth=True)
-
-    def test_get_payment_status(self):
-        """Test getting payment status"""
-        if not self.payment_id:
-            print("❌ Cannot test payment status - no payment created")
-            return False, {}
+            # Check if it references the sitemap
+            if 'Sitemap: https://oilgasfinder.com/sitemap.xml' not in content:
+                return False, "Missing sitemap reference"
             
-        return self.run_test("Get Payment Status", "GET", f"payments/status/{self.payment_id}", 200, auth=True)
-
-    def test_cancel_subscription(self):
-        """Test cancelling a subscription"""
-        if not self.subscription_id:
-            print("❌ Cannot test subscription cancellation - no subscription created")
-            return False, {}
+            # Check if it has allow/disallow directives
+            if 'Allow:' not in content or 'Disallow:' not in content:
+                return False, "Missing Allow or Disallow directives"
             
-        return self.run_test("Cancel Subscription", "DELETE", f"payments/cancel-subscription/{self.subscription_id}", 200, auth=True)
+            return True, "Valid robots.txt with required directives"
+        
+        return self.run_test("Robots.txt", "GET", "robots.txt", 200, is_api=False, check_content=check_robots_content)
 
-    def test_get_payment_history(self):
-        """Test getting payment history"""
-        return self.run_test("Get Payment History", "GET", "payments/history", 200, auth=True)
+    def test_seo_keywords(self):
+        """Test SEO keywords API"""
+        return self.run_test("SEO Keywords API", "GET", "seo/keywords?product_type=crude_oil&location=houston-tx", 200)
 
-    # Analytics API Tests
-    def test_get_platform_analytics(self):
-        """Test getting platform analytics"""
-        return self.run_test("Get Platform Analytics", "GET", "analytics/platform", 200, auth=True)
+    def test_seo_meta_data(self):
+        """Test SEO meta data API"""
+        return self.run_test("SEO Meta Data API", "GET", "seo/meta-data?page_type=product&product_type=crude_oil&location=houston-tx", 200)
 
-    def test_get_user_analytics(self):
-        """Test getting user analytics"""
-        return self.run_test("Get User Analytics", "GET", "analytics/user", 200, auth=True)
+    def test_seo_schema_data(self):
+        """Test SEO schema data API"""
+        return self.run_test("SEO Schema Data API", "GET", "seo/schema-data?schema_type=product&product_type=crude_oil&location=houston-tx&price=75.50", 200)
 
-    def test_get_market_analytics(self):
-        """Test getting market analytics"""
-        return self.run_test("Get Market Analytics", "GET", "analytics/market", 200)
-
-    def test_get_revenue_analytics(self):
-        """Test getting revenue analytics"""
-        return self.run_test("Get Revenue Analytics", "GET", "analytics/revenue", 200, auth=True)
-
-    def test_get_listing_analytics(self):
-        """Test getting listing analytics"""
-        if not self.listing_id:
-            print("❌ Cannot test listing analytics - no listing created")
-            return False, {}
-            
-        return self.run_test("Get Listing Analytics", "GET", f"analytics/listing/{self.listing_id}", 200, auth=True)
-
-    # Email Notification Test
-    def test_email_notification(self, email="test@example.com"):
-        """Test email notification system"""
-        return self.run_test("Test Email Notification", "POST", f"notifications/test-email?email={email}", 200, auth=True)
-
-    # Business Growth API Tests
-    def test_create_referral_program(self):
-        """Test creating a referral program"""
+    # Analytics & Lead Generation Tests
+    def test_newsletter_subscribe(self):
+        """Test newsletter subscription"""
         data = {
-            "referral_type": "standard"
+            "email": f"test.user{uuid.uuid4().hex[:8]}@example.com",
+            "source": "homepage"
         }
-        success, response = self.run_test("Create Referral Program", "POST", "referrals/create", 200, data, auth=True)
-        if success and 'referral_code' in response:
-            self.referral_code = response['referral_code']
-        return success, response
+        return self.run_test("Newsletter Subscribe", "POST", "newsletter/subscribe", 200, data)
 
-    def test_process_referral_signup(self):
-        """Test processing a referral signup"""
-        if not self.referral_code:
-            print("❌ Cannot test referral signup - no referral code created")
-            return False, {}
-            
+    def test_lead_capture(self):
+        """Test lead capture"""
         data = {
-            "referral_code": self.referral_code
+            "email": f"lead.user{uuid.uuid4().hex[:8]}@example.com",
+            "name": "Test Lead",
+            "company": "Test Oil Company",
+            "phone": "+1234567890",
+            "formType": "demo_request",
+            "source": "product_page",
+            "timestamp": int(datetime.utcnow().timestamp())
         }
-        return self.run_test("Process Referral Signup", "POST", "referrals/signup", 200, data, auth=True)
+        return self.run_test("Lead Capture", "POST", "leads", 200, data)
 
-    def test_process_referral_conversion(self):
-        """Test processing a referral conversion"""
-        if not self.user_id:
-            print("❌ Cannot test referral conversion - no user ID available")
-            return False, {}
-            
+    def test_analytics_pageview(self):
+        """Test analytics pageview tracking"""
         data = {
-            "conversion_type": "subscription"
+            "path": "/products/crude-oil",
+            "title": "Crude Oil Trading | Oil & Gas Finder",
+            "timestamp": int(datetime.utcnow().timestamp()),
+            "sessionId": self.session_id,
+            "referrer": "https://www.google.com",
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         }
-        return self.run_test("Process Referral Conversion", "POST", f"referrals/convert/{self.user_id}", 200, data, auth=True)
+        return self.run_test("Analytics Pageview", "POST", "analytics/pageview", 200, data)
 
-    def test_get_conversion_metrics(self):
-        """Test getting conversion metrics"""
-        return self.run_test("Get Conversion Metrics", "GET", "referrals/metrics", 200, auth=True)
-
-    def test_get_user_acquisition_dashboard(self):
-        """Test getting user acquisition dashboard"""
-        return self.run_test("Get User Acquisition Dashboard", "GET", "acquisition/dashboard", 200, auth=True)
-
-    # Content Marketing API Tests
-    def test_create_market_insight_article(self):
-        """Test creating a market insight article"""
+    def test_analytics_event(self):
+        """Test analytics event tracking"""
         data = {
-            "title": f"Test Market Insight Article {uuid.uuid4().hex[:8]}",
-            "content": "This is a test market insight article for API testing.",
-            "category": "oil_market"
+            "event": "lead_generated",
+            "parameters": {
+                "category": "lead_generation",
+                "label": "newsletter",
+                "value": 5,
+                "sessionId": self.session_id,
+                "path": "/products/crude-oil"
+            }
         }
-        success, response = self.run_test("Create Market Insight Article", "POST", "content/article", 200, data, auth=True)
-        if success and 'article_id' in response:
-            self.article_id = response['article_id']
-        return success, response
+        return self.run_test("Analytics Event", "POST", "analytics/event", 200, data)
 
-    def test_generate_weekly_market_report(self):
-        """Test generating a weekly market report"""
-        return self.run_test("Generate Weekly Market Report", "POST", "content/market-report", 200, auth=True)
+    def test_analytics_dashboard(self):
+        """Test analytics dashboard API"""
+        return self.run_test("Analytics Dashboard", "GET", "analytics/dashboard?days=30", 200)
 
-    def test_create_seo_content(self):
-        """Test creating SEO-optimized content"""
-        data = {
-            "topic": "Oil Price Trends 2025",
-            "target_keywords": ["oil price forecast", "crude oil trends", "energy market outlook"],
-            "content_type": "article"
-        }
-        return self.run_test("Create SEO Content", "POST", "content/seo-content", 200, data, auth=True)
+    def test_leads_analytics(self):
+        """Test leads analytics API"""
+        return self.run_test("Leads Analytics", "GET", "analytics/leads?days=30", 200)
 
-    def test_generate_industry_whitepaper(self):
-        """Test generating an industry whitepaper"""
-        data = {
-            "title": "Future of LNG Trading in Global Markets",
-            "research_topic": "lng_market_trends"
-        }
-        return self.run_test("Generate Industry Whitepaper", "POST", "content/whitepaper", 200, data, auth=True)
+    # Content API Tests
+    def test_blog_posts(self):
+        """Test blog posts API"""
+        return self.run_test("Blog Posts", "GET", "blog/posts?limit=10&offset=0&published_only=true", 200)
 
-    def test_get_content_performance(self):
-        """Test getting content performance metrics"""
-        return self.run_test("Get Content Performance", "GET", "content/performance", 200, auth=True)
+    def test_blog_categories(self):
+        """Test blog categories API"""
+        return self.run_test("Blog Categories", "GET", "blog/categories", 200)
 
-    def test_get_content_marketing_dashboard(self):
-        """Test getting content marketing dashboard"""
-        return self.run_test("Get Content Marketing Dashboard", "GET", "content/dashboard", 200, auth=True)
+    def test_location_data(self):
+        """Test location data API"""
+        return self.run_test("Location Data", "GET", "locations/houston-tx", 200)
 
-    # Lead Generation API Tests
-    def test_create_lead_magnet(self):
-        """Test creating a lead magnet"""
-        data = {
-            "title": f"Test Lead Magnet {uuid.uuid4().hex[:8]}",
-            "content_type": "whitepaper",
-            "target_audience": "oil_traders"
-        }
-        success, response = self.run_test("Create Lead Magnet", "POST", "leads/magnet", 200, data, auth=True)
-        if success and 'lead_magnet_id' in response:
-            self.lead_magnet_id = response['lead_magnet_id']
-        return success, response
+    def test_product_data(self):
+        """Test product data API"""
+        return self.run_test("Product Data", "GET", "products/crude-oil", 200)
 
-    def test_track_lead_generation(self):
-        """Test tracking lead generation"""
-        if not self.lead_magnet_id:
-            print("❌ Cannot test lead tracking - no lead magnet created")
-            return False, {}
-            
-        data = {
-            "lead_magnet_id": self.lead_magnet_id,
-            "user_email": f"lead{uuid.uuid4().hex[:8]}@example.com",
-            "source": "organic"
-        }
-        return self.run_test("Track Lead Generation", "POST", "leads/track", 200, data, auth=True)
+    def test_content_suggestions(self):
+        """Test content suggestions API"""
+        return self.run_test("Content Suggestions", "GET", "seo/content-suggestions?topic=crude_oil&content_type=blog", 200)
 
-    # Partnership API Tests
-    def test_create_partnership_program(self):
-        """Test creating a partnership program"""
-        data = {
-            "partner_type": "affiliate",
-            "commission_rate": 20.0
-        }
-        return self.run_test("Create Partnership Program", "POST", "partnerships/create", 200, data, auth=True)
-
-    # Enhanced Market Intelligence API Test
-    def test_get_market_intelligence(self):
-        """Test getting enhanced market intelligence"""
-        return self.run_test("Get Market Intelligence", "GET", "market-intelligence", 200)
+    def test_content_templates(self):
+        """Test content templates API"""
+        return self.run_test("Content Templates", "GET", "content/templates?template_type=product_page", 200)
 
     def print_summary(self):
         """Print test summary"""
         print("\n" + "="*50)
-        print(f"🔍 API TESTING SUMMARY")
+        print(f"🔍 SEO & LEAD GENERATION TESTING SUMMARY")
         print("="*50)
         print(f"✅ Tests passed: {self.tests_passed}/{self.tests_run} ({self.tests_passed/self.tests_run*100:.1f}%)")
         
@@ -422,6 +246,8 @@ class OilGasFinderAPITester:
                 if not result.get('success'):
                     if 'expected_status' in result:
                         print(f"  - {name}: Expected status {result['expected_status']}, got {result['actual_status']}")
+                        if result.get('content_check'):
+                            print(f"    Content check: {result['content_check']}")
                     else:
                         print(f"  - {name}: {result.get('error', 'Unknown error')}")
         
@@ -432,102 +258,33 @@ def main():
     # Get the backend URL
     backend_url = "https://2feb79c7-fd63-4021-b0db-9197e62ab3af.preview.emergentagent.com"
     
-    print(f"Testing API at: {backend_url}")
+    print(f"Testing SEO & Lead Generation API at: {backend_url}")
     
     # Initialize tester
-    tester = OilGasFinderAPITester(backend_url)
+    tester = OilGasFinderSEOTester(backend_url)
     
-    # Test API status
-    tester.test_status()
+    # Test SEO Infrastructure
+    tester.test_sitemap_xml()
+    tester.test_robots_txt()
+    tester.test_seo_keywords()
+    tester.test_seo_meta_data()
+    tester.test_seo_schema_data()
     
-    # Test authentication - try with enterprise user first
-    success, _ = tester.test_login("enterprise@oilfinder.com", "password123")
+    # Test Analytics & Lead Generation
+    tester.test_newsletter_subscribe()
+    tester.test_lead_capture()
+    tester.test_analytics_pageview()
+    tester.test_analytics_event()
+    tester.test_analytics_dashboard()
+    tester.test_leads_analytics()
     
-    if not success:
-        # If enterprise login fails, try with regular user
-        success, _ = tester.test_login("john.doe@petroltrade.com", "password123")
-        
-        if not success:
-            # If all logins fail, register a new user
-            test_email = f"test.user{uuid.uuid4().hex[:8]}@example.com"
-            tester.test_register(
-                email=test_email,
-                password="TestPassword123!",
-                first_name="Test",
-                last_name="User",
-                company_name="Test Oil Trading Co",
-                country="United States",
-                trading_role="both"
-            )
-    
-    # Test user profile
-    tester.test_get_profile()
-    
-    # Test platform data
-    tester.test_get_stats()
-    tester.test_get_market_data()
-    tester.test_get_listings()
-    
-    # Test listing operations
-    tester.test_create_listing()
-    tester.test_get_my_listings()
-    tester.test_update_listing()
-    
-    # Test search
-    tester.test_search_companies()
-    
-    # Test connections
-    tester.test_create_connection()
-    tester.test_get_connections()
-    
-    # Test payment features
-    tester.test_create_subscription_payment("premium_basic")
-    tester.test_get_payment_status()
-    tester.test_execute_payment("subscription")
-    tester.test_create_featured_payment("standard")
-    tester.test_execute_payment()
-    tester.test_get_payment_history()
-    
-    # Test analytics features
-    tester.test_get_user_analytics()
-    tester.test_get_market_analytics()
-    tester.test_get_platform_analytics()
-    tester.test_get_revenue_analytics()
-    tester.test_get_listing_analytics()
-    
-    # Test business growth features
-    tester.test_create_referral_program()
-    tester.test_process_referral_signup()
-    tester.test_process_referral_conversion()
-    tester.test_get_conversion_metrics()
-    tester.test_get_user_acquisition_dashboard()
-    
-    # Test content marketing features
-    tester.test_create_market_insight_article()
-    tester.test_generate_weekly_market_report()
-    tester.test_create_seo_content()
-    tester.test_generate_industry_whitepaper()
-    tester.test_get_content_performance()
-    tester.test_get_content_marketing_dashboard()
-    
-    # Test lead generation features
-    tester.test_create_lead_magnet()
-    tester.test_track_lead_generation()
-    
-    # Test partnership features
-    tester.test_create_partnership_program()
-    
-    # Test enhanced market intelligence
-    tester.test_get_market_intelligence()
-    
-    # Test email notification
-    tester.test_email_notification()
-    
-    # Test subscription cancellation
-    tester.test_cancel_subscription()
-    
-    # Test listing deletion (do this last)
-    tester.test_delete_listing()
+    # Test Content APIs
+    tester.test_blog_posts()
+    tester.test_blog_categories()
+    tester.test_location_data()
+    tester.test_product_data()
+    tester.test_content_suggestions()
+    tester.test_content_templates()
     
     # Print summary
     success = tester.print_summary()
