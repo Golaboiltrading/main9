@@ -1466,8 +1466,18 @@ function App() {
 
   return (
     <div className="App">
+      {/* Legal Disclaimer Banner (shows on first visit) */}
+      <DisclaimerBanner />
+      
+      {/* Header Warning (persistent) */}
+      <HeaderWarning />
+      
       <Header />
       {renderCurrentPage()}
+      
+      {/* Footer Disclaimer (persistent) */}
+      <FooterDisclaimer />
+      
       <PaymentModal />
     </div>
   );
