@@ -23,6 +23,7 @@ try:
     from business_growth_service import business_growth_service
     from content_marketing_service import content_marketing_service
     from seo_routes import router as seo_router
+    from analytics_routes import router as analytics_router
 except ImportError as e:
     print(f"Warning: Could not import advanced services: {e}")
     PayPalService = None
@@ -31,6 +32,7 @@ except ImportError as e:
     business_growth_service = None
     content_marketing_service = None
     seo_router = None
+    analytics_router = None
 
 # Initialize FastAPI app
 app = FastAPI(title="Oil & Gas Finder API", version="1.0.0")
