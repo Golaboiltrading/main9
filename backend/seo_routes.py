@@ -221,7 +221,7 @@ async def get_schema_data(
 ):
     """Generate structured data for SEO"""
     
-    base_url = "https://your-domain.com"  # Replace with actual domain
+    base_url = "https://oilgasfinder.com"  # Updated domain
     
     if schema_type == "organization":
         return {
