@@ -6,24 +6,24 @@ const EnhancedHomePage = () => {
 
   const heroSlides = [
     {
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
-      title: "Global Oil Trading Hub",
-      subtitle: "Connect with verified crude oil traders worldwide. Access WTI, Brent, and regional grades with real-time market data.",
-      cta: "Start Trading Oil",
+      image: "https://images.unsplash.com/photo-1613909207039-6905ac2eb19e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      title: "Oil & Gas Trading Network",
+      subtitle: "Connect and find verified crude oil traders worldwide. Our finder network helps you discover WTI, Brent, and regional grades with trusted partners.",
+      cta: "Find Oil Traders",
       overlay: "bg-gradient-to-r from-orange-900/80 to-red-900/80"
     },
     {
-      image: "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
-      title: "Natural Gas & LNG Network",
-      subtitle: "Trade natural gas, LNG, and pipeline gas with trusted partners. Access global LNG terminals and distribution networks.",
-      cta: "Explore Gas Trading",
+      image: "https://images.unsplash.com/photo-1586943101559-4cdcf86a6f87?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      title: "Natural Gas Finder Network",
+      subtitle: "Discover natural gas, LNG, and pipeline gas connections through our global finder platform. Access LNG terminals and distribution networks.",
+      cta: "Find Gas Suppliers",
       overlay: "bg-gradient-to-r from-blue-900/80 to-indigo-900/80"
     },
     {
-      image: "https://images.unsplash.com/photo-1518709268805-4e9042af2a73?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
-      title: "Refinery & Terminal Operations",
-      subtitle: "Connect refineries, storage terminals, and logistics providers. Secure supply chains for global energy distribution.",
-      cta: "Join Network",
+      image: "https://images.unsplash.com/photo-1597149304368-0e0e69fa7724?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      title: "Energy Connection Network",
+      subtitle: "Find refineries, storage terminals, and logistics providers through our connection network. Discover secure supply chains for global energy distribution.",
+      cta: "Join Finder Network",
       overlay: "bg-gradient-to-r from-gray-900/80 to-slate-900/80"
     }
   ];
@@ -31,45 +31,45 @@ const EnhancedHomePage = () => {
   const energyFeatures = [
     {
       icon: "🛢️",
-      title: "Crude Oil Trading",
-      description: "WTI, Brent, Dubai, Urals, and specialty grades. Direct refinery connections and spot market access.",
+      title: "Crude Oil Finder",
+      description: "Find WTI, Brent, Dubai, Urals, and specialty grades through our network. Connect with refinery sources and discover spot market opportunities.",
       background: "bg-gradient-to-br from-orange-600 to-red-700",
-      metrics: "2.5M+ Barrels/Day"
+      metrics: "2.5M+ Barrels/Day Network"
     },
     {
       icon: "⛽",
-      title: "Natural Gas & LNG", 
-      description: "Pipeline gas, LNG cargoes, and storage solutions. Major terminal access and flexible contracts.",
+      title: "Natural Gas Network", 
+      description: "Discover pipeline gas, LNG cargoes, and storage solutions through our finder platform. Access major terminal networks and flexible connections.",
       background: "bg-gradient-to-br from-blue-600 to-indigo-700",
-      metrics: "50+ LNG Terminals"
+      metrics: "50+ LNG Terminal Network"
     },
     {
       icon: "⚡",
-      title: "Refined Products",
-      description: "Gasoline, diesel, jet fuel, and specialty products. Refinery direct and trading desk connections.",
+      title: "Refined Products Finder",
+      description: "Find gasoline, diesel, jet fuel, and specialty products through our network. Discover refinery direct connections and trading desk access.",
       background: "bg-gradient-to-br from-green-600 to-teal-700",
-      metrics: "1M+ MT/Month"
+      metrics: "1M+ MT/Month Network"
     },
     {
       icon: "🏭",
-      title: "Petrochemicals",
-      description: "Ethylene, propylene, benzene, and chemical feedstocks. Direct producer and consumer links.",
+      title: "Petrochemical Network",
+      description: "Connect with ethylene, propylene, benzene, and chemical feedstock sources. Find direct producer and consumer connections through our platform.",
       background: "bg-gradient-to-br from-purple-600 to-pink-700",
-      metrics: "500+ Producers"
+      metrics: "500+ Producer Network"
     },
     {
       icon: "🚢",
-      title: "Maritime & Logistics",
-      description: "Tanker chartering, storage solutions, and global logistics networks for energy commodities.",
+      title: "Maritime Connection Network",
+      description: "Find tanker chartering, storage solutions, and global logistics networks for energy commodities through our connection platform.",
       background: "bg-gradient-to-br from-slate-600 to-gray-800",
-      metrics: "200+ Vessels"
+      metrics: "200+ Vessel Network"
     },
     {
       icon: "📊",
-      title: "Market Intelligence",
-      description: "Real-time pricing, market analysis, and trading signals from global energy markets.",
+      title: "Market Intelligence Network",
+      description: "Access real-time pricing, market analysis, and trading signals from our global energy market intelligence network and finder platform.",
       background: "bg-gradient-to-br from-yellow-600 to-orange-700",
-      metrics: "24/7 Analytics"
+      metrics: "24/7 Network Analytics"
     }
   ];
 
@@ -112,7 +112,7 @@ const EnhancedHomePage = () => {
             <div className="relative z-10 flex items-center justify-center h-full text-white px-4">
               <div className="max-w-5xl mx-auto text-center">
                 <div className="mb-6 text-lg text-orange-300 font-semibold tracking-wide">
-                  ENERGY COMMODITY TRADING
+                  ENERGY CONNECTION FINDER PLATFORM
                 </div>
                 <h1 className="text-6xl md:text-8xl font-bold mb-8 leading-tight animate-fade-in-up">
                   {slide.title}
@@ -120,12 +120,17 @@ const EnhancedHomePage = () => {
                 <p className="text-xl md:text-2xl mb-10 text-gray-200 max-w-4xl mx-auto leading-relaxed animate-fade-in-up delay-300">
                   {slide.subtitle}
                 </p>
+                <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-4 mb-8 max-w-3xl mx-auto">
+                  <p className="text-yellow-800 text-sm font-semibold">
+                    🔗 CONNECTION PLATFORM ONLY - We help you find and connect with energy traders. We do not facilitate direct commodity trading.
+                  </p>
+                </div>
                 <div className="flex flex-col sm:flex-row gap-6 justify-center animate-fade-in-up delay-600">
                   <button className="bg-orange-600 hover:bg-orange-500 text-white px-10 py-4 rounded-lg text-xl font-bold transform hover:scale-105 transition-all duration-300 shadow-2xl">
                     {slide.cta}
                   </button>
                   <button className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-10 py-4 rounded-lg text-xl font-bold transform hover:scale-105 transition-all duration-300">
-                    View Market Data
+                    View Network Data
                   </button>
                 </div>
               </div>
@@ -147,64 +152,69 @@ const EnhancedHomePage = () => {
         </div>
       </div>
 
-      {/* Energy Market Stats */}
+      {/* Energy Network Stats */}
       <section className="py-20 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 text-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4 text-orange-300">Global Energy Trading Network</h2>
-            <p className="text-xl text-gray-300">Real-time market connectivity across major energy hubs</p>
+            <h2 className="text-4xl font-bold mb-4 text-orange-300">Global Energy Connection Network</h2>
+            <p className="text-xl text-gray-300">Find and connect with energy professionals across major trading hubs</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
             <div className="group transform hover:scale-110 transition-all duration-300">
               <div className="text-5xl md:text-6xl font-bold mb-3 text-orange-400 group-hover:text-orange-300">
                 {stats.oil_gas_traders || '2,543'}+
               </div>
-              <div className="text-blue-200 text-lg">Energy Traders</div>
+              <div className="text-blue-200 text-lg">Network Members</div>
               <div className="text-gray-400 text-sm mt-1">Verified Professionals</div>
             </div>
             <div className="group transform hover:scale-110 transition-all duration-300">
               <div className="text-5xl md:text-6xl font-bold mb-3 text-green-400 group-hover:text-green-300">
                 $2.5B+
               </div>
-              <div className="text-blue-200 text-lg">Daily Volume</div>
-              <div className="text-gray-400 text-sm mt-1">Crude & Products</div>
+              <div className="text-blue-200 text-lg">Network Volume</div>
+              <div className="text-gray-400 text-sm mt-1">Monthly Connections</div>
             </div>
             <div className="group transform hover:scale-110 transition-all duration-300">
               <div className="text-5xl md:text-6xl font-bold mb-3 text-purple-400 group-hover:text-purple-300">
                 156
               </div>
               <div className="text-blue-200 text-lg">Countries</div>
-              <div className="text-gray-400 text-sm mt-1">Global Reach</div>
+              <div className="text-gray-400 text-sm mt-1">Global Network</div>
             </div>
             <div className="group transform hover:scale-110 transition-all duration-300">
               <div className="text-5xl md:text-6xl font-bold mb-3 text-yellow-400 group-hover:text-yellow-300">
                 24/7
               </div>
-              <div className="text-blue-200 text-lg">Trading Hours</div>
-              <div className="text-gray-400 text-sm mt-1">Market Access</div>
+              <div className="text-blue-200 text-lg">Network Access</div>
+              <div className="text-gray-400 text-sm mt-1">Connection Platform</div>
             </div>
             <div className="group transform hover:scale-110 transition-all duration-300">
               <div className="text-5xl md:text-6xl font-bold mb-3 text-red-400 group-hover:text-red-300">
                 85+
               </div>
               <div className="text-blue-200 text-lg">Refineries</div>
-              <div className="text-gray-400 text-sm mt-1">Direct Access</div>
+              <div className="text-gray-400 text-sm mt-1">Network Access</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Energy Trading Features */}
+      {/* Energy Connection Features */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Complete Energy Trading Solution
+              Complete Energy Connection Network
             </h2>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              From crude oil to refined products, natural gas to petrochemicals - access the world's largest 
-              energy commodity trading network with real-time pricing and verified counterparties.
+              From crude oil to refined products, natural gas to petrochemicals - find and connect with the world's largest 
+              energy commodity network through our finder platform with verified connection partners.
             </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-8 max-w-4xl mx-auto">
+              <p className="text-blue-800 text-lg font-semibold">
+                🔗 FINDER & CONNECTION PLATFORM - We help you discover and connect with energy professionals. All transactions are conducted directly between parties.
+              </p>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -221,12 +231,12 @@ const EnhancedHomePage = () => {
                   <h3 className="text-2xl font-bold mb-4">{feature.title}</h3>
                   <p className="text-lg opacity-90 mb-6 leading-relaxed">{feature.description}</p>
                   <div className="bg-white/20 rounded-lg p-3 mb-4">
-                    <div className="text-sm font-semibold text-orange-200">VOLUME</div>
+                    <div className="text-sm font-semibold text-orange-200">NETWORK SIZE</div>
                     <div className="text-lg font-bold">{feature.metrics}</div>
                   </div>
                   <div className="opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
                     <button className="bg-white/20 hover:bg-white/30 px-6 py-3 rounded-lg font-semibold transition-all duration-300 border border-white/30">
-                      Access Market →
+                      Find Connections →
                     </button>
                   </div>
                 </div>
@@ -260,7 +270,7 @@ const EnhancedHomePage = () => {
             </div>
             <div className="text-gray-400 text-sm flex items-center">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
-              Live • Updated 30 sec ago
+              Network Data • Updated 30 sec ago
             </div>
           </div>
         </div>
@@ -271,32 +281,37 @@ const EnhancedHomePage = () => {
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
           <h2 className="text-5xl md:text-6xl font-bold mb-8">
-            Ready to Trade Energy?
+            Ready to Find Energy Partners?
           </h2>
-          <p className="text-xl mb-12 max-w-3xl mx-auto leading-relaxed">
-            Join the world's most trusted energy trading platform. Connect with refineries, 
+          <p className="text-xl mb-8 max-w-3xl mx-auto leading-relaxed">
+            Join the world's most trusted energy connection network. Find and connect with refineries, 
             producers, and traders across oil, gas, and petrochemical markets.
           </p>
+          <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-6 mb-12 max-w-4xl mx-auto">
+            <p className="text-yellow-800 text-lg font-semibold">
+              🔗 CONNECTION FINDER PLATFORM - We help you discover trading partners. All transactions conducted directly between connected parties.
+            </p>
+          </div>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <button className="bg-white text-orange-600 px-10 py-5 rounded-lg text-xl font-bold hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-2xl">
-              Start Trading Now
+              Find Partners Now
             </button>
             <button className="border-3 border-white text-white px-10 py-5 rounded-lg text-xl font-bold hover:bg-white hover:text-orange-600 transform hover:scale-105 transition-all duration-300">
-              Explore Premium
+              Explore Network
             </button>
           </div>
           <div className="mt-12 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
             <div className="text-center">
               <div className="text-3xl font-bold">$0</div>
-              <div className="text-orange-200">Setup Fee</div>
+              <div className="text-orange-200">Connection Fee</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold">24/7</div>
-              <div className="text-orange-200">Support</div>
+              <div className="text-orange-200">Network Access</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold">100%</div>
-              <div className="text-orange-200">Verified</div>
+              <div className="text-orange-200">Verified Network</div>
             </div>
           </div>
         </div>
