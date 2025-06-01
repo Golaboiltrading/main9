@@ -29,6 +29,7 @@ function App() {
     else if (path === '/premium') setCurrentPage('premium');
     else if (path === '/register') setCurrentPage('register');
     else if (path === '/login') setCurrentPage('login');
+    else if (path === '/ai-analysis') setCurrentPage('ai-analysis');
     else setCurrentPage('home');
   }, []);
 
@@ -151,47 +152,56 @@ function App() {
 
   // Components
   const Header = () => (
-    <header className="bg-blue-900 text-white shadow-lg">
+    <header className="bg-slate-900 text-white shadow-2xl border-b-2 border-orange-500">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold cursor-pointer" onClick={() => setCurrentPage('home')}>
-              🛢️ Oil & Gas Finder
-            </h1>
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-3">
+              <div className="text-3xl">🛢️</div>
+              <h1 className="text-2xl font-bold cursor-pointer text-orange-300 hover:text-orange-200 transition-colors" onClick={() => setCurrentPage('home')}>
+                Oil & Gas Finder
+              </h1>
+            </div>
             <nav className="hidden md:flex space-x-6">
               <button 
                 onClick={() => navigateToPage('home')}
-                className={`hover:text-blue-200 ${currentPage === 'home' ? 'text-blue-200' : ''}`}
+                className={`hover:text-orange-300 font-semibold ${currentPage === 'home' ? 'text-orange-300 border-b-2 border-orange-300' : ''}`}
               >
                 Home
               </button>
               <button 
                 onClick={() => navigateToPage('browse')}
-                className={`hover:text-blue-200 ${currentPage === 'browse' ? 'text-blue-200' : ''}`}
+                className={`hover:text-orange-300 font-semibold ${currentPage === 'browse' ? 'text-orange-300 border-b-2 border-orange-300' : ''}`}
               >
                 Browse Traders
               </button>
               <button 
                 onClick={() => navigateToPage('ai-analysis')}
-                className={`hover:text-blue-200 ${currentPage === 'ai-analysis' ? 'text-blue-200' : ''}`}
+                className={`hover:text-orange-300 font-semibold ${currentPage === 'ai-analysis' ? 'text-orange-300 border-b-2 border-orange-300' : ''}`}
               >
                 AI Analysis
+              </button>
+              <button 
+                onClick={() => navigateToPage('premium')}
+                className={`hover:text-orange-300 font-semibold ${currentPage === 'premium' ? 'text-orange-300 border-b-2 border-orange-300' : ''}`}
+              >
+                Premium
               </button>
             </nav>
           </div>
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                <span className="text-sm">Welcome, {user.first_name}</span>
+                <span className="text-sm text-gray-300">Welcome, {user.first_name}</span>
                 <button 
                   onClick={() => setCurrentPage('dashboard')}
-                  className="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded-lg"
+                  className="bg-orange-600 hover:bg-orange-500 px-4 py-2 rounded-lg font-semibold transition-colors"
                 >
                   Dashboard
                 </button>
                 <button 
                   onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg"
+                  className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg font-semibold transition-colors"
                 >
                   Logout
                 </button>
@@ -200,13 +210,13 @@ function App() {
               <>
                 <button 
                   onClick={() => setCurrentPage('login')}
-                  className="hover:text-blue-200"
+                  className="hover:text-orange-300 font-semibold"
                 >
                   Login
                 </button>
                 <button 
                   onClick={() => setCurrentPage('register')}
-                  className="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded-lg"
+                  className="bg-orange-600 hover:bg-orange-500 px-4 py-2 rounded-lg font-semibold transition-colors"
                 >
                   Register
                 </button>
@@ -216,101 +226,6 @@ function App() {
         </div>
       </div>
     </header>
-  );
-
-  const HomePage = () => (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl font-bold mb-6">
-            Global Oil & Gas Trading Platform
-          </h1>
-          <p className="text-xl mb-8 max-w-3xl mx-auto">
-            Connect with verified oil and gas traders worldwide. Find crude oil, natural gas, LNG, and refined products from trusted trading partners.
-          </p>
-          <div className="flex justify-center space-x-4">
-            <button 
-              onClick={() => setCurrentPage('register')}
-              className="bg-orange-500 hover:bg-orange-400 text-white px-8 py-3 rounded-lg text-lg font-semibold"
-            >
-              Start Trading
-            </button>
-            <button 
-              onClick={() => setCurrentPage('browse')}
-              className="bg-transparent border-2 border-white hover:bg-white hover:text-blue-900 px-8 py-3 rounded-lg text-lg font-semibold"
-            >
-              Browse Traders
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
-            <div className="bg-blue-50 p-6 rounded-lg">
-              <div className="text-3xl font-bold text-blue-900">{stats.oil_gas_traders || 2543}</div>
-              <div className="text-gray-600 mt-2">Oil & Gas Traders</div>
-            </div>
-            <div className="bg-green-50 p-6 rounded-lg">
-              <div className="text-3xl font-bold text-green-900">{stats.active_oil_listings || 1876}</div>
-              <div className="text-gray-600 mt-2">Active Oil Listings</div>
-            </div>
-            <div className="bg-purple-50 p-6 rounded-lg">
-              <div className="text-3xl font-bold text-purple-900">{stats.successful_connections || 4231}</div>
-              <div className="text-gray-600 mt-2">Successful Connections</div>
-            </div>
-            <div className="bg-orange-50 p-6 rounded-lg">
-              <div className="text-3xl font-bold text-orange-900">{stats.premium_finders || 567}</div>
-              <div className="text-gray-600 mt-2">Premium Members</div>
-            </div>
-            <div className="bg-red-50 p-6 rounded-lg">
-              <div className="text-3xl font-bold text-red-900">{stats.featured_opportunities || 234}</div>
-              <div className="text-gray-600 mt-2">Featured Opportunities</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Recent Listings */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Recent Trading Opportunities</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {listings.slice(0, 6).map((listing, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg shadow-lg">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-bold">{listing.title}</h3>
-                  {listing.is_featured && (
-                    <span className="bg-orange-500 text-white px-2 py-1 rounded text-sm">Featured</span>
-                  )}
-                </div>
-                <p className="text-gray-600 mb-2">{listing.product_type?.replace('_', ' ').toUpperCase()}</p>
-                <p className="text-gray-600 mb-2">Quantity: {listing.quantity} {listing.unit}</p>
-                <p className="text-gray-600 mb-2">Location: {listing.location}</p>
-                <p className="text-gray-600 mb-4">Price: {listing.price_range}</p>
-                <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg w-full">
-                  View Details
-                </button>
-              </div>
-            ))}
-          </div>
-          {listings.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-gray-600 mb-4">No listings available yet. Be the first to post!</p>
-              <button
-                onClick={() => setCurrentPage('register')}
-                className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg"
-              >
-                Create Account
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-    </div>
   );
 
   const LoginPage = () => {
@@ -325,7 +240,11 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-center mb-8">Login to Oil & Gas Finder</h2>
+          <div className="text-center mb-8">
+            <div className="text-4xl mb-4">🛢️</div>
+            <h2 className="text-2xl font-bold text-gray-900">Login to Oil & Gas Finder</h2>
+            <p className="text-gray-600 mt-2">Access global energy trading network</p>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
@@ -333,7 +252,7 @@ function App() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 required
               />
             </div>
@@ -343,14 +262,14 @@ function App() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 required
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg font-semibold disabled:opacity-50"
+              className="w-full bg-orange-600 hover:bg-orange-500 text-white py-2 rounded-lg font-semibold disabled:opacity-50"
             >
               {loading ? 'Logging in...' : 'Login'}
             </button>
@@ -359,7 +278,7 @@ function App() {
             Don't have an account?{' '}
             <button 
               onClick={() => setCurrentPage('register')}
-              className="text-blue-600 hover:text-blue-500 font-semibold"
+              className="text-orange-600 hover:text-orange-500 font-semibold"
             >
               Register here
             </button>
@@ -393,7 +312,11 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-center mb-8">Join Oil & Gas Finder</h2>
+          <div className="text-center mb-8">
+            <div className="text-4xl mb-4">🛢️</div>
+            <h2 className="text-2xl font-bold text-gray-900">Join Oil & Gas Finder</h2>
+            <p className="text-gray-600 mt-2">Connect with global energy markets</p>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -403,7 +326,7 @@ function App() {
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   required
                 />
               </div>
@@ -414,7 +337,7 @@ function App() {
                   name="last_name"
                   value={formData.last_name}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   required
                 />
               </div>
@@ -426,7 +349,7 @@ function App() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 required
               />
             </div>
@@ -437,7 +360,7 @@ function App() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 required
               />
             </div>
@@ -448,7 +371,7 @@ function App() {
                 name="company_name"
                 value={formData.company_name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 required
               />
             </div>
@@ -459,14 +382,14 @@ function App() {
                 name="country"
                 value={formData.country}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 required
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg font-semibold disabled:opacity-50"
+              className="w-full bg-orange-600 hover:bg-orange-500 text-white py-2 rounded-lg font-semibold disabled:opacity-50"
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </button>
@@ -475,7 +398,7 @@ function App() {
             Already have an account?{' '}
             <button 
               onClick={() => setCurrentPage('login')}
-              className="text-blue-600 hover:text-blue-500 font-semibold"
+              className="text-orange-600 hover:text-orange-500 font-semibold"
             >
               Login here
             </button>
@@ -489,38 +412,41 @@ function App() {
     const subscriptionPlans = [
       {
         id: 'premium_basic',
-        name: 'Premium Basic',
+        name: 'Energy Trader',
         price: 10,
         features: [
           'Enhanced listing visibility',
-          'Basic analytics dashboard',
+          'Basic market analytics',
           'Priority customer support',
-          'Up to 20 listings per month'
+          'Up to 20 listings per month',
+          'Email market alerts'
         ]
       },
       {
         id: 'premium_advanced',
-        name: 'Premium Advanced',
+        name: 'Energy Pro',
         price: 25,
         popular: true,
         features: [
-          'Everything in Premium Basic',
-          'Advanced analytics & reporting',
+          'Everything in Energy Trader',
+          'Advanced market intelligence',
           'Unlimited featured listings',
-          'Market intelligence reports',
-          'Connection recommendations'
+          'Real-time price alerts',
+          'Connection recommendations',
+          'API access for data'
         ]
       },
       {
         id: 'enterprise',
-        name: 'Enterprise',
+        name: 'Energy Enterprise',
         price: 45,
         features: [
-          'Everything in Premium Advanced',
-          'API access for integration',
-          'Custom branding options',
+          'Everything in Energy Pro',
           'Dedicated account manager',
-          'White-label solutions'
+          'Custom market reports',
+          'White-label solutions',
+          'Priority technical support',
+          'Custom integrations'
         ]
       }
     ];
@@ -534,15 +460,15 @@ function App() {
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">Choose Your Premium Plan</h1>
-            <p className="text-xl text-gray-600">Unlock advanced features and grow your oil & gas trading business</p>
+            <h1 className="text-4xl font-bold mb-4">Choose Your Energy Trading Plan</h1>
+            <p className="text-xl text-gray-600">Unlock advanced features and grow your energy trading business</p>
           </div>
 
           {/* Demo Request Form */}
           <div className="max-w-md mx-auto mb-12">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-              <h3 className="text-lg font-semibold text-blue-800 mb-2">Want to See Premium Features?</h3>
-              <p className="text-blue-600 mb-4">Schedule a personalized demo and see how premium features can grow your business.</p>
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 text-center">
+              <h3 className="text-lg font-semibold text-orange-800 mb-2">Want to See Premium Features?</h3>
+              <p className="text-orange-600 mb-4">Schedule a personalized demo and see how premium features can grow your energy business.</p>
               <LeadCaptureForm 
                 formType="demo_request"
                 title=""
@@ -555,16 +481,16 @@ function App() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {subscriptionPlans.map((plan) => (
-              <div key={plan.id} className={`relative bg-white rounded-lg shadow-lg p-8 ${plan.popular ? 'ring-2 ring-blue-500' : ''}`}>
+              <div key={plan.id} className={`relative bg-white rounded-lg shadow-lg p-8 ${plan.popular ? 'ring-2 ring-orange-500 scale-105' : ''}`}>
                 {plan.popular && (
                   <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-semibold">Most Popular</span>
+                    <span className="bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-semibold">Most Popular</span>
                   </div>
                 )}
                 
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                  <div className="text-4xl font-bold text-blue-600 mb-2">${plan.price}</div>
+                  <div className="text-4xl font-bold text-orange-600 mb-2">${plan.price}</div>
                   <div className="text-gray-600">per month</div>
                 </div>
 
@@ -581,9 +507,9 @@ function App() {
 
                 <button
                   onClick={() => handleSubscriptionSelect(plan.id)}
-                  className={`w-full py-3 px-6 rounded-lg font-semibold ${
+                  className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors ${
                     plan.popular 
-                      ? 'bg-blue-600 hover:bg-blue-500 text-white' 
+                      ? 'bg-orange-600 hover:bg-orange-500 text-white' 
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
                   }`}
                 >
@@ -598,41 +524,50 @@ function App() {
   };
 
   const BrowsePage = () => (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4">
-        <h1 className="text-4xl font-bold text-center mb-12">Browse Oil & Gas Traders</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {listings.map((listing, index) => (
-            <div key={index} className="bg-white p-6 rounded-lg shadow-lg">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-bold">{listing.title}</h3>
-                {listing.is_featured && (
-                  <span className="bg-orange-500 text-white px-2 py-1 rounded text-sm">Featured</span>
-                )}
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Main Content */}
+      <div className="flex-1 py-12">
+        <div className="container mx-auto px-4">
+          <h1 className="text-4xl font-bold text-center mb-12">Browse Oil & Gas Traders</h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {listings.map((listing, index) => (
+              <div key={index} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-lg font-bold">{listing.title}</h3>
+                  {listing.is_featured && (
+                    <span className="bg-orange-500 text-white px-2 py-1 rounded text-sm">Featured</span>
+                  )}
+                </div>
+                <p className="text-gray-600 mb-2 font-semibold">{listing.product_type?.replace('_', ' ').toUpperCase()}</p>
+                <p className="text-gray-600 mb-2">Quantity: {listing.quantity} {listing.unit}</p>
+                <p className="text-gray-600 mb-2">Location: {listing.location}</p>
+                <p className="text-gray-600 mb-4">Price: {listing.price_range}</p>
+                <button className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg w-full font-semibold transition-colors">
+                  Connect with Trader
+                </button>
               </div>
-              <p className="text-gray-600 mb-2">{listing.product_type?.replace('_', ' ').toUpperCase()}</p>
-              <p className="text-gray-600 mb-2">Quantity: {listing.quantity} {listing.unit}</p>
-              <p className="text-gray-600 mb-2">Location: {listing.location}</p>
-              <p className="text-gray-600 mb-4">Price: {listing.price_range}</p>
-              <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg w-full">
-                Connect with Trader
+            ))}
+          </div>
+          
+          {listings.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">🛢️</div>
+              <p className="text-gray-600 mb-4">No listings found.</p>
+              <button
+                onClick={() => setCurrentPage('register')}
+                className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-2 rounded-lg font-semibold"
+              >
+                Create Account to Post
               </button>
             </div>
-          ))}
+          )}
         </div>
-        
-        {listings.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-600 mb-4">No listings found.</p>
-            <button
-              onClick={() => setCurrentPage('register')}
-              className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg"
-            >
-              Create Account to Post
-            </button>
-          </div>
-        )}
+      </div>
+
+      {/* Right Sidebar for News */}
+      <div className="w-80 bg-white shadow-lg p-6 overflow-y-auto">
+        <NewsSidebar />
       </div>
     </div>
   );
@@ -669,13 +604,13 @@ function App() {
       {renderCurrentPage()}
       
       {/* Newsletter Signup Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 py-12">
+      <div className="bg-gradient-to-r from-orange-600 to-red-600 py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h3 className="text-2xl font-bold text-white mb-4">
-              Get Weekly Market Insights
+              Get Weekly Energy Market Insights
             </h3>
-            <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
+            <p className="text-orange-100 mb-8 max-w-2xl mx-auto">
               Join 10,000+ energy professionals receiving exclusive market analysis, trading opportunities, and industry insights.
             </p>
             <LeadCaptureForm 
