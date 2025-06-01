@@ -70,6 +70,14 @@ if analytics_router:
 if content_router:
     app.include_router(content_router, tags=["Content"])
 
+# Include AI Analysis router if available
+try:
+    from ai_analysis_routes import router as ai_router
+    app.include_router(ai_router, tags=["AI Analysis"])
+except ImportError as e:
+    print(f"Warning: Could not import AI analysis routes: {e}")
+    ai_router = None
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
