@@ -179,7 +179,7 @@ function App() {
                 onClick={() => navigateToPage('ai-analysis')}
                 className={`hover:text-orange-300 font-semibold ${currentPage === 'ai-analysis' ? 'text-orange-300 border-b-2 border-orange-300' : ''}`}
               >
-                AI Analysis
+                Product Analysis
               </button>
               <button 
                 onClick={() => navigateToPage('premium')}
