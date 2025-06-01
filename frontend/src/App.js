@@ -1468,8 +1468,10 @@ function App() {
       case 'product':
         const product = window.location.pathname.split('/products/')[1];
         return <ProductLandingPage productType={product} />;
+      case 'ai-analysis':
+        return <AIAnalysisPage />;
       default:
-        return <HomePage />;
+        return <EnhancedHomePage user={user} navigateToPage={navigateToPage} />;
     }
   };
 
