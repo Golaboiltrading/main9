@@ -23,10 +23,17 @@ export class AnalyticsManager {
 
   // Setup Google Analytics 4
   setupGoogleAnalytics() {
+    // Only setup if GA_TRACKING_ID is provided
+    const gaTrackingId = process.env.REACT_APP_GA_TRACKING_ID;
+    if (!gaTrackingId || gaTrackingId === 'G-XXXXXXXXXX') {
+      console.log('Google Analytics tracking ID not configured');
+      return;
+    }
+
     // Add GA4 script
     const script1 = document.createElement('script');
     script1.async = true;
-    script1.src = 'https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID';
+    script1.src = `https://www.googletagmanager.com/gtag/js?id=${gaTrackingId}`;
     document.head.appendChild(script1);
 
     const script2 = document.createElement('script');
@@ -34,7 +41,7 @@ export class AnalyticsManager {
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'GA_MEASUREMENT_ID', {
+      gtag('config', '${gaTrackingId}', {
         page_title: document.title,
         page_location: window.location.href,
         custom_map: {
@@ -53,11 +60,18 @@ export class AnalyticsManager {
 
   // Setup Hotjar for user behavior tracking
   setupHotjar() {
+    // Only setup if HOTJAR_ID is provided
+    const hotjarId = process.env.REACT_APP_HOTJAR_ID;
+    if (!hotjarId || hotjarId === 'XXXXXXX') {
+      console.log('Hotjar tracking ID not configured');
+      return;
+    }
+
     const script = document.createElement('script');
     script.innerHTML = `
       (function(h,o,t,j,a,r){
         h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-        h._hjSettings={hjid:YOUR_HOTJAR_ID,hjsv:6};
+        h._hjSettings={hjid:${hotjarId},hjsv:6};
         a=o.getElementsByTagName('head')[0];
         r=o.createElement('script');r.async=1;
         r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
