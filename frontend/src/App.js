@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { LeadCaptureForm } from './components/Analytics';
+import { DisclaimerBanner, FooterDisclaimer, HeaderWarning } from './components/DisclaimerBanner';
+import { TermsOfService, PrivacyPolicy, Disclaimer } from './components/LegalPages';
+import EnhancedHomePage from './components/EnhancedHomePage';
+import NewsBar, { NewsSidebar } from './components/NewsBar';
+import AIAnalysisPage from './components/AIAnalysisPage';
 import PayPalButton from './PayPalButton';
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
