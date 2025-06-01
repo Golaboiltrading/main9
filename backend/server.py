@@ -73,13 +73,9 @@ except ImportError as e:
     print(f"Warning: Could not import AI routes: {e}")
     ai_router = None
 
-# Include AI Analysis router if available
-try:
-    from ai_analysis_routes import router as ai_router
+# Include AI router if available
+if ai_router:
     app.include_router(ai_router, tags=["AI Analysis"])
-except ImportError as e:
-    print(f"Warning: Could not import AI analysis routes: {e}")
-    ai_router = None
 
 # Add CORS middleware
 app.add_middleware(
