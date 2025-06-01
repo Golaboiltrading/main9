@@ -215,4 +215,4 @@ export const HeaderWarning = () => {
   );
 };
 
-export default { DisclaimerBanner, FooterDisclaimer, HeaderWarning };
+export { DisclaimerBanner, FooterDisclaimer, HeaderWarning };
