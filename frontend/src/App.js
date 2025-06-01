@@ -54,6 +54,12 @@ function App() {
     analytics.trackPageView(`/${page === 'home' ? '' : page}`);
   };
 
+  // Determine if news sidebar should be shown
+  const shouldShowNewsSidebar = () => {
+    const showOnPages = ['home', 'browse', 'market', 'dashboard', 'ai-analysis'];
+    return showOnPages.includes(currentPage);
+  };
+
   useEffect(() => {
     if (token) {
       fetchUserProfile();
