@@ -172,10 +172,10 @@ function App() {
                 Browse Traders
               </button>
               <button 
-                onClick={() => navigateToPage('premium')}
-                className={`hover:text-blue-200 ${currentPage === 'premium' ? 'text-blue-200' : ''}`}
+                onClick={() => navigateToPage('ai-analysis')}
+                className={`hover:text-blue-200 ${currentPage === 'ai-analysis' ? 'text-blue-200' : ''}`}
               >
-                Premium
+                AI Analysis
               </button>
             </nav>
           </div>
