@@ -1296,6 +1296,249 @@ async def track_pageview(pageview_data: dict):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
+# CONTENT API ROUTES - Added directly to server.py
+
+@app.get("/api/blog/posts")
+async def get_blog_posts(limit: int = 10, offset: int = 0, category: str = None):
+    """Get blog posts with pagination"""
+    try:
+        # Sample blog posts for demo - in production, fetch from database
+        sample_posts = [
+            {
+                "id": "1",
+                "title": "Oil Market Analysis: Global Trends and Trading Opportunities",
+                "slug": "oil-market-analysis-global-trends-2024",
+                "excerpt": "Comprehensive analysis of current oil market conditions, price trends, and emerging trading opportunities across global markets.",
+                "content": "The global oil market continues to evolve with changing geopolitical dynamics...",
+                "category": "Market Analysis",
+                "keywords": "oil market, crude oil prices, trading opportunities, market analysis",
+                "author": "Oil & Gas Finder Team",
+                "featured_image": "/images/blog/oil-market-analysis.jpg",
+                "read_time": 8,
+                "created_at": "2024-05-30T10:00:00Z",
+                "views": 1250
+            },
+            {
+                "id": "2", 
+                "title": "Natural Gas Trading Strategies for 2024",
+                "slug": "natural-gas-trading-strategies-2024",
+                "excerpt": "Expert insights into natural gas trading strategies, market forecasts, and risk management techniques for successful trading.",
+                "content": "Natural gas markets present unique opportunities for traders who understand...",
+                "category": "Trading Strategies",
+                "keywords": "natural gas trading, LNG market, gas prices, trading strategies",
+                "author": "Energy Trading Expert",
+                "featured_image": "/images/blog/natural-gas-trading.jpg", 
+                "read_time": 6,
+                "created_at": "2024-05-28T14:30:00Z",
+                "views": 987
+            },
+            {
+                "id": "3",
+                "title": "Houston Energy Trading Hub: Market Insights and Opportunities", 
+                "slug": "houston-energy-trading-hub-market-insights",
+                "excerpt": "Deep dive into Houston's role as a global energy trading center, key players, and opportunities for traders.",
+                "content": "Houston remains the energy capital of the world, serving as a critical hub...",
+                "category": "Market Insights",
+                "keywords": "Houston oil trading, energy hub, Texas crude oil, trading opportunities",
+                "author": "Market Research Team",
+                "featured_image": "/images/blog/houston-trading-hub.jpg",
+                "read_time": 7,
+                "created_at": "2024-05-26T09:15:00Z", 
+                "views": 1543
+            }
+        ]
+        
+        # Apply filters
+        filtered_posts = sample_posts
+        if category:
+            filtered_posts = [p for p in sample_posts if p["category"].lower() == category.lower()]
+        
+        # Apply pagination
+        paginated_posts = filtered_posts[offset:offset + limit]
+        
+        return {
+            "posts": paginated_posts,
+            "total": len(filtered_posts),
+            "has_more": (offset + limit) < len(filtered_posts)
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/blog/posts/{slug}")
+async def get_blog_post(slug: str):
+    """Get individual blog post by slug"""
+    try:
+        # Sample post data - in production, fetch from database
+        sample_posts = {
+            "oil-market-analysis-global-trends-2024": {
+                "id": "1",
+                "title": "Oil Market Analysis: Global Trends and Trading Opportunities",
+                "slug": "oil-market-analysis-global-trends-2024",
+                "excerpt": "Comprehensive analysis of current oil market conditions, price trends, and emerging trading opportunities.",
+                "content": """
+                <h2>Current Market Conditions</h2>
+                <p>The global oil market is experiencing significant volatility driven by multiple factors including geopolitical tensions, supply chain disruptions, and changing demand patterns.</p>
+                
+                <h2>Key Trading Opportunities</h2>
+                <ul>
+                <li>WTI Crude Oil trading at $70-75 range</li>
+                <li>Brent Crude showing strong support at $75</li>
+                <li>Emerging markets increasing demand</li>
+                </ul>
+                
+                <h2>Market Outlook</h2>
+                <p>Looking ahead, we expect continued volatility with potential for upward price pressure due to supply constraints and growing global demand.</p>
+                """,
+                "category": "Market Analysis",
+                "keywords": "oil market, crude oil prices, trading opportunities, market analysis",
+                "author": "Oil & Gas Finder Team",
+                "featured_image": "/images/blog/oil-market-analysis.jpg",
+                "read_time": 8,
+                "created_at": "2024-05-30T10:00:00Z",
+                "views": 1250
+            }
+        }
+        
+        post = sample_posts.get(slug)
+        if not post:
+            return {"status": "error", "message": "Post not found"}
+            
+        # Related posts
+        related_posts = [
+            {
+                "id": "2",
+                "title": "Natural Gas Trading Strategies for 2024", 
+                "slug": "natural-gas-trading-strategies-2024",
+                "excerpt": "Expert insights into natural gas trading strategies and market forecasts.",
+                "category": "Trading Strategies",
+                "featured_image": "/images/blog/natural-gas-trading.jpg",
+                "created_at": "2024-05-28T14:30:00Z"
+            }
+        ]
+        
+        return {
+            "post": post,
+            "related_posts": related_posts
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/blog/categories") 
+async def get_blog_categories():
+    """Get all blog categories"""
+    try:
+        categories = [
+            {"_id": "Market Analysis", "count": 15},
+            {"_id": "Trading Strategies", "count": 12}, 
+            {"_id": "Market Insights", "count": 8},
+            {"_id": "Industry News", "count": 20},
+            {"_id": "Technology", "count": 6}
+        ]
+        return {"categories": categories}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/locations/{location}")
+async def get_location_data(location: str):
+    """Get location-specific trading data"""
+    try:
+        # Sample location data
+        location_data = {
+            "houston-tx": {
+                "name": "Houston, TX",
+                "slug": "houston-tx", 
+                "description": "Global energy capital with major oil and gas trading activities",
+                "address": {
+                    "street": "1000 Louisiana St",
+                    "city": "Houston",
+                    "state": "TX", 
+                    "zip": "77002",
+                    "country": "US",
+                    "lat": 29.7604,
+                    "lng": -95.3698
+                },
+                "phone": "+1-713-XXX-XXXX"
+            },
+            "dubai-uae": {
+                "name": "Dubai, UAE",
+                "slug": "dubai-uae",
+                "description": "Middle East energy trading hub connecting global markets",
+                "address": {
+                    "street": "Sheikh Zayed Road", 
+                    "city": "Dubai",
+                    "state": "Dubai",
+                    "zip": "00000",
+                    "country": "AE",
+                    "lat": 25.2048,
+                    "lng": 55.2708
+                },
+                "phone": "+971-4-XXX-XXXX"
+            }
+        }
+        
+        location_info = location_data.get(location, {
+            "name": location.replace('-', ' ').title(),
+            "slug": location,
+            "description": f"Oil and gas trading hub in {location.replace('-', ' ').title()}"
+        })
+        
+        # Mock market data
+        market_data = {
+            "crude_oil_price": 75.25,
+            "crude_oil_change": 1.2,
+            "natural_gas_price": 2.85, 
+            "natural_gas_change": -0.8,
+            "active_traders": 145,
+            "new_traders_today": 8,
+            "daily_volume": "2.5M",
+            "volume_change": 5.2
+        }
+        
+        return {
+            "location": location_info,
+            "market_data": market_data
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/products/{product_type}")
+async def get_product_data(product_type: str):
+    """Get product-specific trading data"""
+    try:
+        # Sample product data
+        product_info = {
+            "name": product_type.replace('-', ' ').title(),
+            "slug": product_type,
+            "description": f"Trade {product_type.replace('-', ' ')} with verified buyers and sellers worldwide",
+            "category": "Energy Products"
+        }
+        
+        # Mock market data based on product type
+        base_prices = {
+            "crude-oil": 75.25,
+            "natural-gas": 2.85,
+            "lng": 12.50,
+            "gasoline": 2.15,
+            "diesel": 2.95
+        }
+        
+        price = base_prices.get(product_type, 50.00)
+        
+        market_data = {
+            "current_price": price,
+            "price_change": 1.2,
+            "daily_volume": "1.2M BBL", 
+            "volume_change": 3.5,
+            "active_listings": 125,
+            "new_listings": 15
+        }
+        
+        product_info.update(market_data)
+        
+        return product_info
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 @app.post("/api/analytics/event")
 async def track_event(event_data: dict):
     """Track custom events for analytics"""
