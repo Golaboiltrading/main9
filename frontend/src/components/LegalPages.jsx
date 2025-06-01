@@ -419,5 +419,3 @@ export const Disclaimer = () => {
     </div>
   );
 };
-
-export { TermsOfService, PrivacyPolicy, Disclaimer };
