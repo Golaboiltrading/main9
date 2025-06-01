@@ -1,217 +1,156 @@
 import React, { useState, useEffect } from 'react';
 
-// Prominent disclaimer banner component
+// Modal Banner Component
 export const DisclaimerBanner = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isAccepted, setIsAccepted] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    // Check if user has already accepted disclaimer
-    const accepted = localStorage.getItem('disclaimer_accepted');
-    if (!accepted) {
-      setIsVisible(true);
-    } else {
-      setIsAccepted(true);
+    // Show modal on first visit
+    const hasSeenDisclaimer = localStorage.getItem('oil_gas_finder_disclaimer_accepted');
+    if (!hasSeenDisclaimer) {
+      setShowModal(true);
     }
   }, []);
 
-  const handleAccept = () => {
-    localStorage.setItem('disclaimer_accepted', 'true');
-    localStorage.setItem('disclaimer_date', new Date().toISOString());
-    setIsVisible(false);
-    setIsAccepted(true);
+  const acceptDisclaimer = () => {
+    localStorage.setItem('oil_gas_finder_disclaimer_accepted', 'true');
+    setShowModal(false);
   };
 
-  const handleDecline = () => {
-    // Redirect away from platform
-    window.location.href = 'https://google.com';
-  };
-
-  if (!isVisible && isAccepted) {
-    return null;
-  }
+  if (!showModal) return null;
 
   return (
-    <>
-      {/* Overlay */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto">
-          {/* Header */}
-          <div className="bg-red-600 text-white p-6 rounded-t-lg">
-            <h2 className="text-2xl font-bold flex items-center">
-              <span className="mr-3">⚠️</span>
-              CRITICAL LEGAL DISCLAIMER
-            </h2>
-            <p className="mt-2 text-red-100">
-              Please read carefully before using Oil & Gas Finder
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex items-center mb-4">
+            <div className="text-3xl mr-3">⚠️</div>
+            <h2 className="text-2xl font-bold text-red-600">IMPORTANT LEGAL NOTICE</h2>
+          </div>
+          
+          <div className="space-y-4 text-gray-700">
+            <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
+              <h3 className="font-bold text-red-800 mb-2">🚨 SANCTIONS & COMPLIANCE WARNING</h3>
+              <p className="text-sm">
+                Oil & Gas Finder is a CONNECTION SERVICE ONLY. We do not engage in actual trading, 
+                financing, or transaction processing. All users must comply with international sanctions, 
+                export controls, and local regulations. We are not responsible for any illegal activities.
+              </p>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+              <h3 className="font-bold text-yellow-800 mb-2">⚠️ FRAUD PROTECTION</h3>
+              <p className="text-sm">
+                Always verify trader credentials independently. Never transfer money without proper 
+                documentation. Be aware of advance fee frauds, fake certificates, and too-good-to-be-true offers. 
+                We provide a platform for connections only.
+              </p>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+              <h3 className="font-bold text-blue-800 mb-2">ℹ️ PLATFORM LIMITATIONS</h3>
+              <p className="text-sm">
+                Our platform facilitates introductions between potential trading partners. We do not:
+                • Verify product quality or authenticity
+                • Handle payments or escrow services  
+                • Guarantee successful transactions
+                • Provide legal or financial advice
+              </p>
+            </div>
+
+            <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
+              <h3 className="font-bold text-gray-800 mb-2">📋 USER RESPONSIBILITIES</h3>
+              <ul className="text-sm space-y-1">
+                <li>• Conduct proper due diligence on all potential partners</li>
+                <li>• Verify all documentation and certifications independently</li>
+                <li>• Comply with all applicable laws and regulations</li>
+                <li>• Use secure payment methods and proper contracts</li>
+                <li>• Report suspicious activities to relevant authorities</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={acceptDisclaimer}
+              className="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold"
+            >
+              I Understand & Accept
+            </button>
+            <button
+              onClick={() => window.location.href = 'https://google.com'}
+              className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-3 rounded-lg font-semibold"
+            >
+              Exit Site
+            </button>
+          </div>
+
+          <p className="text-xs text-gray-500 mt-4 text-center">
+            By using this platform, you acknowledge that you have read and understood these warnings.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Header Warning Component
+export const HeaderWarning = () => {
+  return (
+    <div className="bg-red-600 text-white py-2">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-center text-center">
+          <span className="text-sm font-medium">
+            ⚠️ CONNECTION SERVICE ONLY - Verify all traders independently • Comply with sanctions • Beware of fraud
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Footer Disclaimer Component
+export const FooterDisclaimer = () => {
+  return (
+    <div className="bg-gray-900 text-gray-300 py-8">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h3 className="text-white font-bold mb-3">Legal Disclaimer</h3>
+            <p className="text-sm">
+              Oil & Gas Finder operates as a connection service only. We do not engage in trading, 
+              provide financial services, or guarantee transaction outcomes.
             </p>
           </div>
           
-          {/* Content */}
-          <div className="p-6 space-y-6">
-            {/* Main Warning */}
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-              <h3 className="font-bold text-yellow-800 text-lg mb-2">
-                PLATFORM LIMITATION NOTICE
-              </h3>
-              <p className="text-yellow-700">
-                Oil & Gas Finder is a <strong>connection platform only</strong>. We do not participate in, 
-                guarantee, or take responsibility for any transactions between users.
-              </p>
-            </div>
-            
-            {/* Sanctions Warning */}
-            <div className="bg-red-50 border-l-4 border-red-500 p-4">
-              <h3 className="font-bold text-red-800 text-lg mb-2">
-                SANCTIONS COMPLIANCE WARNING
-              </h3>
-              <p className="text-red-700">
-                Users are <strong>solely responsible</strong> for ensuring compliance with all applicable 
-                international sanctions (US, EU, UN). Oil & Gas Finder provides no sanctions guidance 
-                and accepts no liability for violations.
-              </p>
-            </div>
-            
-            {/* Fraud Warning */}
-            <div className="bg-orange-50 border-l-4 border-orange-500 p-4">
-              <h3 className="font-bold text-orange-800 text-lg mb-2">
-                FRAUD & SCAM WARNING
-              </h3>
-              <p className="text-orange-700">
-                The oil & gas industry experiences frequent fraud. Common scams include fake refineries, 
-                advance fee fraud, and document forgery. <strong>Conduct thorough due diligence</strong> 
-                before any transactions.
-              </p>
-            </div>
-            
-            {/* No Responsibility */}
-            <div className="bg-gray-50 border-l-4 border-gray-500 p-4">
-              <h3 className="font-bold text-gray-800 text-lg mb-2">
-                NO RESPONSIBILITY DISCLAIMER
-              </h3>
-              <p className="text-gray-700">
-                Oil & Gas Finder accepts <strong>no responsibility</strong> for:
-              </p>
-              <ul className="list-disc list-inside text-gray-700 mt-2 space-y-1">
-                <li>Fraudulent activities or scams by users</li>
-                <li>Financial losses or transaction disputes</li>
-                <li>Sanctions violations or regulatory issues</li>
-                <li>Product quality, delivery, or payment problems</li>
-                <li>Identity verification or user credentials</li>
-              </ul>
-            </div>
-            
-            {/* Recommendations */}
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
-              <h3 className="font-bold text-blue-800 text-lg mb-2">
-                STRONGLY RECOMMENDED
-              </h3>
-              <p className="text-blue-700">
-                Before engaging in transactions, consult with:
-              </p>
-              <ul className="list-disc list-inside text-blue-700 mt-2 space-y-1">
-                <li>Legal counsel specializing in energy law</li>
-                <li>Sanctions compliance specialists</li>
-                <li>Financial advisors familiar with commodity trading</li>
-                <li>Industry verification services</li>
-              </ul>
-            </div>
-            
-            {/* Age and Competency */}
-            <div className="bg-purple-50 border-l-4 border-purple-500 p-4">
-              <h3 className="font-bold text-purple-800 text-lg mb-2">
-                USER REQUIREMENTS
-              </h3>
-              <p className="text-purple-700">
-                By using this platform, you confirm that you are:
-              </p>
-              <ul className="list-disc list-inside text-purple-700 mt-2 space-y-1">
-                <li>18+ years old and legally competent</li>
-                <li>Authorized to bind your organization (if applicable)</li>
-                <li>Familiar with oil & gas trading risks</li>
-                <li>Capable of conducting proper due diligence</li>
-              </ul>
-            </div>
-            
-            {/* Legal Links */}
-            <div className="text-sm text-gray-600">
-              <p>
-                For complete terms, please review our{' '}
-                <a href="/terms" className="text-blue-600 underline">Terms of Service</a>,{' '}
-                <a href="/privacy" className="text-blue-600 underline">Privacy Policy</a>, and{' '}
-                <a href="/disclaimer" className="text-blue-600 underline">Legal Disclaimer</a>.
-              </p>
-            </div>
+          <div>
+            <h3 className="text-white font-bold mb-3">Risk Warning</h3>
+            <p className="text-sm">
+              Commodity trading involves substantial risk. Always conduct proper due diligence, 
+              verify credentials, and comply with applicable regulations before engaging in any transactions.
+            </p>
           </div>
           
-          {/* Footer Actions */}
-          <div className="bg-gray-50 px-6 py-4 rounded-b-lg flex flex-col sm:flex-row gap-4">
-            <button
-              onClick={handleDecline}
-              className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-700 transition-colors"
-            >
-              I DO NOT AGREE - Exit Platform
-            </button>
-            <button
-              onClick={handleAccept}
-              className="flex-1 bg-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 transition-colors"
-            >
-              I UNDERSTAND & ACCEPT ALL RISKS
-            </button>
+          <div>
+            <h3 className="text-white font-bold mb-3">Compliance Notice</h3>
+            <p className="text-sm">
+              Users must comply with international sanctions, export controls, and local laws. 
+              Report suspicious activities to relevant authorities immediately.
+            </p>
           </div>
         </div>
-      </div>
-    </>
-  );
-};
-
-// Persistent footer disclaimer
-export const FooterDisclaimer = () => {
-  return (
-    <div className="bg-red-50 border-t-2 border-red-200 py-3">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row items-center justify-between text-sm">
-          <p className="text-red-700 font-medium">
-            ⚠️ Platform connects users only - No responsibility for transactions, sanctions, or fraud
+        
+        <div className="border-t border-gray-700 mt-8 pt-8 text-center">
+          <p className="text-sm text-gray-400">
+            © 2024 Oil & Gas Finder. All rights reserved. | 
+            <a href="/terms" className="hover:text-white ml-1">Terms of Service</a> | 
+            <a href="/privacy" className="hover:text-white ml-1">Privacy Policy</a> | 
+            <a href="/disclaimer" className="hover:text-white ml-1">Full Disclaimer</a>
           </p>
-          <div className="flex space-x-4 mt-2 sm:mt-0">
-            <a href="/disclaimer" className="text-red-600 hover:text-red-800 underline">
-              Legal Disclaimer
-            </a>
-            <a href="/terms" className="text-red-600 hover:text-red-800 underline">
-              Terms
-            </a>
-          </div>
         </div>
       </div>
     </div>
   );
 };
 
-// Header warning banner (smaller, persistent)
-export const HeaderWarning = () => {
-  const [isVisible, setIsVisible] = useState(true);
-
-  if (!isVisible) {
-    return null;
-  }
-
-  return (
-    <div className="bg-yellow-400 text-yellow-900 py-2">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between text-sm">
-          <p className="font-medium">
-            ⚠️ Connection platform only - Users responsible for sanctions compliance & fraud prevention
-          </p>
-          <button
-            onClick={() => setIsVisible(false)}
-            className="text-yellow-700 hover:text-yellow-900"
-          >
-            ✕
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
+export default { DisclaimerBanner, HeaderWarning, FooterDisclaimer };

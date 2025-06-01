@@ -1,221 +1,308 @@
 import React, { useState, useEffect } from 'react';
 
-export const NewsBar = () => {
+const NewsBar = () => {
   const [news, setNews] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [marketData, setMarketData] = useState({});
 
-  useEffect(() => {
-    fetchNews();
-    const interval = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % news.length);
-    }, 5000); // Rotate news every 5 seconds
-    
-    return () => clearInterval(interval);
-  }, [news.length]);
-
-  const fetchNews = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/news/oil-gas`);
-      const data = await response.json();
-      setNews(data.articles || mockNews);
-    } catch (error) {
-      console.error('Error fetching news:', error);
-      setNews(mockNews);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Mock news data for immediate display
-  const mockNews = [
+  // Sample news data with sentiment analysis
+  const sampleNews = [
     {
-      title: "Oil Prices Rise 3% on Supply Concerns",
-      summary: "Crude oil futures gained after reports of production cuts from major exporters...",
-      source: "Energy News",
-      time: "2 hours ago",
+      id: 1,
+      title: "Oil Prices Rise on Supply Concerns",
       category: "Market",
-      sentiment: "positive"
+      sentiment: "positive",
+      timestamp: "2 hours ago",
+      impact: "high"
     },
     {
-      title: "Natural Gas Demand Surges in Winter Season",
-      summary: "European gas prices hit seasonal highs as winter demand increases across the region...",
-      source: "Gas Daily",
-      time: "4 hours ago",
-      category: "Natural Gas",
-      sentiment: "positive"
+      id: 2,
+      title: "New LNG Terminal Opens in Gulf Coast",
+      category: "Infrastructure", 
+      sentiment: "positive",
+      timestamp: "4 hours ago",
+      impact: "medium"
     },
     {
-      title: "New LNG Terminal Opens in Texas",
-      summary: "Major infrastructure development boosts US export capacity by 15 million tons per year...",
-      source: "LNG Journal",
-      time: "6 hours ago",
-      category: "Infrastructure",
-      sentiment: "positive"
-    },
-    {
-      title: "OPEC+ Meeting Scheduled for Next Week",
-      summary: "Oil ministers to discuss production quotas amid changing market conditions...",
-      source: "OPEC News",
-      time: "8 hours ago",
+      id: 3,
+      title: "OPEC+ Considers Production Cuts",
       category: "Policy",
-      sentiment: "neutral"
+      sentiment: "neutral",
+      timestamp: "6 hours ago",
+      impact: "high"
     },
     {
-      title: "Renewable Energy Investment Hits Record High",
-      summary: "Global investment in clean energy technologies reaches $2.8 trillion in 2024...",
-      source: "Energy Transition",
-      time: "1 day ago",
-      category: "Renewables",
-      sentiment: "positive"
+      id: 4,
+      title: "Natural Gas Demand Surges in Asia",
+      category: "Market",
+      sentiment: "positive", 
+      timestamp: "8 hours ago",
+      impact: "medium"
     },
     {
-      title: "Geopolitical Tensions Affect Oil Trade Routes",
-      summary: "Shipping companies adjust routes as regional conflicts impact key maritime passages...",
-      source: "Maritime Oil",
-      time: "1 day ago",
-      category: "Geopolitics",
-      sentiment: "negative"
+      id: 5,
+      title: "Crude Oil Inventories Fall Sharply",
+      category: "Market",
+      sentiment: "positive",
+      timestamp: "10 hours ago", 
+      impact: "high"
     }
   ];
 
-  if (loading) {
-    return (
-      <div className="bg-white rounded-lg shadow-lg p-4">
-        <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    // Simulate fetching news data
+    setNews(sampleNews);
+    
+    // Simulate fetching market data
+    setMarketData({
+      wti: { price: 75.25, change: 1.2 },
+      brent: { price: 79.50, change: 0.8 },
+      naturalGas: { price: 2.85, change: -0.5 },
+      lastUpdate: new Date().toLocaleTimeString()
+    });
+
+    // Auto-rotate news every 5 seconds
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % sampleNews.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const getSentimentColor = (sentiment) => {
+    switch (sentiment) {
+      case 'positive': return 'text-green-600';
+      case 'negative': return 'text-red-600';
+      default: return 'text-yellow-600';
+    }
+  };
+
+  const getSentimentIcon = (sentiment) => {
+    switch (sentiment) {
+      case 'positive': return '📈';
+      case 'negative': return '📉';
+      default: return '📊';
+    }
+  };
+
+  const getImpactBadge = (impact) => {
+    const colors = {
+      high: 'bg-red-100 text-red-800',
+      medium: 'bg-yellow-100 text-yellow-800', 
+      low: 'bg-green-100 text-green-800'
+    };
+    return `px-2 py-1 rounded-full text-xs font-semibold ${colors[impact]}`;
+  };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4">
-        <h3 className="text-lg font-bold flex items-center">
-          <span className="mr-2">📰</span>
-          Industry News
-        </h3>
-      </div>
-
-      {/* Current News Item */}
-      <div className="p-4 border-b">
-        {news.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getCategoryColor(news[currentIndex].category)}`}>
-                {news[currentIndex].category}
-              </span>
-              <span className={`text-sm ${getSentimentColor(news[currentIndex].sentiment)}`}>
-                {getSentimentIcon(news[currentIndex].sentiment)}
-              </span>
+    <div className="bg-gray-900 text-white">
+      {/* Market Indicators Bar */}
+      <div className="border-b border-gray-700 py-2">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-wrap justify-between items-center text-sm">
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <span className="text-gray-400">WTI:</span>
+                <span className="font-bold">${marketData.wti?.price}</span>
+                <span className={marketData.wti?.change >= 0 ? 'text-green-400' : 'text-red-400'}>
+                  {marketData.wti?.change >= 0 ? '▲' : '▼'} {Math.abs(marketData.wti?.change)}%
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-gray-400">Brent:</span>
+                <span className="font-bold">${marketData.brent?.price}</span>
+                <span className={marketData.brent?.change >= 0 ? 'text-green-400' : 'text-red-400'}>
+                  {marketData.brent?.change >= 0 ? '▲' : '▼'} {Math.abs(marketData.brent?.change)}%
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-gray-400">Natural Gas:</span>
+                <span className="font-bold">${marketData.naturalGas?.price}</span>
+                <span className={marketData.naturalGas?.change >= 0 ? 'text-green-400' : 'text-red-400'}>
+                  {marketData.naturalGas?.change >= 0 ? '▲' : '▼'} {Math.abs(marketData.naturalGas?.change)}%
+                </span>
+              </div>
             </div>
-            
-            <h4 className="font-semibold text-gray-900 text-sm leading-snug">
-              {news[currentIndex].title}
-            </h4>
-            
-            <p className="text-gray-600 text-xs leading-relaxed">
-              {news[currentIndex].summary}
-            </p>
-            
-            <div className="flex items-center justify-between text-xs text-gray-500">
-              <span>{news[currentIndex].source}</span>
-              <span>{news[currentIndex].time}</span>
+            <div className="text-gray-400 text-xs">
+              Live • Updated {marketData.lastUpdate}
             </div>
           </div>
-        )}
-      </div>
-
-      {/* News List */}
-      <div className="max-h-96 overflow-y-auto">
-        {news.slice(1, 6).map((item, index) => (
-          <div 
-            key={index}
-            className="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
-            onClick={() => setCurrentIndex(index + 1)}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getCategoryColor(item.category)}`}>
-                {item.category}
-              </span>
-              <span className="text-xs text-gray-500">{item.time}</span>
-            </div>
-            
-            <h5 className="font-medium text-gray-900 text-sm leading-tight mb-1">
-              {item.title}
-            </h5>
-            
-            <p className="text-gray-600 text-xs leading-relaxed line-clamp-2">
-              {item.summary}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Market Indicators */}
-      <div className="bg-gray-50 p-4">
-        <h4 className="font-semibold text-gray-900 text-sm mb-3">Market Indicators</h4>
-        <div className="space-y-2">
-          <MarketIndicator name="WTI Crude" value="$75.25" change="+1.2%" positive={true} />
-          <MarketIndicator name="Brent Crude" value="$78.90" change="+0.8%" positive={true} />
-          <MarketIndicator name="Natural Gas" value="$2.85" change="-0.5%" positive={false} />
-          <MarketIndicator name="Gasoline" value="$2.15" change="+2.1%" positive={true} />
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="bg-blue-50 p-3 text-center">
-        <button className="text-blue-600 text-xs font-semibold hover:text-blue-800 transition-colors">
-          View All News →
-        </button>
+      {/* News Ticker */}
+      <div className="py-3">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center">
+            <div className="bg-red-600 text-white px-3 py-1 rounded-lg text-sm font-bold mr-4">
+              BREAKING
+            </div>
+            <div className="flex-1 overflow-hidden">
+              {news.length > 0 && (
+                <div className="flex items-center animate-fade-in-out">
+                  <span className="mr-2">
+                    {getSentimentIcon(news[currentIndex]?.sentiment)}
+                  </span>
+                  <span className="font-semibold mr-2">
+                    {news[currentIndex]?.title}
+                  </span>
+                  <span className={`mr-2 ${getImpactBadge(news[currentIndex]?.impact)}`}>
+                    {news[currentIndex]?.impact?.toUpperCase()}
+                  </span>
+                  <span className="text-gray-400 text-sm">
+                    {news[currentIndex]?.timestamp}
+                  </span>
+                </div>
+              )}
+            </div>
+            <button className="bg-blue-600 hover:bg-blue-500 px-4 py-1 rounded text-sm font-semibold transition-colors">
+              View All News
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-const MarketIndicator = ({ name, value, change, positive }) => (
-  <div className="flex items-center justify-between text-xs">
-    <span className="text-gray-700 font-medium">{name}</span>
-    <div className="flex items-center space-x-2">
-      <span className="font-semibold">{value}</span>
-      <span className={`font-semibold ${positive ? 'text-green-600' : 'text-red-600'}`}>
-        {change}
-      </span>
+// Sidebar News Component
+export const NewsSidebar = () => {
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [news, setNews] = useState([]);
+
+  const categories = ['all', 'market', 'infrastructure', 'policy', 'technology'];
+  
+  const sampleNews = [
+    {
+      id: 1,
+      title: "Oil Prices Surge on Middle East Tensions",
+      excerpt: "Crude oil futures jumped 3% as geopolitical concerns mount in the region affecting major supply routes.",
+      category: "market",
+      sentiment: "positive",
+      timestamp: "1 hour ago",
+      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop"
+    },
+    {
+      id: 2,
+      title: "New LNG Export Terminal Approved",
+      excerpt: "Major energy company receives approval for $12 billion LNG export facility on the Gulf Coast.",
+      category: "infrastructure", 
+      sentiment: "positive",
+      timestamp: "3 hours ago",
+      image: "https://images.unsplash.com/photo-1518709268805-4e9042af2a73?w=300&h=200&fit=crop"
+    },
+    {
+      id: 3,
+      title: "OPEC+ Meeting Results in Production Freeze",
+      excerpt: "Oil cartel maintains current production levels despite pressure from consuming nations.",
+      category: "policy",
+      sentiment: "neutral", 
+      timestamp: "5 hours ago",
+      image: "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=300&h=200&fit=crop"
+    },
+    {
+      id: 4,
+      title: "AI-Powered Trading Platform Launched",
+      excerpt: "Revolutionary AI system promises to transform oil and gas commodity trading with predictive analytics.",
+      category: "technology",
+      sentiment: "positive",
+      timestamp: "7 hours ago", 
+      image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=300&h=200&fit=crop"
+    },
+    {
+      id: 5,
+      title: "Natural Gas Demand Peaks in Europe",
+      excerpt: "European gas demand reaches record highs as winter approaches and supply concerns persist.",
+      category: "market",
+      sentiment: "positive",
+      timestamp: "9 hours ago",
+      image: "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=300&h=200&fit=crop"
+    }
+  ];
+
+  useEffect(() => {
+    setNews(sampleNews);
+  }, []);
+
+  const filteredNews = selectedCategory === 'all' 
+    ? news 
+    : news.filter(item => item.category === selectedCategory);
+
+  const getSentimentIcon = (sentiment) => {
+    switch (sentiment) {
+      case 'positive': return <span className="text-green-500">📈</span>;
+      case 'negative': return <span className="text-red-500">📉</span>;
+      default: return <span className="text-yellow-500">📊</span>;
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Industry News</h2>
+        <div className="flex items-center space-x-2">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span className="text-sm text-gray-500">Live</span>
+        </div>
+      </div>
+
+      {/* Category Filter */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {categories.map((category) => (
+          <button
+            key={category}
+            onClick={() => setSelectedCategory(category)}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+              selectedCategory === category
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            {category.charAt(0).toUpperCase() + category.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* News List */}
+      <div className="space-y-4 max-h-96 overflow-y-auto">
+        {filteredNews.map((article) => (
+          <div key={article.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
+            <div className="flex space-x-3">
+              <img 
+                src={article.image} 
+                alt={article.title}
+                className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-gray-500 uppercase tracking-wide">
+                    {article.category}
+                  </span>
+                  {getSentimentIcon(article.sentiment)}
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900 leading-tight mb-1">
+                  {article.title}
+                </h3>
+                <p className="text-xs text-gray-600 line-clamp-2 mb-2">
+                  {article.excerpt}
+                </p>
+                <div className="text-xs text-gray-400">
+                  {article.timestamp}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* View More Button */}
+      <div className="mt-4 text-center">
+        <button className="text-blue-600 hover:text-blue-500 text-sm font-medium">
+          View All Industry News →
+        </button>
+      </div>
     </div>
-  </div>
-);
-
-const getCategoryColor = (category) => {
-  const colors = {
-    'Market': 'bg-blue-100 text-blue-800',
-    'Natural Gas': 'bg-green-100 text-green-800',
-    'Infrastructure': 'bg-purple-100 text-purple-800',
-    'Policy': 'bg-yellow-100 text-yellow-800',
-    'Renewables': 'bg-emerald-100 text-emerald-800',
-    'Geopolitics': 'bg-red-100 text-red-800'
-  };
-  return colors[category] || 'bg-gray-100 text-gray-800';
-};
-
-const getSentimentColor = (sentiment) => {
-  const colors = {
-    'positive': 'text-green-600',
-    'negative': 'text-red-600',
-    'neutral': 'text-gray-600'
-  };
-  return colors[sentiment] || 'text-gray-600';
-};
-
-const getSentimentIcon = (sentiment) => {
-  const icons = {
-    'positive': '📈',
-    'negative': '📉',
-    'neutral': '📊'
-  };
-  return icons[sentiment] || '📊';
+  );
 };
 
 export default NewsBar;
