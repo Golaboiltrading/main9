@@ -421,4 +421,4 @@ export const ProductLandingPage = ({ productType }) => {
   );
 };
 
-export default { LocationLandingPage, ProductLandingPage };
+export { LocationLandingPage, ProductLandingPage };
