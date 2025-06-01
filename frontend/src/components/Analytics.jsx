@@ -402,5 +402,3 @@ export const LeadCaptureForm = ({
     </div>
   );
 };
-
-export { AnalyticsManager, analytics, useAnalytics, withAnalytics, ConversionTracker, LeadCaptureForm };
