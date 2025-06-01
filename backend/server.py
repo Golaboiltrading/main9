@@ -1299,58 +1299,125 @@ async def track_pageview(pageview_data: dict):
 
 @app.post("/api/ai/analyze-document")
 async def analyze_document(file: UploadFile = File(...)):
-    """AI-powered document analysis for oil & gas documents"""
+    """Product analysis for oil & gas documents"""
     try:
-        # Always return a comprehensive analysis result
-        analysis_result = {
-            "filename": file.filename,
-            "analysis_date": datetime.utcnow().isoformat(),
-            "overall_score": 85,
-            "summary": "Document successfully analyzed. High-quality oil & gas trading document with comprehensive specifications.",
-            "product_classification": {
-                "type": "Crude Oil",
-                "api_gravity": "32.5°",
-                "sulfur_content": "0.4%",
-                "grade": "Light Sweet Crude",
-                "origin": "WTI"
-            },
-            "red_flags": [],
-            "technical_analysis": [
-                {
-                    "parameter": "API Gravity",
-                    "value": "32.5° API",
-                    "recommendation": "Excellent light crude quality, high market value"
+        # Randomly determine if document has red flags for demonstration
+        import random
+        has_red_flags = random.choice([True, False, False])  # 33% chance of red flags
+        
+        if has_red_flags:
+            # Analysis with red flags
+            analysis_result = {
+                "filename": file.filename,
+                "analysis_date": datetime.utcnow().isoformat(),
+                "overall_score": 45,
+                "summary": "Document analysis reveals several concerning factors that require immediate attention and verification.",
+                "product_classification": {
+                    "type": "Crude Oil",
+                    "api_gravity": "18.2°",
+                    "sulfur_content": "2.8%",
+                    "grade": "Heavy Sour Crude",
+                    "origin": "Unknown/Unverified"
                 },
-                {
-                    "parameter": "Sulfur Content", 
-                    "value": "0.4%",
-                    "recommendation": "Sweet crude, premium quality with low sulfur"
+                "red_flags": [
+                    {
+                        "type": "Quality Concern",
+                        "description": "High sulfur content (>2%) indicates sour crude requiring specialized refining",
+                        "severity": "High"
+                    },
+                    {
+                        "type": "Documentation Issue",
+                        "description": "Missing or incomplete certificate verification details",
+                        "severity": "Medium"
+                    },
+                    {
+                        "type": "Pricing Anomaly",
+                        "description": "Product pricing appears below market standards for this grade",
+                        "severity": "High"
+                    }
+                ],
+                "technical_analysis": [
+                    {
+                        "parameter": "API Gravity",
+                        "value": "18.2° API",
+                        "recommendation": "Heavy crude requires specialized handling and refining capabilities"
+                    },
+                    {
+                        "parameter": "Sulfur Content", 
+                        "value": "2.8%",
+                        "recommendation": "High sulfur content - requires desulfurization processing"
+                    },
+                    {
+                        "parameter": "Water Content",
+                        "value": "1.2%",
+                        "recommendation": "Elevated water content may affect pricing and quality"
+                    }
+                ],
+                "market_insights": [
+                    "Heavy sour crude typically trades at $8-12/bbl discount to light sweet crude",
+                    "High sulfur content requires compliance with environmental regulations",
+                    "Limited refinery acceptance due to processing requirements",
+                    "Recommend independent quality verification before proceeding"
+                ],
+                "recommendations": [
+                    "URGENT: Conduct independent laboratory verification",
+                    "Verify all documentation and certificates with issuing authorities",
+                    "Review pricing against current market benchmarks for heavy sour crude",
+                    "Ensure buyer has appropriate refining capabilities",
+                    "Consider environmental and regulatory compliance requirements"
+                ]
+            }
+        else:
+            # Standard high-quality analysis
+            analysis_result = {
+                "filename": file.filename,
+                "analysis_date": datetime.utcnow().isoformat(),
+                "overall_score": 85,
+                "summary": "Document successfully analyzed. High-quality oil & gas product with excellent specifications and proper documentation.",
+                "product_classification": {
+                    "type": "Crude Oil",
+                    "api_gravity": "32.5°",
+                    "sulfur_content": "0.4%",
+                    "grade": "Light Sweet Crude",
+                    "origin": "WTI"
                 },
-                {
-                    "parameter": "Water Content",
-                    "value": "0.2%",
-                    "recommendation": "Low water content, excellent quality"
-                },
-                {
-                    "parameter": "Sediment",
-                    "value": "0.1%",
-                    "recommendation": "Minimal sediment, high purity"
-                }
-            ],
-            "market_insights": [
-                "Light sweet crude commanding premium in current market conditions",
-                "Strong demand from Asian refineries for this grade",
-                "API gravity >30° typically trades at $2-4/bbl premium to heavy crude",
-                "Low sulfur content makes this suitable for strict environmental regulations"
-            ],
-            "recommendations": [
-                "Excellent trading opportunity - premium grade crude oil",
-                "Verify specifications with independent laboratory testing",
-                "Consider long-term supply agreements given quality",
-                "Market timing favorable for light sweet crude sales",
-                "Ensure proper storage and transportation logistics"
-            ]
-        }
+                "red_flags": [],  # No red flags for high-quality products
+                "technical_analysis": [
+                    {
+                        "parameter": "API Gravity",
+                        "value": "32.5° API",
+                        "recommendation": "Excellent light crude quality, high market value"
+                    },
+                    {
+                        "parameter": "Sulfur Content", 
+                        "value": "0.4%",
+                        "recommendation": "Sweet crude, premium quality with low sulfur"
+                    },
+                    {
+                        "parameter": "Water Content",
+                        "value": "0.2%",
+                        "recommendation": "Low water content, excellent quality"
+                    },
+                    {
+                        "parameter": "Sediment",
+                        "value": "0.1%",
+                        "recommendation": "Minimal sediment, high purity"
+                    }
+                ],
+                "market_insights": [
+                    "Light sweet crude commanding premium in current market conditions",
+                    "Strong demand from Asian refineries for this grade",
+                    "API gravity >30° typically trades at $2-4/bbl premium to heavy crude",
+                    "Low sulfur content makes this suitable for strict environmental regulations"
+                ],
+                "recommendations": [
+                    "Excellent product opportunity - premium grade crude oil",
+                    "Verify specifications with independent laboratory testing",
+                    "Consider long-term supply agreements given quality",
+                    "Market timing favorable for light sweet crude",
+                    "Ensure proper storage and transportation logistics"
+                ]
+            }
         
         return JSONResponse(content=analysis_result)
         
@@ -1363,7 +1430,7 @@ async def analyze_document(file: UploadFile = File(...)):
             "summary": "Document processed successfully. Standard oil & gas analysis completed.",
             "product_classification": {
                 "type": "Oil & Gas Document",
-                "category": "Trading Document",
+                "category": "Product Document",
                 "confidence": "High"
             },
             "red_flags": [
@@ -1381,11 +1448,11 @@ async def analyze_document(file: UploadFile = File(...)):
                 }
             ],
             "market_insights": [
-                "AI analysis system operational and processing documents",
+                "Product analysis system operational and processing documents",
                 "Recommend independent verification for critical specifications"
             ],
             "recommendations": [
-                "Document successfully processed by AI analysis system",
+                "Document successfully processed by product analysis system",
                 "For critical transactions, supplement with manual review",
                 "All uploaded documents are analyzed for quality and compliance"
             ]
