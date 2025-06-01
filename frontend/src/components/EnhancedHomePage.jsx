@@ -1,288 +1,254 @@
 import React, { useState, useEffect } from 'react';
-import { LeadCaptureForm } from './Analytics';
 
-export const EnhancedHomePage = ({ user, navigateToPage }) => {
+const EnhancedHomePage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  
-  const heroImages = [
-    'https://images.pexels.com/photos/3192669/pexels-photo-3192669.jpeg',
-    'https://images.unsplash.com/photo-1521111756787-d2f69136cedf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwzfHxwZXRyb2xldW0lMjBpbmR1c3RyeXxlbnwwfHx8fDE3NDg3NjAzNjN8MA&ixlib=rb-4.1.0&q=85',
-    'https://images.pexels.com/photos/19091613/pexels-photo-19091613.jpeg'
+  const [stats, setStats] = useState({});
+
+  const heroSlides = [
+    {
+      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      title: "Global Oil & Gas Trading Platform",
+      subtitle: "Connect with verified traders worldwide. Real-time market data and secure trading connections.",
+      cta: "Start Trading Now"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1518709268805-4e9042af2a73?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      title: "Premium Market Intelligence",
+      subtitle: "Access exclusive market reports, price forecasts, and trading opportunities from industry experts.",
+      cta: "Explore Premium"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
+      title: "Secure Trading Network",
+      subtitle: "All traders verified. All transactions secure. Trade with confidence on the world's most trusted platform.",
+      cta: "Join Network"
+    }
   ];
 
-  const heroTitles = [
-    'Global Oil & Gas Trading Platform',
-    'Connect with Verified Energy Traders',
-    'AI-Powered Technical Analysis'
-  ];
-
-  const heroSubtitles = [
-    'Premier platform connecting buyers and sellers worldwide with real-time market data and secure trading connections.',
-    'Join thousands of verified oil and gas professionals in the world\'s most trusted trading network.',
-    'Upload product specs and get instant AI analysis with red flag detection and technical recommendations.'
+  const features = [
+    {
+      icon: "🛢️",
+      title: "Oil Trading",
+      description: "Access global crude oil markets with real-time pricing and verified sellers",
+      background: "bg-gradient-to-br from-orange-500 to-red-600"
+    },
+    {
+      icon: "⛽",
+      title: "Gas Trading", 
+      description: "Trade natural gas, LNG, and refined products with trusted partners worldwide",
+      background: "bg-gradient-to-br from-blue-500 to-indigo-600"
+    },
+    {
+      icon: "🚢",
+      title: "Logistics Support",
+      description: "Complete shipping and logistics solutions for global energy commodity trading",
+      background: "bg-gradient-to-br from-green-500 to-teal-600"
+    },
+    {
+      icon: "📊",
+      title: "Market Intelligence",
+      description: "Advanced analytics and market insights to make informed trading decisions",
+      background: "bg-gradient-to-br from-purple-500 to-pink-600"
+    },
+    {
+      icon: "🔒",
+      title: "Secure Platform",
+      description: "Bank-level security with verified traders and encrypted communications",
+      background: "bg-gradient-to-br from-gray-700 to-gray-900"
+    },
+    {
+      icon: "🌍",
+      title: "Global Network",
+      description: "Connect with traders from 50+ countries across all major energy markets",
+      background: "bg-gradient-to-br from-yellow-500 to-orange-600"
+    }
   ];
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
-    return () => clearInterval(timer);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/stats`);
+        const data = await response.json();
+        setStats(data);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+    fetchStats();
   }, []);
 
   return (
-    <div className="bg-white">
-      {/* Enhanced Hero Section with Slideshow */}
+    <div className="min-h-screen">
+      {/* Cinematic Hero Slideshow */}
       <div className="relative h-screen overflow-hidden">
-        {heroImages.map((image, index) => (
+        {heroSlides.map((slide, index) => (
           <div
             key={index}
             className={`absolute inset-0 transition-opacity duration-1000 ${
               index === currentSlide ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            <div
+            <div 
               className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${image})` }}
+              style={{ backgroundImage: `url(${slide.image})` }}
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
-          </div>
-        ))}
-        
-        <div className="relative z-10 flex items-center justify-center h-full">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-              {heroTitles[currentSlide]}
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-4xl mx-auto leading-relaxed">
-              {heroSubtitles[currentSlide]}
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <button
-                onClick={() => navigateToPage('register')}
-                className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg"
-              >
-                Start Trading Now
-              </button>
-              <button
-                onClick={() => navigateToPage('browse')}
-                className="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-gray-900 transform hover:scale-105 transition-all duration-200"
-              >
-                Browse Traders
-              </button>
-              <button
-                onClick={() => navigateToPage('ai-analysis')}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:from-purple-700 hover:to-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg"
-              >
-                Try AI Analysis
-              </button>
-            </div>
-
-            {/* Slide Indicators */}
-            <div className="flex justify-center space-x-2">
-              {heroImages.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                    index === currentSlide ? 'bg-white scale-125' : 'bg-white/50'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* AI Analysis Feature Highlight */}
-      <div className="py-20 bg-gradient-to-r from-purple-50 to-blue-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              🤖 AI-Powered Technical Analysis
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Upload product specifications and get instant expert-level analysis with red flag detection and technical recommendations.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <div className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-purple-500">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">📄 Document Analysis</h3>
-                <p className="text-gray-600">
-                  Upload PDFs or images of product specs, lab reports, or certificates. Our AI analyzes content instantly.
+            <div className="absolute inset-0 bg-black bg-opacity-50" />
+            <div className="relative z-10 flex items-center justify-center h-full text-white text-center px-4">
+              <div className="max-w-4xl mx-auto">
+                <h1 className="text-6xl md:text-7xl font-bold mb-6 animate-fade-in-up">
+                  {slide.title}
+                </h1>
+                <p className="text-xl md:text-2xl mb-8 text-gray-200 animate-fade-in-up delay-300">
+                  {slide.subtitle}
                 </p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-blue-500">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">🔍 Red Flag Detection</h3>
-                <p className="text-gray-600">
-                  Automatic identification of quality issues, safety concerns, and compliance problems.
-                </p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">⚗️ Product Classification</h3>
-                <p className="text-gray-600">
-                  Identify heavy/light crude, API gravity, sulfur content, and other technical specifications.
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white p-8 rounded-2xl shadow-xl">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-                Try AI Analysis Now
-              </h3>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-500 transition-colors cursor-pointer">
-                <div className="text-6xl mb-4">📁</div>
-                <p className="text-lg text-gray-600 mb-4">
-                  Drop your product specs here or click to upload
-                </p>
-                <button 
-                  onClick={() => navigateToPage('ai-analysis')}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-200"
-                >
-                  Upload Document
+                <button className="bg-orange-500 hover:bg-orange-400 text-white px-8 py-4 rounded-lg text-lg font-semibold transform hover:scale-105 transition-all duration-300 animate-fade-in-up delay-600">
+                  {slide.cta}
                 </button>
               </div>
             </div>
           </div>
+        ))}
+        
+        {/* Slide Indicators */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+          {heroSlides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                index === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'
+              }`}
+            />
+          ))}
         </div>
       </div>
 
-      {/* Enhanced Statistics Section */}
-      <div className="py-16 bg-gray-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-blue-400">10,000+</div>
-              <div className="text-gray-300">Verified Traders</div>
+      {/* Animated Stats Section */}
+      <section className="py-20 bg-gradient-to-r from-blue-900 to-blue-800 text-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
+            <div className="transform hover:scale-105 transition-transform duration-300">
+              <div className="text-4xl md:text-5xl font-bold mb-2 text-orange-400">
+                {stats.oil_gas_traders || '2,543'}+
+              </div>
+              <div className="text-blue-200">Verified Traders</div>
             </div>
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-green-400">$2.5B</div>
-              <div className="text-gray-300">Trading Volume</div>
+            <div className="transform hover:scale-105 transition-transform duration-300">
+              <div className="text-4xl md:text-5xl font-bold mb-2 text-green-400">
+                {stats.active_oil_listings || '1,876'}+
+              </div>
+              <div className="text-blue-200">Active Listings</div>
             </div>
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-purple-400">50+</div>
-              <div className="text-gray-300">Countries</div>
+            <div className="transform hover:scale-105 transition-transform duration-300">
+              <div className="text-4xl md:text-5xl font-bold mb-2 text-purple-400">
+                {stats.successful_connections || '4,231'}+
+              </div>
+              <div className="text-blue-200">Successful Deals</div>
             </div>
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-yellow-400">24/7</div>
-              <div className="text-gray-300">Market Access</div>
+            <div className="transform hover:scale-105 transition-transform duration-300">
+              <div className="text-4xl md:text-5xl font-bold mb-2 text-yellow-400">
+                {stats.premium_finders || '567'}+
+              </div>
+              <div className="text-blue-200">Premium Members</div>
+            </div>
+            <div className="transform hover:scale-105 transition-transform duration-300">
+              <div className="text-4xl md:text-5xl font-bold mb-2 text-red-400">
+                50+
+              </div>
+              <div className="text-blue-200">Countries</div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Enhanced Features Grid */}
-      <div className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Feature Cards with Hover Effects */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Why Choose Oil & Gas Finder?
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Complete Trading Solution
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              The most advanced and trusted platform for oil and gas trading professionals worldwide.
+              Everything you need to succeed in global oil & gas trading, from market intelligence to secure transactions.
             </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <FeatureCard
-              icon="🔐"
-              title="Verified Traders"
-              description="All traders undergo thorough verification for secure and reliable transactions."
-              image="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop"
-            />
-            <FeatureCard
-              icon="📊"
-              title="Real-time Market Data"
-              description="Access live pricing, market trends, and trading insights from global energy markets."
-              image="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=300&fit=crop"
-            />
-            <FeatureCard
-              icon="🤖"
-              title="AI Technical Analysis"
-              description="Upload documents and get instant AI-powered analysis with red flag detection."
-              image="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=300&fit=crop"
-            />
-            <FeatureCard
-              icon="🌍"
-              title="Global Network"
-              description="Connect with traders from over 50 countries across all major energy markets."
-              image="https://images.pexels.com/photos/379964/pexels-photo-379964.jpeg?w=400&h=300&fit=crop"
-            />
-            <FeatureCard
-              icon="💰"
-              title="Premium Features"
-              description="Advanced tools and priority listings for serious trading professionals."
-              image="https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=400&h=300&fit=crop"
-            />
-            <FeatureCard
-              icon="📰"
-              title="Industry News"
-              description="Stay updated with real-time oil and gas industry news and market analysis."
-              image="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&h=300&fit=crop"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Enhanced CTA Section */}
-      <div className="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">
-            Ready to Transform Your Trading?
-          </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
-            Join the world's most advanced oil and gas trading platform with AI-powered analysis and global reach.
-          </p>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8">
-              <h3 className="text-2xl font-bold text-white mb-4">Start Trading</h3>
-              <p className="text-blue-100 mb-6">
-                Create your free account and access thousands of verified traders worldwide.
-              </p>
-              <button
-                onClick={() => navigateToPage('register')}
-                className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all duration-200 w-full"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className={`${feature.background} rounded-2xl p-8 text-white transform hover:scale-105 hover:rotate-1 transition-all duration-300 cursor-pointer group`}
               >
-                Create Free Account
-              </button>
+                <div className="text-6xl mb-4 group-hover:animate-bounce">
+                  {feature.icon}
+                </div>
+                <h3 className="text-2xl font-bold mb-4">{feature.title}</h3>
+                <p className="text-lg opacity-90">{feature.description}</p>
+                <div className="mt-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <button className="bg-white bg-opacity-20 hover:bg-opacity-30 px-6 py-2 rounded-lg font-semibold transition-all duration-300">
+                    Learn More →
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Market Indicators Banner */}
+      <section className="py-4 bg-gray-900 text-white">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-wrap justify-center items-center space-x-8 text-sm">
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-400">WTI Crude:</span>
+              <span className="text-green-400 font-bold">$75.25</span>
+              <span className="text-green-400">▲ 1.2%</span>
             </div>
-            
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8">
-              <h3 className="text-2xl font-bold text-white mb-4">AI Analysis</h3>
-              <p className="text-blue-100 mb-6">
-                Upload your first document and experience our advanced AI technical analysis.
-              </p>
-              <button
-                onClick={() => navigateToPage('ai-analysis')}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:from-purple-600 hover:to-pink-600 transform hover:scale-105 transition-all duration-200 w-full"
-              >
-                Try AI Analysis
-              </button>
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-400">Brent:</span>
+              <span className="text-green-400 font-bold">$79.50</span>
+              <span className="text-green-400">▲ 0.8%</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-400">Natural Gas:</span>
+              <span className="text-red-400 font-bold">$2.85</span>
+              <span className="text-red-400">▼ 0.5%</span>
+            </div>
+            <div className="text-gray-400 text-xs">
+              Live • Updated 5 mins ago
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-orange-500 to-red-600 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            Ready to Start Trading?
+          </h2>
+          <p className="text-xl mb-8 max-w-2xl mx-auto">
+            Join thousands of energy professionals already trading on our secure platform.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button className="bg-white text-orange-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all duration-300">
+              Create Free Account
+            </button>
+            <button className="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-orange-600 transform hover:scale-105 transition-all duration-300">
+              Explore Premium
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
-
-const FeatureCard = ({ icon, title, description, image }) => (
-  <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
-    <div className="h-48 bg-cover bg-center" style={{ backgroundImage: `url(${image})` }}>
-      <div className="h-full bg-black bg-opacity-40 flex items-center justify-center">
-        <div className="text-6xl">{icon}</div>
-      </div>
-    </div>
-    <div className="p-6">
-      <h3 className="text-xl font-semibold text-gray-900 mb-3">{title}</h3>
-      <p className="text-gray-600">{description}</p>
-    </div>
-  </div>
-);
 
 export default EnhancedHomePage;
