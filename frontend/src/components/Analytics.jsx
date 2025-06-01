@@ -403,4 +403,4 @@ export const LeadCaptureForm = ({
   );
 };
 
-export default { AnalyticsManager, analytics, useAnalytics, withAnalytics, ConversionTracker, LeadCaptureForm };
+export { AnalyticsManager, analytics, useAnalytics, withAnalytics, ConversionTracker, LeadCaptureForm };
