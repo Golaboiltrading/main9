@@ -1,0 +1,687 @@
+import React, { useState, useEffect } from 'react';
+import './App.css';
+import { LeadCaptureForm } from './components/Analytics';
+import PayPalButton from './PayPalButton';
+
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
+function App() {
+  const [currentPage, setCurrentPage] = useState('home');
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState({});
+  const [marketData, setMarketData] = useState({});
+  const [listings, setListings] = useState([]);
+  const [userAnalytics, setUserAnalytics] = useState({});
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedTier, setSelectedTier] = useState('');
+
+  // URL routing
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path === '/browse') setCurrentPage('browse');
+    else if (path === '/premium') setCurrentPage('premium');
+    else if (path === '/register') setCurrentPage('register');
+    else if (path === '/login') setCurrentPage('login');
+    else setCurrentPage('home');
+  }, []);
+
+  // Update page and URL
+  const navigateToPage = (page) => {
+    setCurrentPage(page);
+    window.history.pushState({}, '', `/${page === 'home' ? '' : page}`);
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchUserProfile();
+    }
+    fetchStats();
+    fetchMarketData();
+    fetchListings();
+  }, [token]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/stats`);
+      const data = await response.json();
+      setStats(data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
+  const fetchMarketData = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/market-data`);
+      const data = await response.json();
+      setMarketData(data);
+    } catch (error) {
+      console.error('Error fetching market data:', error);
+    }
+  };
+
+  const fetchListings = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/listings`);
+      const data = await response.json();
+      setListings(data.listings || []);
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+    }
+  };
+
+  const handleLogin = async (email, password) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setToken(data.access_token);
+        setUser(data.user);
+        localStorage.setItem('token', data.access_token);
+        setCurrentPage('dashboard');
+      } else {
+        alert('Login failed. Please check your credentials.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('Login failed. Please try again.');
+    }
+    setLoading(false);
+  };
+
+  const handleRegister = async (userData) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setToken(data.access_token);
+        setUser(data.user);
+        localStorage.setItem('token', data.access_token);
+        setCurrentPage('dashboard');
+      } else {
+        const errorData = await response.json();
+        alert(errorData.detail || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert('Registration failed. Please try again.');
+    }
+    setLoading(false);
+  };
+
+  const handleLogout = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('token');
+    setCurrentPage('home');
+  };
+
+  // Components
+  const Header = () => (
+    <header className="bg-blue-900 text-white shadow-lg">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <h1 className="text-2xl font-bold cursor-pointer" onClick={() => setCurrentPage('home')}>
+              🛢️ Oil & Gas Finder
+            </h1>
+            <nav className="hidden md:flex space-x-6">
+              <button 
+                onClick={() => navigateToPage('home')}
+                className={`hover:text-blue-200 ${currentPage === 'home' ? 'text-blue-200' : ''}`}
+              >
+                Home
+              </button>
+              <button 
+                onClick={() => navigateToPage('browse')}
+                className={`hover:text-blue-200 ${currentPage === 'browse' ? 'text-blue-200' : ''}`}
+              >
+                Browse Traders
+              </button>
+              <button 
+                onClick={() => navigateToPage('premium')}
+                className={`hover:text-blue-200 ${currentPage === 'premium' ? 'text-blue-200' : ''}`}
+              >
+                Premium
+              </button>
+            </nav>
+          </div>
+          <div className="flex items-center space-x-4">
+            {user ? (
+              <>
+                <span className="text-sm">Welcome, {user.first_name}</span>
+                <button 
+                  onClick={() => setCurrentPage('dashboard')}
+                  className="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded-lg"
+                >
+                  Dashboard
+                </button>
+                <button 
+                  onClick={handleLogout}
+                  className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  onClick={() => setCurrentPage('login')}
+                  className="hover:text-blue-200"
+                >
+                  Login
+                </button>
+                <button 
+                  onClick={() => setCurrentPage('register')}
+                  className="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded-lg"
+                >
+                  Register
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+
+  const HomePage = () => (
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-20">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-5xl font-bold mb-6">
+            Global Oil & Gas Trading Platform
+          </h1>
+          <p className="text-xl mb-8 max-w-3xl mx-auto">
+            Connect with verified oil and gas traders worldwide. Find crude oil, natural gas, LNG, and refined products from trusted trading partners.
+          </p>
+          <div className="flex justify-center space-x-4">
+            <button 
+              onClick={() => setCurrentPage('register')}
+              className="bg-orange-500 hover:bg-orange-400 text-white px-8 py-3 rounded-lg text-lg font-semibold"
+            >
+              Start Trading
+            </button>
+            <button 
+              onClick={() => setCurrentPage('browse')}
+              className="bg-transparent border-2 border-white hover:bg-white hover:text-blue-900 px-8 py-3 rounded-lg text-lg font-semibold"
+            >
+              Browse Traders
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
+            <div className="bg-blue-50 p-6 rounded-lg">
+              <div className="text-3xl font-bold text-blue-900">{stats.oil_gas_traders || 2543}</div>
+              <div className="text-gray-600 mt-2">Oil & Gas Traders</div>
+            </div>
+            <div className="bg-green-50 p-6 rounded-lg">
+              <div className="text-3xl font-bold text-green-900">{stats.active_oil_listings || 1876}</div>
+              <div className="text-gray-600 mt-2">Active Oil Listings</div>
+            </div>
+            <div className="bg-purple-50 p-6 rounded-lg">
+              <div className="text-3xl font-bold text-purple-900">{stats.successful_connections || 4231}</div>
+              <div className="text-gray-600 mt-2">Successful Connections</div>
+            </div>
+            <div className="bg-orange-50 p-6 rounded-lg">
+              <div className="text-3xl font-bold text-orange-900">{stats.premium_finders || 567}</div>
+              <div className="text-gray-600 mt-2">Premium Members</div>
+            </div>
+            <div className="bg-red-50 p-6 rounded-lg">
+              <div className="text-3xl font-bold text-red-900">{stats.featured_opportunities || 234}</div>
+              <div className="text-gray-600 mt-2">Featured Opportunities</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Recent Listings */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">Recent Trading Opportunities</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {listings.slice(0, 6).map((listing, index) => (
+              <div key={index} className="bg-white p-6 rounded-lg shadow-lg">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-lg font-bold">{listing.title}</h3>
+                  {listing.is_featured && (
+                    <span className="bg-orange-500 text-white px-2 py-1 rounded text-sm">Featured</span>
+                  )}
+                </div>
+                <p className="text-gray-600 mb-2">{listing.product_type?.replace('_', ' ').toUpperCase()}</p>
+                <p className="text-gray-600 mb-2">Quantity: {listing.quantity} {listing.unit}</p>
+                <p className="text-gray-600 mb-2">Location: {listing.location}</p>
+                <p className="text-gray-600 mb-4">Price: {listing.price_range}</p>
+                <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg w-full">
+                  View Details
+                </button>
+              </div>
+            ))}
+          </div>
+          {listings.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-gray-600 mb-4">No listings available yet. Be the first to post!</p>
+              <button
+                onClick={() => setCurrentPage('register')}
+                className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg"
+              >
+                Create Account
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+
+  const LoginPage = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      handleLogin(email, password);
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-center mb-8">Login to Oil & Gas Finder</h2>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg font-semibold disabled:opacity-50"
+            >
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
+          <p className="text-center mt-4 text-gray-600">
+            Don't have an account?{' '}
+            <button 
+              onClick={() => setCurrentPage('register')}
+              className="text-blue-600 hover:text-blue-500 font-semibold"
+            >
+              Register here
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  const RegisterPage = () => {
+    const [formData, setFormData] = useState({
+      email: '',
+      password: '',
+      first_name: '',
+      last_name: '',
+      company_name: '',
+      phone: '',
+      country: '',
+      trading_role: 'both'
+    });
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      handleRegister(formData);
+    };
+
+    const handleChange = (e) => {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-center mb-8">Join Oil & Gas Finder</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                <input
+                  type="text"
+                  name="first_name"
+                  value={formData.first_name}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                <input
+                  type="text"
+                  name="last_name"
+                  value={formData.last_name}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+              <input
+                type="text"
+                name="company_name"
+                value={formData.company_name}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+              <input
+                type="text"
+                name="country"
+                value={formData.country}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg font-semibold disabled:opacity-50"
+            >
+              {loading ? 'Creating Account...' : 'Create Account'}
+            </button>
+          </form>
+          <p className="text-center mt-4 text-gray-600">
+            Already have an account?{' '}
+            <button 
+              onClick={() => setCurrentPage('login')}
+              className="text-blue-600 hover:text-blue-500 font-semibold"
+            >
+              Login here
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  const PremiumPage = () => {
+    const subscriptionPlans = [
+      {
+        id: 'premium_basic',
+        name: 'Premium Basic',
+        price: 10,
+        features: [
+          'Enhanced listing visibility',
+          'Basic analytics dashboard',
+          'Priority customer support',
+          'Up to 20 listings per month'
+        ]
+      },
+      {
+        id: 'premium_advanced',
+        name: 'Premium Advanced',
+        price: 25,
+        popular: true,
+        features: [
+          'Everything in Premium Basic',
+          'Advanced analytics & reporting',
+          'Unlimited featured listings',
+          'Market intelligence reports',
+          'Connection recommendations'
+        ]
+      },
+      {
+        id: 'enterprise',
+        name: 'Enterprise',
+        price: 45,
+        features: [
+          'Everything in Premium Advanced',
+          'API access for integration',
+          'Custom branding options',
+          'Dedicated account manager',
+          'White-label solutions'
+        ]
+      }
+    ];
+
+    const handleSubscriptionSelect = (planId) => {
+      setSelectedTier(planId);
+      setShowPaymentModal(true);
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold mb-4">Choose Your Premium Plan</h1>
+            <p className="text-xl text-gray-600">Unlock advanced features and grow your oil & gas trading business</p>
+          </div>
+
+          {/* Demo Request Form */}
+          <div className="max-w-md mx-auto mb-12">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">Want to See Premium Features?</h3>
+              <p className="text-blue-600 mb-4">Schedule a personalized demo and see how premium features can grow your business.</p>
+              <LeadCaptureForm 
+                formType="demo_request"
+                title=""
+                description=""
+                buttonText="Request Demo"
+                fields={['email', 'name', 'company']}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {subscriptionPlans.map((plan) => (
+              <div key={plan.id} className={`relative bg-white rounded-lg shadow-lg p-8 ${plan.popular ? 'ring-2 ring-blue-500' : ''}`}>
+                {plan.popular && (
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-semibold">Most Popular</span>
+                  </div>
+                )}
+                
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                  <div className="text-4xl font-bold text-blue-600 mb-2">${plan.price}</div>
+                  <div className="text-gray-600">per month</div>
+                </div>
+
+                <ul className="space-y-4 mb-8">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-start">
+                      <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={() => handleSubscriptionSelect(plan.id)}
+                  className={`w-full py-3 px-6 rounded-lg font-semibold ${
+                    plan.popular 
+                      ? 'bg-blue-600 hover:bg-blue-500 text-white' 
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                  }`}
+                >
+                  {user?.role === 'basic' ? 'Upgrade Now' : 'Switch Plan'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const BrowsePage = () => (
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="container mx-auto px-4">
+        <h1 className="text-4xl font-bold text-center mb-12">Browse Oil & Gas Traders</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {listings.map((listing, index) => (
+            <div key={index} className="bg-white p-6 rounded-lg shadow-lg">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-lg font-bold">{listing.title}</h3>
+                {listing.is_featured && (
+                  <span className="bg-orange-500 text-white px-2 py-1 rounded text-sm">Featured</span>
+                )}
+              </div>
+              <p className="text-gray-600 mb-2">{listing.product_type?.replace('_', ' ').toUpperCase()}</p>
+              <p className="text-gray-600 mb-2">Quantity: {listing.quantity} {listing.unit}</p>
+              <p className="text-gray-600 mb-2">Location: {listing.location}</p>
+              <p className="text-gray-600 mb-4">Price: {listing.price_range}</p>
+              <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg w-full">
+                Connect with Trader
+              </button>
+            </div>
+          ))}
+        </div>
+        
+        {listings.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-600 mb-4">No listings found.</p>
+            <button
+              onClick={() => setCurrentPage('register')}
+              className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg"
+            >
+              Create Account to Post
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case 'login':
+        return <LoginPage />;
+      case 'register':
+        return <RegisterPage />;
+      case 'premium':
+        return <PremiumPage />;
+      case 'browse':
+        return <BrowsePage />;
+      default:
+        return <HomePage />;
+    }
+  };
+
+  return (
+    <div className="App">
+      <Header />
+      {renderCurrentPage()}
+      
+      {/* Newsletter Signup Section */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h3 className="text-2xl font-bold text-white mb-4">
+              Get Weekly Market Insights
+            </h3>
+            <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
+              Join 10,000+ energy professionals receiving exclusive market analysis, trading opportunities, and industry insights.
+            </p>
+            <LeadCaptureForm 
+              formType="newsletter"
+              title=""
+              description=""
+              buttonText="Subscribe to Market Insights"
+              fields={['email']}
+            />
+          </div>
+        </div>
+      </div>
+      
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-8">
+        <div className="container mx-auto px-4 text-center">
+          <p>&copy; 2024 Oil & Gas Finder. All rights reserved.</p>
+          <p className="text-gray-400 mt-2">Global oil & gas trading platform</p>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+export default App;
