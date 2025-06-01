@@ -647,8 +647,16 @@ function App() {
         return <PremiumPage />;
       case 'browse':
         return <BrowsePage />;
+      case 'ai-analysis':
+        return <AIAnalysisPage />;
+      case 'terms':
+        return <TermsOfService />;
+      case 'privacy':
+        return <PrivacyPolicy />;
+      case 'disclaimer':
+        return <Disclaimer />;
       default:
-        return <HomePage />;
+        return <EnhancedHomePage />;
     }
   };
 
