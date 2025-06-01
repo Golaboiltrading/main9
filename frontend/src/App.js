@@ -1508,6 +1508,27 @@ function App() {
         )}
       </div>
       
+      {/* Newsletter Signup Section */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h3 className="text-2xl font-bold text-white mb-4">
+              Get Weekly Market Insights
+            </h3>
+            <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
+              Join 10,000+ energy professionals receiving exclusive market analysis, trading opportunities, and industry insights.
+            </p>
+            <LeadCaptureForm 
+              formType="newsletter"
+              title=""
+              description=""
+              buttonText="Subscribe to Market Insights"
+              fields={['email']}
+            />
+          </div>
+        </div>
+      </div>
+      
       {/* Footer Disclaimer (persistent) */}
       <FooterDisclaimer />
       
