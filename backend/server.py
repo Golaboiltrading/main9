@@ -66,9 +66,12 @@ if seo_router:
 if analytics_router:
     app.include_router(analytics_router, tags=["Analytics"])
 
-# Include Content router if available  
-if content_router:
-    app.include_router(content_router, tags=["Content"])
+# Import our AI routes
+try:
+    from ai_routes import router as ai_router
+except ImportError as e:
+    print(f"Warning: Could not import AI routes: {e}")
+    ai_router = None
 
 # Include AI Analysis router if available
 try:
