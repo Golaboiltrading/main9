@@ -348,4 +348,4 @@ export const BlogPost = ({ slug }) => {
   );
 };
 
-export default BlogSystem;
+export { BlogSystem, BlogPost };
