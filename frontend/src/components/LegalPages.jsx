@@ -420,4 +420,4 @@ export const Disclaimer = () => {
   );
 };
 
-export default { TermsOfService, PrivacyPolicy, Disclaimer };
+export { TermsOfService, PrivacyPolicy, Disclaimer };
