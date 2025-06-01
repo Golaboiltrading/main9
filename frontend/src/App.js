@@ -1,5 +1,123 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+
+// LeadCaptureForm Component for Newsletter and Lead Generation
+const LeadCaptureForm = ({ 
+  formType = 'newsletter', 
+  onSubmit, 
+  title = "Stay Updated", 
+  description = "Get the latest market insights",
+  buttonText = "Subscribe",
+  fields = ['email']
+}) => {
+  const [formData, setFormData] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // Submit to backend
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/leads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          formType,
+          source: window.location.pathname,
+          timestamp: Date.now()
+        })
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+        
+        if (onSubmit) {
+          onSubmit(formData);
+        }
+      }
+    } catch (error) {
+      console.error('Lead capture error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  if (submitted) {
+    return (
+      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+        <div className="text-green-600 text-2xl mb-2">✓</div>
+        <h3 className="text-lg font-semibold text-green-800 mb-2">Thank you!</h3>
+        <p className="text-green-700">We'll be in touch with valuable insights.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-md">
+      {title && <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>}
+      {description && <p className="text-gray-600 mb-6">{description}</p>}
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {fields.includes('email') && (
+          <input
+            type="email"
+            placeholder="Enter your email address"
+            required
+            onChange={(e) => handleInputChange('email', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        )}
+        
+        {fields.includes('name') && (
+          <input
+            type="text"
+            placeholder="Enter your full name"
+            required
+            onChange={(e) => handleInputChange('name', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        )}
+        
+        {fields.includes('company') && (
+          <input
+            type="text"
+            placeholder="Company name"
+            onChange={(e) => handleInputChange('company', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        )}
+        
+        {fields.includes('phone') && (
+          <input
+            type="tel"
+            placeholder="Phone number"
+            onChange={(e) => handleInputChange('phone', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        )}
+        
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+        >
+          {loading ? 'Submitting...' : buttonText}
+        </button>
+      </form>
+      
+      <p className="text-xs text-gray-500 mt-4 text-center">
+        No spam, unsubscribe anytime. Your data is protected.
+      </p>
+    </div>
+  );
+};
 import { DisclaimerBanner, FooterDisclaimer, HeaderWarning } from './components/DisclaimerBanner';
 import { TermsOfService, PrivacyPolicy, Disclaimer } from './components/LegalPages';
 import { BlogSystem, BlogPost } from './components/BlogSystem';
