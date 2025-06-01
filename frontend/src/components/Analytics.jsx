@@ -121,20 +121,28 @@ export class AnalyticsManager {
     this.events.push(event);
     this.sendToBackend('event', event);
 
-    // Google Analytics
+    // Google Analytics (only if available)
     if (window.gtag) {
-      window.gtag('event', eventName, {
-        event_category: parameters.category || 'engagement',
-        event_label: parameters.label,
-        value: parameters.value,
-        custom_parameter_1: parameters.userType,
-        custom_parameter_2: parameters.subscriptionTier
-      });
+      try {
+        window.gtag('event', eventName, {
+          event_category: parameters.category || 'engagement',
+          event_label: parameters.label,
+          value: parameters.value,
+          custom_parameter_1: parameters.userType,
+          custom_parameter_2: parameters.subscriptionTier
+        });
+      } catch (error) {
+        console.log('Google Analytics tracking error:', error.message);
+      }
     }
 
-    // Hotjar
+    // Hotjar (only if available)
     if (window.hj) {
-      window.hj('event', eventName);
+      try {
+        window.hj('event', eventName);
+      } catch (error) {
+        console.log('Hotjar tracking error:', error.message);
+      }
     }
   }
 
