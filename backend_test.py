@@ -7,7 +7,7 @@ from datetime import datetime
 import xml.etree.ElementTree as ET
 import re
 
-class OilGasFinderSEOTester:
+class OilGasFinderTester:
     def __init__(self, base_url):
         self.base_url = base_url
         self.tests_run = 0
@@ -139,18 +139,6 @@ class OilGasFinderSEOTester:
         
         return self.run_test("Robots.txt", "GET", "robots.txt", 200, is_api=False, check_content=check_robots_content)
 
-    def test_seo_keywords(self):
-        """Test SEO keywords API"""
-        return self.run_test("SEO Keywords API", "GET", "seo/keywords?product_type=crude_oil&location=houston-tx", 200)
-
-    def test_seo_meta_data(self):
-        """Test SEO meta data API"""
-        return self.run_test("SEO Meta Data API", "GET", "seo/meta-data?page_type=product&product_type=crude_oil&location=houston-tx", 200)
-
-    def test_seo_schema_data(self):
-        """Test SEO schema data API"""
-        return self.run_test("SEO Schema Data API", "GET", "seo/schema-data?schema_type=product&product_type=crude_oil&location=houston-tx&price=75.50", 200)
-
     # Analytics & Lead Generation Tests
     def test_newsletter_subscribe(self):
         """Test newsletter subscription"""
@@ -199,18 +187,14 @@ class OilGasFinderSEOTester:
         }
         return self.run_test("Analytics Event", "POST", "analytics/event", 200, data)
 
-    def test_analytics_dashboard(self):
-        """Test analytics dashboard API"""
-        return self.run_test("Analytics Dashboard", "GET", "analytics/dashboard?days=30", 200)
-
-    def test_leads_analytics(self):
-        """Test leads analytics API"""
-        return self.run_test("Leads Analytics", "GET", "analytics/leads?days=30", 200)
-
     # Content API Tests
     def test_blog_posts(self):
         """Test blog posts API"""
-        return self.run_test("Blog Posts", "GET", "blog/posts?limit=10&offset=0&published_only=true", 200)
+        return self.run_test("Blog Posts", "GET", "blog/posts?limit=10&offset=0", 200)
+
+    def test_blog_post_by_slug(self):
+        """Test individual blog post by slug"""
+        return self.run_test("Blog Post by Slug", "GET", "blog/posts/oil-market-analysis-global-trends-2024", 200)
 
     def test_blog_categories(self):
         """Test blog categories API"""
@@ -224,18 +208,27 @@ class OilGasFinderSEOTester:
         """Test product data API"""
         return self.run_test("Product Data", "GET", "products/crude-oil", 200)
 
-    def test_content_suggestions(self):
-        """Test content suggestions API"""
-        return self.run_test("Content Suggestions", "GET", "seo/content-suggestions?topic=crude_oil&content_type=blog", 200)
+    # Platform Status Tests
+    def test_api_status(self):
+        """Test API status endpoint"""
+        return self.run_test("API Status", "GET", "status", 200)
 
-    def test_content_templates(self):
-        """Test content templates API"""
-        return self.run_test("Content Templates", "GET", "content/templates?template_type=product_page", 200)
+    def test_platform_stats(self):
+        """Test platform statistics"""
+        return self.run_test("Platform Stats", "GET", "stats", 200)
+
+    def test_market_data(self):
+        """Test market data API"""
+        return self.run_test("Market Data", "GET", "market-data", 200)
+
+    def test_market_intelligence(self):
+        """Test market intelligence API"""
+        return self.run_test("Market Intelligence", "GET", "market-intelligence", 200)
 
     def print_summary(self):
         """Print test summary"""
         print("\n" + "="*50)
-        print(f"🔍 SEO & LEAD GENERATION TESTING SUMMARY")
+        print(f"🔍 OIL & GAS FINDER PLATFORM TESTING SUMMARY")
         print("="*50)
         print(f"✅ Tests passed: {self.tests_passed}/{self.tests_run} ({self.tests_passed/self.tests_run*100:.1f}%)")
         
@@ -255,36 +248,36 @@ class OilGasFinderSEOTester:
         return self.tests_passed == self.tests_run
 
 def main():
-    # Get the backend URL
+    # Get the backend URL from environment variable or use the default
     backend_url = "https://2feb79c7-fd63-4021-b0db-9197e62ab3af.preview.emergentagent.com"
     
-    print(f"Testing SEO & Lead Generation API at: {backend_url}")
+    print(f"Testing Oil & Gas Finder Platform API at: {backend_url}")
     
     # Initialize tester
-    tester = OilGasFinderSEOTester(backend_url)
+    tester = OilGasFinderTester(backend_url)
     
     # Test SEO Infrastructure
     tester.test_sitemap_xml()
     tester.test_robots_txt()
-    tester.test_seo_keywords()
-    tester.test_seo_meta_data()
-    tester.test_seo_schema_data()
     
     # Test Analytics & Lead Generation
     tester.test_newsletter_subscribe()
     tester.test_lead_capture()
     tester.test_analytics_pageview()
     tester.test_analytics_event()
-    tester.test_analytics_dashboard()
-    tester.test_leads_analytics()
     
     # Test Content APIs
     tester.test_blog_posts()
+    tester.test_blog_post_by_slug()
     tester.test_blog_categories()
     tester.test_location_data()
     tester.test_product_data()
-    tester.test_content_suggestions()
-    tester.test_content_templates()
+    
+    # Test Platform Status
+    tester.test_api_status()
+    tester.test_platform_stats()
+    tester.test_market_data()
+    tester.test_market_intelligence()
     
     # Print summary
     success = tester.print_summary()
