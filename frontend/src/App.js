@@ -936,6 +936,21 @@ function App() {
             <p className="text-xl text-gray-600">Unlock advanced features and grow your oil & gas trading business</p>
           </div>
 
+          {/* Demo Request Form */}
+          <div className="max-w-md mx-auto mb-12">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">Want to See Premium Features?</h3>
+              <p className="text-blue-600 mb-4">Schedule a personalized demo and see how premium features can grow your business.</p>
+              <LeadCaptureForm 
+                formType="demo_request"
+                title=""
+                description=""
+                buttonText="Request Demo"
+                fields={['email', 'name', 'company']}
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {subscriptionPlans.map((plan) => (
               <div key={plan.id} className={`relative bg-white rounded-lg shadow-lg p-8 ${plan.popular ? 'ring-2 ring-blue-500' : ''}`}>
