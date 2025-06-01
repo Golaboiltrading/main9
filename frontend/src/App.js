@@ -1484,7 +1484,23 @@ function App() {
       <HeaderWarning />
       
       <Header />
-      {renderCurrentPage()}
+      
+      {/* Main Content with News Sidebar */}
+      <div className="flex">
+        {/* Main Content */}
+        <div className="flex-1">
+          {renderCurrentPage()}
+        </div>
+        
+        {/* News Sidebar - Only show on certain pages */}
+        {shouldShowNewsSidebar() && (
+          <div className="hidden lg:block w-80 p-4 bg-gray-50">
+            <div className="sticky top-4">
+              <NewsBar />
+            </div>
+          </div>
+        )}
+      </div>
       
       {/* Footer Disclaimer (persistent) */}
       <FooterDisclaimer />
