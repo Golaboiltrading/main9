@@ -420,5 +420,3 @@ export const ProductLandingPage = ({ productType }) => {
     </div>
   );
 };
-
-export { LocationLandingPage, ProductLandingPage };
