@@ -117,10 +117,15 @@ if RATE_LIMITING_AVAILABLE:
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     app.add_middleware(SlowAPIMiddleware)
-    print("Rate limiting enabled")
+    print("✅ Rate limiting enabled")
 else:
     limiter = None
-    print("Rate limiting disabled - slowapi not available")
+    print("❌ Rate limiting disabled - slowapi not available")
+
+# Add injection prevention middleware
+if INJECTION_PREVENTION_AVAILABLE:
+    app.middleware("http")(sanitize_request_middleware)
+    print("✅ Injection prevention middleware enabled")
 
 # Include SEO router if available
 if seo_router:
