@@ -468,36 +468,18 @@ async def register_user(user_data: UserCreate, request: Request):
         print(f"Registration error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
     
-    user_doc = {
-        "user_id": user_id,
-        "email": user_data.email,
-        "password_hash": hashed_password,
-        "first_name": user_data.first_name,
-        "last_name": user_data.last_name,
-        "company_name": user_data.company_name,
-        "phone": user_data.phone,
-        "country": user_data.country,
-        "trading_role": user_data.trading_role,
-        "role": UserRole.BASIC,
-        "is_verified": False,
-        "created_at": datetime.utcnow(),
-        "last_login": None
+    return {
+        "message": "User registered successfully",
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "user_id": user_id,
+            "email": user_data.email,
+            "first_name": user_data.first_name,
+            "last_name": user_data.last_name,
+            "role": UserRole.BASIC
+        }
     }
-    
-    users_collection.insert_one(user_doc)
-    
-    # Create access token
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user_id}, expires_delta=access_token_expires
-    )
-    
-    # Send welcome email
-    if email_service:
-        try:
-            await email_service.send_welcome_email(user_data.email, user_data.first_name)
-        except Exception as e:
-            print(f"Failed to send welcome email: {e}")
     
     return {
         "message": "User registered successfully",
