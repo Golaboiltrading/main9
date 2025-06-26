@@ -279,32 +279,42 @@ class PremiumSubscription(BaseModel):
     price: float
     duration_months: int
 
-# Utility functions
+# Enhanced utility functions using security middleware
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    """Use enhanced security middleware for password hashing"""
+    return secure_hash_password(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    """Use enhanced security middleware for password verification"""
+    return secure_verify_password(plain_password, hashed_password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    """Use enhanced security middleware for token creation"""
+    return secure_create_access_token(data, expires_delta)
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Enhanced user authentication with security logging"""
     token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid authentication credentials")
-        return user_id
+        
+        # Get user from database to ensure they still exist
+        user = users_collection.find_one({"user_id": user_id})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        
+        return user
     except jwt.PyJWTError:
+        # Log failed authentication attempt
+        SecurityAuditLogger.log_security_event(
+            "failed_authentication", 
+            "unknown", 
+            {"reason": "Invalid JWT token"},
+            None
+        )
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
 
 # API Endpoints
