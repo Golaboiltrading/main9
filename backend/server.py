@@ -78,21 +78,31 @@ except ImportError as e:
     print(f"Warning: Query optimization not available: {e}")
     QUERY_OPTIMIZATION_AVAILABLE = False
 
-# Import caching service
+# Import WebSocket and subscription management
 try:
-    from cache_service import (
-        cache_service,
-        cached,
-        CacheWarmer,
-        CacheInvalidator,
-        get_cached_market_data,
-        get_cached_listings
+    from websocket_manager import (
+        manager as websocket_manager,
+        market_simulator,
+        analytics_streamer,
+        websocket_endpoint,
     )
-    CACHING_AVAILABLE = True
-    print("✅ Caching service loaded successfully")
+    from subscription_manager import (
+        SubscriptionManager,
+        SubscriptionCreate,
+        SubscriptionUpdate,
+        SubscriptionResponse,
+        UsageStats,
+        FeatureAccess,
+        get_subscription_plans,
+        SUBSCRIPTION_PLANS
+    )
+    WEBSOCKET_AVAILABLE = True
+    SUBSCRIPTION_MANAGER_AVAILABLE = True
+    print("✅ WebSocket and subscription management loaded successfully")
 except ImportError as e:
-    print(f"Warning: Caching service not available: {e}")
-    CACHING_AVAILABLE = False
+    print(f"Warning: WebSocket/Subscription features not available: {e}")
+    WEBSOCKET_AVAILABLE = False
+    SUBSCRIPTION_MANAGER_AVAILABLE = False
 # Import our new services separately to handle missing dependencies better
 seo_router = None
 analytics_router = None
