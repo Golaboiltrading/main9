@@ -1,0 +1,61 @@
+# ZAP Security Testing Rules
+# These rules define what ZAP should test for during security scans
+
+# SQL Injection tests
+10001	WARN	1	SQL Injection
+10002	WARN	1	SQL Injection - PostgreSQL
+10003	WARN	1	SQL Injection - Oracle
+10004	WARN	1	SQL Injection - MySQL
+
+# XSS tests
+40012	WARN	1	Cross Site Scripting (Reflected)
+40013	WARN	1	Cross Site Scripting (Persistent)
+40014	WARN	1	Cross Site Scripting (Persistent) - Prime
+40016	WARN	1	Cross Site Scripting (Persistent) - Spider
+40017	WARN	1	Cross Site Scripting (Persistent) - OData
+
+# Directory traversal
+10019	WARN	1	Path Traversal
+
+# Code injection
+10020	WARN	1	Remote Code Execution
+10021	WARN	1	Command Injection
+
+# CSRF
+10023	WARN	1	Cross Site Request Forgery
+
+# Header injection
+10024	WARN	1	HTTP Header Injection
+
+# NoSQL injection
+10033	WARN	1	NoSQL Injection
+
+# Server side includes
+10034	WARN	1	Server Side Include
+
+# LDAP injection
+10035	WARN	1	LDAP Injection
+
+# Buffer overflow
+10036	WARN	1	Buffer Overflow
+
+# Format string
+10037	WARN	1	Format String Error
+
+# External redirect
+10038	WARN	1	External Redirect
+
+# CRLF injection
+10039	WARN	1	CRLF Injection
+
+# Parameter pollution
+10040	WARN	1	HTTP Parameter Pollution
+
+# Source code disclosure
+10041	WARN	1	Source Code Disclosure
+
+# Backup file disclosure
+10095	WARN	1	Backup File Disclosure
+
+# Cross domain misconfiguration
+10098	WARN	1	Cross Domain Misconfiguration
