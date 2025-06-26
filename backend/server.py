@@ -480,19 +480,6 @@ async def register_user(user_data: UserCreate, request: Request):
             "role": UserRole.BASIC
         }
     }
-    
-    return {
-        "message": "User registered successfully",
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": {
-            "user_id": user_id,
-            "email": user_data.email,
-            "first_name": user_data.first_name,
-            "last_name": user_data.last_name,
-            "role": UserRole.BASIC
-        }
-    }
 
 @app.post("/api/auth/login")
 async def login_user(user_data: UserLogin):
