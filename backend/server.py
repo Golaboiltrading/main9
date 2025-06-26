@@ -895,6 +895,146 @@ async def upgrade_subscription(
         "payment_url": f"/api/payments/paypal/{subscription_id}"  # Placeholder for PayPal integration
     }
 
+# ===== SUBSCRIPTION MANAGEMENT ENDPOINTS =====
+
+@app.get("/api/subscription/plans")
+async def get_available_plans():
+    """Get all available subscription plans"""
+    if not SUBSCRIPTION_MANAGER_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Subscription service not available")
+    
+    return {
+        "plans": get_subscription_plans(),
+        "message": "Available subscription plans"
+    }
+
+@app.get("/api/subscription/current")
+async def get_current_subscription(current_user: dict = Depends(get_current_user)):
+    """Get user's current subscription details"""
+    if not SUBSCRIPTION_MANAGER_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Subscription service not available")
+    
+    try:
+        user_id = current_user.get("user_id")
+        subscription = await subscription_manager.get_user_subscription(user_id)
+        
+        if not subscription:
+            # Return default basic subscription
+            return {
+                "plan": "basic",
+                "status": "active",
+                "features": SUBSCRIPTION_PLANS["basic"]["features"],
+                "limits": SUBSCRIPTION_PLANS["basic"]["limits"]
+            }
+        
+        return subscription
+        
+    except Exception as e:
+        logger.error(f"Error getting subscription: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get subscription")
+
+@app.post("/api/subscription/upgrade")
+async def upgrade_subscription(
+    upgrade_data: SubscriptionCreate, 
+    current_user: dict = Depends(get_current_user)
+):
+    """Upgrade user's subscription to a higher plan"""
+    if not SUBSCRIPTION_MANAGER_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Subscription service not available")
+    
+    try:
+        user_id = current_user.get("user_id")
+        
+        # Check if this is a new subscription or upgrade
+        current_subscription = await subscription_manager.get_user_subscription(user_id)
+        
+        if current_subscription and current_subscription.plan != "basic":
+            # Upgrade existing subscription
+            updated_subscription = await subscription_manager.upgrade_subscription(
+                user_id, 
+                upgrade_data.plan_id, 
+                upgrade_data.billing_cycle
+            )
+        else:
+            # Create new subscription
+            updated_subscription = await subscription_manager.create_subscription(
+                user_id, 
+                upgrade_data
+            )
+        
+        return {
+            "message": f"Successfully upgraded to {upgrade_data.plan_id} plan",
+            "subscription": updated_subscription
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error upgrading subscription: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upgrade subscription")
+
+@app.post("/api/subscription/cancel")
+async def cancel_subscription(current_user: dict = Depends(get_current_user)):
+    """Cancel user's subscription (remains active until period end)"""
+    if not SUBSCRIPTION_MANAGER_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Subscription service not available")
+    
+    try:
+        user_id = current_user.get("user_id")
+        cancelled_subscription = await subscription_manager.cancel_subscription(user_id)
+        
+        return {
+            "message": "Subscription cancelled successfully",
+            "subscription": cancelled_subscription,
+            "note": "Your subscription will remain active until the end of the current billing period"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error cancelling subscription: {e}")
+        raise HTTPException(status_code=500, detail="Failed to cancel subscription")
+
+@app.get("/api/subscription/usage")
+async def get_usage_stats(current_user: dict = Depends(get_current_user)):
+    """Get user's current usage statistics"""
+    if not SUBSCRIPTION_MANAGER_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Subscription service not available")
+    
+    try:
+        user_id = current_user.get("user_id")
+        usage_stats = await subscription_manager.get_usage_stats(user_id)
+        
+        return {
+            "usage": usage_stats,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting usage stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get usage statistics")
+
+@app.get("/api/subscription/feature/{feature_name}")
+async def check_feature_access(
+    feature_name: str, 
+    current_user: dict = Depends(get_current_user)
+):
+    """Check if user has access to a specific feature"""
+    if not SUBSCRIPTION_MANAGER_AVAILABLE:
+        return {"has_access": True, "reason": "Subscription service not available"}
+    
+    try:
+        user_id = current_user.get("user_id")
+        subscription = await subscription_manager.get_user_subscription(user_id)
+        
+        feature_access = subscription_manager.check_feature_access(subscription, feature_name)
+        
+        return feature_access
+        
+    except Exception as e:
+        logger.error(f"Error checking feature access: {e}")
+        return {"has_access": False, "reason": "Error checking feature access"}
+
 @app.get("/api/search/companies")
 async def search_companies(
     q: Optional[str] = None,
