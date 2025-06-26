@@ -253,10 +253,22 @@ companies_collection = db.companies
 listings_collection = db.listings
 connections_collection = db.connections
 subscriptions_collection = db.subscriptions
+usage_collection = db.usage
 analytics_pageviews = db.analytics_pageviews
 analytics_events = db.analytics_events
 leads_collection = db.leads
 newsletter_subscribers = db.newsletter_subscribers
+
+# Initialize subscription manager
+if SUBSCRIPTION_MANAGER_AVAILABLE:
+    subscription_manager = SubscriptionManager(
+        users_collection, 
+        subscriptions_collection, 
+        usage_collection
+    )
+    print("✅ Subscription manager initialized")
+else:
+    subscription_manager = None
 
 # Enums
 class UserRole(str, Enum):
