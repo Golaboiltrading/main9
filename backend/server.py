@@ -399,6 +399,9 @@ async def register_user(user_data: UserCreate, request: Request):
                 await email_service.send_welcome_email(user_data.email, user_data.first_name)
             except Exception as e:
                 print(f"Failed to send welcome email: {e}")
+    except Exception as e:
+        print(f"Registration error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
     
     return {
         "message": "User registered successfully",
