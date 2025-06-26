@@ -264,17 +264,57 @@ def main():
     # Initialize tester
     tester = OilGasFinderTester(backend_url)
     
+    # Register test user for authenticated tests
+    tester.register_test_user()
+    
+    print("\n" + "="*80)
+    print("SECURITY TESTS - OWASP TOP 10")
+    print("="*80)
+    
+    print("\n--- A02: Cryptographic Failures Testing ---")
+    tester.test_jwt_token_security()
+    tester.test_password_security()
+    
+    print("\n--- A03: Injection Vulnerabilities Testing ---")
+    tester.test_injection_vulnerabilities()
+    
+    print("\n--- Rate Limiting Testing ---")
+    tester.test_rate_limiting()
+    
+    print("\n--- Security Headers Testing ---")
+    tester.test_security_headers()
+    
+    print("\n" + "="*80)
+    print("PERFORMANCE TESTS")
+    print("="*80)
+    
+    print("\n--- Database Performance ---")
+    tester.test_database_performance()
+    
+    print("\n--- API Performance ---")
+    tester.test_api_performance()
+    
+    print("\n--- Caching Performance ---")
+    tester.test_caching()
+    
     # Test SEO Infrastructure
+    print("\n" + "="*80)
+    print("FUNCTIONAL TESTS")
+    print("="*80)
+    
+    print("\n--- SEO Infrastructure ---")
     tester.test_sitemap_xml()
     tester.test_robots_txt()
     
     # Test Analytics & Lead Generation
+    print("\n--- Analytics & Lead Generation ---")
     tester.test_newsletter_subscribe()
     tester.test_lead_capture()
     tester.test_analytics_pageview()
     tester.test_analytics_event()
     
     # Test Content APIs
+    print("\n--- Content APIs ---")
     tester.test_blog_posts()
     tester.test_blog_post_by_slug()
     tester.test_blog_categories()
@@ -282,6 +322,7 @@ def main():
     tester.test_product_data()
     
     # Test Platform Status
+    print("\n--- Platform Status ---")
     tester.test_api_status()
     tester.test_platform_stats()
     tester.test_market_data()
