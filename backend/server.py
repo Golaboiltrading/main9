@@ -76,8 +76,24 @@ except ImportError as e:
     business_growth_service = None
     content_marketing_service = None
 
-# Initialize FastAPI app
-app = FastAPI(title="Oil & Gas Finder API", version="1.0.0")
+# Initialize FastAPI app with enhanced security
+app = FastAPI(
+    title="Oil & Gas Finder API", 
+    version="1.0.0",
+    docs_url="/api/docs" if os.getenv("ENVIRONMENT") != "production" else None,
+    redoc_url="/api/redoc" if os.getenv("ENVIRONMENT") != "production" else None
+)
+
+# Rate limiting setup
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Add rate limiting middleware
+app.add_middleware(SlowAPIMiddleware)
 
 # Include SEO router if available
 if seo_router:
