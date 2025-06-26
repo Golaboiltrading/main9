@@ -317,53 +317,88 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         )
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
 
-# API Endpoints
+# Enhanced API Endpoints with security and rate limiting
 
 @app.get("/api/status")
-async def get_status():
+@limiter.limit("10 per minute")
+async def get_status(request: Request):
     return {"status": "Oil & Gas Finder API is running", "timestamp": datetime.utcnow()}
 
 @app.post("/api/auth/register")
-async def register_user(user_data: UserCreate):
-    # Check if user already exists
-    existing_user = users_collection.find_one({"email": user_data.email})
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    # Create user
-    user_id = str(uuid.uuid4())
-    hashed_password = hash_password(user_data.password)
-    
-    user_doc = {
-        "user_id": user_id,
-        "email": user_data.email,
-        "password_hash": hashed_password,
-        "first_name": user_data.first_name,
-        "last_name": user_data.last_name,
-        "company_name": user_data.company_name,
-        "phone": user_data.phone,
-        "country": user_data.country,
-        "trading_role": user_data.trading_role,
-        "role": UserRole.BASIC,
-        "is_verified": False,
-        "created_at": datetime.utcnow(),
-        "last_login": None
-    }
-    
-    users_collection.insert_one(user_doc)
-    
-    # Create access token
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user_id}, expires_delta=access_token_expires
-    )
-    
-    # Send welcome email
-    if email_service:
-        try:
-            await email_service.send_welcome_email(user_data.email, user_data.first_name)
-        except Exception as e:
-            print(f"Failed to send welcome email: {e}")
+@limiter.limit("5 per minute")
+async def register_user(user_data: UserCreate, request: Request):
+    try:
+        # Enhanced input validation
+        user_data.email = InputValidator.validate_email(user_data.email)
+        user_data.password = InputValidator.validate_password(user_data.password)
+        user_data.first_name = InputValidator.sanitize_string(user_data.first_name, 100)
+        user_data.last_name = InputValidator.sanitize_string(user_data.last_name, 100)
+        user_data.company_name = InputValidator.sanitize_string(user_data.company_name, 200)
+        user_data.country = InputValidator.sanitize_string(user_data.country, 100)
+        
+        if user_data.phone:
+            user_data.phone = InputValidator.sanitize_string(user_data.phone, 20)
+        
+        # Check if user already exists
+        existing_user = users_collection.find_one({"email": user_data.email})
+        if existing_user:
+            SecurityAuditLogger.log_security_event(
+                "registration_attempt_duplicate", 
+                "unknown", 
+                {"email": user_data.email},
+                get_remote_address(request)
+            )
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        # Create user with enhanced security
+        user_id = str(uuid.uuid4())
+        hashed_password = hash_password(user_data.password)
+        
+        user_doc = {
+            "user_id": user_id,
+            "email": user_data.email,
+            "password_hash": hashed_password,
+            "first_name": user_data.first_name,
+            "last_name": user_data.last_name,
+            "company_name": user_data.company_name,
+            "phone": user_data.phone,
+            "country": user_data.country,
+            "trading_role": user_data.trading_role,
+            "role": UserRole.BASIC,
+            "is_verified": False,
+            "created_at": datetime.utcnow(),
+            "last_login": None,
+            "login_attempts": 0,
+            "account_locked": False
+        }
+        
+        users_collection.insert_one(user_doc)
+        
+        # Create access token with session
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={
+                "sub": user_id, 
+                "role": UserRole.BASIC,
+                "session_id": secrets.token_urlsafe(32)
+            }, 
+            expires_delta=access_token_expires
+        )
+        
+        # Log successful registration
+        SecurityAuditLogger.log_security_event(
+            "user_registration", 
+            user_id, 
+            {"email": user_data.email, "role": UserRole.BASIC},
+            get_remote_address(request)
+        )
+        
+        # Send welcome email
+        if email_service:
+            try:
+                await email_service.send_welcome_email(user_data.email, user_data.first_name)
+            except Exception as e:
+                print(f"Failed to send welcome email: {e}")
     
     return {
         "message": "User registered successfully",
