@@ -18,7 +18,19 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "test:coverage": "react-scripts test --coverage --ci --collectCoverageFrom='src/**/*.{js,jsx}' --collectCoverageFrom='!src/index.js'",
+    "test:ci": "react-scripts test --coverage --ci --collectCoverageFrom='src/**/*.{js,jsx}' --collectCoverageFrom='!src/index.js' --watchAll=false",
+    "eject": "react-scripts eject",
+    "lint": "eslint src/**/*.{js,jsx} --fix",
+    "lint:check": "eslint src/**/*.{js,jsx}",
+    "format": "prettier --write src/**/*.{js,jsx,css,md}",
+    "format:check": "prettier --check src/**/*.{js,jsx,css,md}",
+    "type-check": "npx tsc --noEmit",
+    "analyze": "npm run build && npx webpack-bundle-analyzer build/static/js/*.js",
+    "security:audit": "npm audit --audit-level high",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "lighthouse": "lhci autorun"
   },
   "browserslist": {
     "production": [
