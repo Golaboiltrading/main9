@@ -16,6 +16,8 @@ import logging
 from enum import Enum
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # Try to import enhanced security features
 try:
