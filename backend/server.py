@@ -552,40 +552,109 @@ async def update_user_profile(profile_data: CompanyProfile, user_id: str = Depen
     return {"message": "Profile updated successfully"}
 
 @app.post("/api/listings")
-async def create_listing(listing_data: TradingListing, user_id: str = Depends(get_current_user)):
-    user = users_collection.find_one({"user_id": user_id})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    listing_id = str(uuid.uuid4())
-    listing_doc = {
-        "listing_id": listing_id,
-        "user_id": user_id,
-        "company_name": user["company_name"],
-        "status": ListingStatus.FEATURED if listing_data.is_featured else ListingStatus.ACTIVE,
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
-        **listing_data.dict()
-    }
-    
-    listings_collection.insert_one(listing_doc)
-    
-    # Send listing approval email
-    if email_service:
-        try:
-            await email_service.send_listing_approval(
-                user["email"],
-                user["first_name"],
-                listing_data.title,
-                listing_data.is_featured
+async def create_listing(listing_data: TradingListing, request: Request, current_user: dict = Depends(get_current_user)):
+    """
+    Enhanced secure trading listing creation with comprehensive validation
+    """
+    try:
+        user_id = current_user.get("user_id")
+        
+        # Enhanced input validation for injection prevention
+        if INJECTION_PREVENTION_AVAILABLE:
+            # Convert Pydantic model to dict for validation
+            raw_data = listing_data.dict()
+            
+            # Validate trading data using enhanced validator
+            validated_data = InputValidator.validate_trade_data({
+                'commodity': raw_data.get('product_type'),
+                'quantity': raw_data.get('quantity'),
+                'price': raw_data.get('price_range'),  # Note: this might need parsing
+                'trading_hub': raw_data.get('trading_hub'),
+                'description': raw_data.get('description'),
+                'contact_email': raw_data.get('contact_email'),
+                'contact_person': raw_data.get('contact_person'),
+                'contact_phone': raw_data.get('contact_phone')
+            })
+            
+            # Update listing_data with validated values
+            listing_data.product_type = validated_data.get('commodity', listing_data.product_type)
+            listing_data.trading_hub = validated_data.get('trading_hub', listing_data.trading_hub)
+            listing_data.description = validated_data.get('description', listing_data.description)
+            listing_data.contact_email = validated_data.get('contact_email', listing_data.contact_email)
+            listing_data.contact_person = validated_data.get('contact_person', listing_data.contact_person)
+            listing_data.contact_phone = validated_data.get('contact_phone', listing_data.contact_phone)
+        
+        # Additional security: Sanitize MongoDB query for user lookup
+        user_query = {"user_id": user_id}
+        if INJECTION_PREVENTION_AVAILABLE:
+            user_query = MongoSanitizer.sanitize_query(user_query)
+        
+        user = users_collection.find_one(user_query)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Generate secure listing ID
+        listing_id = str(uuid.uuid4())
+        
+        # Create sanitized listing document
+        listing_doc = {
+            "listing_id": listing_id,
+            "user_id": user_id,
+            "company_name": user.get("company_name", ""),
+            "status": ListingStatus.FEATURED if listing_data.is_featured else ListingStatus.ACTIVE,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        # Add validated listing data
+        listing_dict = listing_data.dict()
+        for key, value in listing_dict.items():
+            if key != 'is_featured':  # Already handled above
+                listing_doc[key] = value
+        
+        # Sanitize the entire document before insertion
+        if INJECTION_PREVENTION_AVAILABLE:
+            listing_doc = MongoSanitizer.sanitize_query(listing_doc)
+        
+        listings_collection.insert_one(listing_doc)
+        
+        # Log security event
+        if ENHANCED_SECURITY_AVAILABLE and RATE_LIMITING_AVAILABLE:
+            SecurityAuditLogger.log_security_event(
+                "trading_listing_created",
+                user_id,
+                {
+                    "listing_id": listing_id,
+                    "commodity": listing_data.product_type,
+                    "is_featured": listing_data.is_featured
+                },
+                get_remote_address(request)
             )
-        except Exception as e:
-            print(f"Failed to send listing approval email: {e}")
-    
-    return {
-        "message": "Listing created successfully",
-        "listing_id": listing_id
-    }
+        
+        # Send listing approval email
+        if email_service:
+            try:
+                await email_service.send_listing_approval(
+                    user["email"],
+                    user["first_name"],
+                    listing_data.title,
+                    listing_data.is_featured
+                )
+            except Exception as e:
+                print(f"Failed to send listing approval email: {e}")
+        
+        return {
+            "message": "Listing created successfully",
+            "listing_id": listing_id,
+            "status": "active",
+            "security_validated": INJECTION_PREVENTION_AVAILABLE
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Listing creation error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create listing")
 
 @app.get("/api/listings")
 async def get_listings(
