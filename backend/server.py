@@ -28,12 +28,24 @@ except ImportError as e:
     print(f"Warning: Rate limiting not available: {e}")
     RATE_LIMITING_AVAILABLE = False
 
+# Import injection prevention and enhanced validation
+try:
+    from injection_prevention import (
+        MongoSanitizer,
+        InputValidator,
+        FileUploadValidator,
+        sanitize_request_middleware
+    )
+    INJECTION_PREVENTION_AVAILABLE = True
+    print("✅ Injection prevention middleware loaded successfully")
+except ImportError as e:
+    print(f"Warning: Injection prevention not available: {e}")
+    INJECTION_PREVENTION_AVAILABLE = False
+
 # Try to import enhanced security middleware
 try:
     from security_middleware import (
         RoleChecker, 
-        InputValidator, 
-        FileValidator, 
         SecurityAuditLogger,
         hash_password as secure_hash_password,
         verify_password as secure_verify_password,
