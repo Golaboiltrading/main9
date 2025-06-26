@@ -96,16 +96,19 @@ app = FastAPI(
     redoc_url="/api/redoc" if os.getenv("ENVIRONMENT") != "production" else None
 )
 
-# Rate limiting setup
-limiter = Limiter(
-    key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
-)
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
-# Add rate limiting middleware
-app.add_middleware(SlowAPIMiddleware)
+# Conditionally setup rate limiting
+if RATE_LIMITING_AVAILABLE:
+    limiter = Limiter(
+        key_func=get_remote_address,
+        default_limits=["200 per day", "50 per hour"]
+    )
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_middleware(SlowAPIMiddleware)
+    print("Rate limiting enabled")
+else:
+    limiter = None
+    print("Rate limiting disabled - slowapi not available")
 
 # Include SEO router if available
 if seo_router:
