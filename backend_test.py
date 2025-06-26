@@ -249,7 +249,7 @@ class OilGasFinderTester:
 
 def main():
     # Get the backend URL from environment variable or use the default
-    backend_url = "https://2feb79c7-fd63-4021-b0db-9197e62ab3af.preview.emergentagent.com"
+    backend_url = "https://97cdbb83-8ee9-4f68-b3c2-729c6dd484c8.preview.emergentagent.com"
     
     print(f"Testing Oil & Gas Finder Platform API at: {backend_url}")
     
