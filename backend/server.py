@@ -212,19 +212,34 @@ class ListingStatus(str, Enum):
     FEATURED = "featured"
 
 # Pydantic models
+# Enhanced Pydantic models with validation
 class UserCreate(BaseModel):
     email: EmailStr
-    password: str
-    first_name: str
-    last_name: str
-    company_name: str
-    phone: Optional[str] = None
-    country: str
+    password: str = Field(..., min_length=8, max_length=128)
+    first_name: str = Field(..., min_length=1, max_length=100)
+    last_name: str = Field(..., min_length=1, max_length=100)
+    company_name: str = Field(..., min_length=1, max_length=200)
+    phone: Optional[str] = Field(None, max_length=20)
+    country: str = Field(..., min_length=2, max_length=100)
     trading_role: TradingRole
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "user@example.com",
+                "password": "SecurePass123!",
+                "first_name": "John",
+                "last_name": "Doe",
+                "company_name": "Oil Trading Co",
+                "phone": "+1234567890",
+                "country": "United States",
+                "trading_role": "buyer"
+            }
+        }
 
 class UserLogin(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(..., min_length=1, max_length=128)
 
 class CompanyProfile(BaseModel):
     company_name: str
