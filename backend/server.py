@@ -294,18 +294,51 @@ class PremiumSubscription(BaseModel):
     price: float
     duration_months: int
 
-# Enhanced utility functions using security middleware
+# Enhanced utility functions with fallback
 def hash_password(password: str) -> str:
-    """Use enhanced security middleware for password hashing"""
-    return secure_hash_password(password)
+    """Enhanced password hashing with bcrypt"""
+    if ENHANCED_SECURITY_AVAILABLE:
+        return secure_hash_password(password)
+    else:
+        # Fallback to more secure bcrypt with higher salt rounds
+        import bcrypt
+        salt_rounds = 12
+        salt = bcrypt.gensalt(rounds=salt_rounds)
+        return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Use enhanced security middleware for password verification"""
-    return secure_verify_password(plain_password, hashed_password)
+    """Enhanced password verification"""
+    if ENHANCED_SECURITY_AVAILABLE:
+        return secure_verify_password(plain_password, hashed_password)
+    else:
+        # Fallback verification
+        import bcrypt
+        try:
+            return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+        except:
+            # Fallback to passlib for backwards compatibility
+            return pwd_context.verify(plain_password, hashed_password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    """Use enhanced security middleware for token creation"""
-    return secure_create_access_token(data, expires_delta)
+    """Enhanced token creation with session management"""
+    if ENHANCED_SECURITY_AVAILABLE:
+        return secure_create_access_token(data, expires_delta)
+    else:
+        # Enhanced fallback implementation
+        to_encode = data.copy()
+        if expires_delta:
+            expire = datetime.utcnow() + expires_delta
+        else:
+            expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        
+        # Add session tracking
+        to_encode.update({
+            "exp": expire,
+            "session_id": secrets.token_urlsafe(16),
+            "iat": datetime.utcnow()
+        })
+        encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+        return encoded_jwt
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """Enhanced user authentication with security logging"""
@@ -323,13 +356,14 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         
         return user
     except jwt.PyJWTError:
-        # Log failed authentication attempt
-        SecurityAuditLogger.log_security_event(
-            "failed_authentication", 
-            "unknown", 
-            {"reason": "Invalid JWT token"},
-            None
-        )
+        # Log failed authentication attempt if enhanced security is available
+        if ENHANCED_SECURITY_AVAILABLE:
+            SecurityAuditLogger.log_security_event(
+                "failed_authentication", 
+                "unknown", 
+                {"reason": "Invalid JWT token"},
+                None
+            )
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
 
 # API Endpoints
