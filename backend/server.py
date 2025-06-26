@@ -16,27 +16,39 @@ import logging
 from enum import Enum
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
-from slowapi.middleware import SlowAPIMiddleware
 
-# Import enhanced security middleware
-from security_middleware import (
-    RoleChecker, 
-    InputValidator, 
-    FileValidator, 
-    SecurityAuditLogger,
-    hash_password as secure_hash_password,
-    verify_password as secure_verify_password,
-    create_access_token as secure_create_access_token,
-    require_admin,
-    require_premium,
-    require_authenticated,
-    verify_resource_ownership,
-    sanitize_mongo_query,
-    RateLimitConfig
-)
+# Try to import enhanced security features
+try:
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.util import get_remote_address
+    from slowapi.errors import RateLimitExceeded
+    from slowapi.middleware import SlowAPIMiddleware
+    RATE_LIMITING_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Rate limiting not available: {e}")
+    RATE_LIMITING_AVAILABLE = False
+
+# Try to import enhanced security middleware
+try:
+    from security_middleware import (
+        RoleChecker, 
+        InputValidator, 
+        FileValidator, 
+        SecurityAuditLogger,
+        hash_password as secure_hash_password,
+        verify_password as secure_verify_password,
+        create_access_token as secure_create_access_token,
+        require_admin,
+        require_premium,
+        require_authenticated,
+        verify_resource_ownership,
+        sanitize_mongo_query,
+        RateLimitConfig
+    )
+    ENHANCED_SECURITY_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Enhanced security middleware not available: {e}")
+    ENHANCED_SECURITY_AVAILABLE = False
 
 # Import our new services separately to handle missing dependencies better
 seo_router = None
