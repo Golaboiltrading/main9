@@ -368,20 +368,105 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
 # API Endpoints
 
+# Enhanced API Endpoints with conditional security features
+
 @app.get("/api/status")
-async def get_status():
+async def get_status(request: Request):
+    # Add rate limiting if available
+    if RATE_LIMITING_AVAILABLE and limiter:
+        # This would typically be handled by the rate limiter decorator
+        pass
     return {"status": "Oil & Gas Finder API is running", "timestamp": datetime.utcnow()}
 
 @app.post("/api/auth/register")
-async def register_user(user_data: UserCreate):
-    # Check if user already exists
-    existing_user = users_collection.find_one({"email": user_data.email})
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    # Create user
-    user_id = str(uuid.uuid4())
-    hashed_password = hash_password(user_data.password)
+async def register_user(user_data: UserCreate, request: Request):
+    try:
+        # Enhanced input validation if available
+        if ENHANCED_SECURITY_AVAILABLE:
+            user_data.email = InputValidator.validate_email(user_data.email)
+            user_data.password = InputValidator.validate_password(user_data.password)
+            user_data.first_name = InputValidator.sanitize_string(user_data.first_name, 100)
+            user_data.last_name = InputValidator.sanitize_string(user_data.last_name, 100)
+            user_data.company_name = InputValidator.sanitize_string(user_data.company_name, 200)
+            user_data.country = InputValidator.sanitize_string(user_data.country, 100)
+            if user_data.phone:
+                user_data.phone = InputValidator.sanitize_string(user_data.phone, 20)
+        else:
+            # Basic validation fallback
+            import re
+            if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', user_data.email):
+                raise HTTPException(status_code=400, detail="Invalid email format")
+            if len(user_data.password) < 8:
+                raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+        
+        # Check if user already exists
+        existing_user = users_collection.find_one({"email": user_data.email})
+        if existing_user:
+            # Log security event if available
+            if ENHANCED_SECURITY_AVAILABLE and RATE_LIMITING_AVAILABLE:
+                SecurityAuditLogger.log_security_event(
+                    "registration_attempt_duplicate", 
+                    "unknown", 
+                    {"email": user_data.email},
+                    get_remote_address(request)
+                )
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        # Create user with enhanced security
+        user_id = str(uuid.uuid4())
+        hashed_password = hash_password(user_data.password)
+        
+        user_doc = {
+            "user_id": user_id,
+            "email": user_data.email,
+            "password_hash": hashed_password,
+            "first_name": user_data.first_name,
+            "last_name": user_data.last_name,
+            "company_name": user_data.company_name,
+            "phone": user_data.phone,
+            "country": user_data.country,
+            "trading_role": user_data.trading_role,
+            "role": UserRole.BASIC,
+            "is_verified": False,
+            "created_at": datetime.utcnow(),
+            "last_login": None,
+            "login_attempts": 0,
+            "account_locked": False
+        }
+        
+        users_collection.insert_one(user_doc)
+        
+        # Create enhanced access token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={
+                "sub": user_id, 
+                "role": UserRole.BASIC
+            }, 
+            expires_delta=access_token_expires
+        )
+        
+        # Log successful registration if enhanced security is available
+        if ENHANCED_SECURITY_AVAILABLE and RATE_LIMITING_AVAILABLE:
+            SecurityAuditLogger.log_security_event(
+                "user_registration", 
+                user_id, 
+                {"email": user_data.email, "role": UserRole.BASIC},
+                get_remote_address(request)
+            )
+        
+        # Send welcome email
+        if email_service:
+            try:
+                await email_service.send_welcome_email(user_data.email, user_data.first_name)
+            except Exception as e:
+                print(f"Failed to send welcome email: {e}")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Registration error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
     
     user_doc = {
         "user_id": user_id,
