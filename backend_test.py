@@ -3,6 +3,8 @@ import requests
 import sys
 import json
 import uuid
+import time
+import base64
 from datetime import datetime
 import xml.etree.ElementTree as ET
 import re
@@ -14,6 +16,8 @@ class OilGasFinderTester:
         self.tests_passed = 0
         self.test_results = {}
         self.session_id = f"test_session_{uuid.uuid4().hex[:8]}"
+        self.session = requests.Session()
+        self.auth_token = None
         
     def run_test(self, name, method, endpoint, expected_status, data=None, is_api=True, check_content=None):
         """Run a single API test"""
@@ -23,15 +27,19 @@ class OilGasFinderTester:
             url = f"{self.base_url}/{endpoint}"
             
         headers = {'Content-Type': 'application/json'}
+        if self.auth_token:
+            headers['Authorization'] = f'Bearer {self.auth_token}'
 
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
         
         try:
             if method == 'GET':
-                response = requests.get(url, headers=headers)
+                response = self.session.get(url, headers=headers)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=headers)
+                response = self.session.post(url, json=data, headers=headers)
+            elif method == 'OPTIONS':
+                response = self.session.options(url, headers=headers)
 
             success = response.status_code == expected_status
             
