@@ -62,6 +62,35 @@ except ImportError as e:
     print(f"Warning: Enhanced security middleware not available: {e}")
     ENHANCED_SECURITY_AVAILABLE = False
 
+# Import query optimization
+try:
+    from query_optimizer import (
+        query_optimizer,
+        user_queries,
+        listing_queries,
+        analytics_queries
+    )
+    QUERY_OPTIMIZATION_AVAILABLE = True
+    print("✅ Query optimization loaded successfully")
+except ImportError as e:
+    print(f"Warning: Query optimization not available: {e}")
+    QUERY_OPTIMIZATION_AVAILABLE = False
+
+# Import caching service
+try:
+    from cache_service import (
+        cache_service,
+        cached,
+        CacheWarmer,
+        CacheInvalidator,
+        get_cached_market_data,
+        get_cached_listings
+    )
+    CACHING_AVAILABLE = True
+    print("✅ Caching service loaded successfully")
+except ImportError as e:
+    print(f"Warning: Caching service not available: {e}")
+    CACHING_AVAILABLE = False
 # Import our new services separately to handle missing dependencies better
 seo_router = None
 analytics_router = None
