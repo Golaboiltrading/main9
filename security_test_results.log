@@ -1,0 +1,100 @@
+Testing OWASP Top 10 Security Features for Oil & Gas Finder API at: https://97cdbb83-8ee9-4f68-b3c2-729c6dd484c8.preview.emergentagent.com
+
+🔍 Testing Register basic user...
+❌ Failed - Expected 200, got 500
+Failed to create basic user
+
+🔍 Testing Register premium user...
+❌ Failed - Expected 200, got 500
+Failed to create premium user
+
+🔍 Testing Register enterprise user...
+❌ Failed - Expected 200, got 500
+Failed to create enterprise user
+
+🔍 Testing Register admin user...
+❌ Failed - Expected 200, got 500
+Failed to create admin user
+
+🔍 Testing Login with correct password (admin user)...
+❌ Failed - Expected 200, got 401
+Error details: {'detail': 'Invalid email or password'}
+
+🔍 Testing Login with incorrect password (admin user)...
+✅ Passed - Status: 401
+
+🔍 Testing Input Validation: Invalid email format...
+❌ Failed - Expected 400, got 422
+Error details: {'detail': [{'type': 'value_error', 'loc': ['body', 'email'], 'msg': 'value is not a valid email address: An email address must have an @-sign.', 'input': 'not-an-email', 'ctx': {'reason': 'An email address must have an @-sign.'}}]}
+
+🔍 Testing Input Validation: Weak password...
+❌ Failed - Expected 400, got 422
+Error details: {'detail': [{'type': 'string_too_short', 'loc': ['body', 'password'], 'msg': 'String should have at least 8 characters', 'input': 'weak', 'ctx': {'min_length': 8}, 'url': 'https://errors.pydantic.dev/2.11/v/string_too_short'}]}
+
+🔍 Testing Input Validation: SQL injection attempt in login...
+❌ Failed - Expected 401, got 422
+Error details: {'detail': [{'type': 'value_error', 'loc': ['body', 'email'], 'msg': 'value is not a valid email address: An email address must have an @-sign.', 'input': "' OR 1=1 --", 'ctx': {'reason': 'An email address must have an @-sign.'}}]}
+
+🔍 Testing Rate Limiting on /api/status (10 per minute)...
+Request 1: Status 200
+Request 2: Status 200
+Request 3: Status 200
+Request 4: Status 200
+Request 5: Status 200
+Request 6: Status 200
+Request 7: Status 200
+Request 8: Status 200
+Request 9: Status 200
+Request 10: Status 200
+Request 11: Status 200
+Request 12: Status 200
+❌ Failed - Rate limiting not applied on /api/status
+
+🔍 Testing Rate Limiting on /api/auth/register (5 per minute)...
+Request 1: Status 500
+Request 2: Status 500
+Request 3: Status 500
+Request 4: Status 500
+Request 5: Status 500
+Request 6: Status 500
+Request 7: Status 500
+❌ Failed - Rate limiting not applied on /api/auth/register
+✅ Passed - Security headers check
+
+Security Headers:
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:; connect-src 'self' https:; frame-ancestors 'none';
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=15724800; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+✅ Passed - CORS allowed for origin: http://localhost:3000
+✅ Passed - CORS allowed for origin: https://localhost:3000
+✅ Passed - CORS allowed for origin: https://oilgasfinder.com
+✅ Passed - CORS allowed for origin: https://www.oilgasfinder.com
+✅ Passed - CORS correctly blocked for origin: https://malicious-site.com
+
+🔍 Testing Security Logging: Failed login attempt...
+✅ Passed - Status: 401
+
+================================================================================
+🔍 OWASP TOP 10 SECURITY TESTING SUMMARY FOR OIL & GAS FINDER API
+================================================================================
+✅ Tests passed: 8/18 (44.4%)
+
+2. Cryptographic Failures: 1/2 tests passed
+  ❌ Login with correct password (admin user): Expected status 200, got 401
+
+3. Injection Vulnerabilities: 0/3 tests passed
+  ❌ Input Validation: Invalid email format: Expected status 400, got 422
+  ❌ Input Validation: Weak password: Expected status 400, got 422
+  ❌ Input Validation: SQL injection attempt in login: Expected status 401, got 422
+
+4. Rate Limiting: 0/2 tests passed
+  ❌ Rate Limiting: /api/status: Unknown error
+  ❌ Rate Limiting: /api/auth/register: Unknown error
+
+5. Security Headers and CORS: 6/6 tests passed
+
+6. Security Audit Logging: 1/1 tests passed
+
+================================================================================

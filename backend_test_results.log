@@ -1,0 +1,58 @@
+Testing Oil & Gas Finder Platform API at: https://97cdbb83-8ee9-4f68-b3c2-729c6dd484c8.preview.emergentagent.com
+
+🔍 Testing Sitemap XML...
+❌ Failed - Expected 200, got 200
+   Content check failed: XML parsing error: syntax error: line 1, column 0
+
+🔍 Testing Robots.txt...
+✅ Passed - Status: 200
+   Content check: Valid robots.txt with required directives
+
+🔍 Testing Newsletter Subscribe...
+✅ Passed - Status: 200
+
+🔍 Testing Lead Capture...
+✅ Passed - Status: 200
+
+🔍 Testing Analytics Pageview...
+✅ Passed - Status: 200
+
+🔍 Testing Analytics Event...
+✅ Passed - Status: 200
+
+🔍 Testing Blog Posts...
+✅ Passed - Status: 200
+
+🔍 Testing Blog Post by Slug...
+✅ Passed - Status: 200
+
+🔍 Testing Blog Categories...
+✅ Passed - Status: 200
+
+🔍 Testing Location Data...
+✅ Passed - Status: 200
+
+🔍 Testing Product Data...
+✅ Passed - Status: 200
+
+🔍 Testing API Status...
+✅ Passed - Status: 200
+
+🔍 Testing Platform Stats...
+✅ Passed - Status: 200
+
+🔍 Testing Market Data...
+✅ Passed - Status: 200
+
+🔍 Testing Market Intelligence...
+✅ Passed - Status: 200
+
+==================================================
+🔍 OIL & GAS FINDER PLATFORM TESTING SUMMARY
+==================================================
+✅ Tests passed: 14/15 (93.3%)
+
+❌ Failed tests:
+  - Sitemap XML: Expected status 200, got 200
+    Content check: XML parsing error: syntax error: line 1, column 0
+==================================================
