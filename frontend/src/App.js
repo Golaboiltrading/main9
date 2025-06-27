@@ -591,6 +591,8 @@ function App() {
         return <BrowsePage />;
       case 'ai-analysis':
         return <AIAnalysisPage />;
+      case 'demo':
+        return <RevenueOptimizationDemo />;
       case 'terms':
         return <TermsOfService />;
       case 'privacy':
