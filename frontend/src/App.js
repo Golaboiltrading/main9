@@ -187,6 +187,12 @@ function App() {
               >
                 Premium
               </button>
+              <button 
+                onClick={() => navigateToPage('demo')}
+                className={`hover:text-orange-300 font-semibold ${currentPage === 'demo' ? 'text-orange-300 border-b-2 border-orange-300' : ''}`}
+              >
+                Revenue Demo
+              </button>
             </nav>
           </div>
           <div className="flex items-center space-x-4">
