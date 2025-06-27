@@ -7,6 +7,7 @@ import EnhancedHomePage from './components/EnhancedHomePage';
 import NewsBar, { NewsSidebar } from './components/NewsBar';
 import AIAnalysisPage from './components/AIAnalysisPage';
 import PayPalButton from './PayPalButton';
+import RevenueOptimizationDemo from './components/RevenueOptimizationDemo';
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
