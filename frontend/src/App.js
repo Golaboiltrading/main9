@@ -1303,6 +1303,21 @@ function App() {
       }
     };
 
+    const handleWhatsAppTrader = () => {
+      if (selectedListing.contact_phone) {
+        const message = encodeURIComponent(
+          `Hello ${selectedListing.contact_person}, I'm interested in your ${selectedListing.product_type.replace('_', ' ')} listing: "${selectedListing.title}". ` +
+          `Quantity: ${selectedListing.quantity} ${selectedListing.unit}, Location: ${selectedListing.location}, Price: ${selectedListing.price_range}. ` +
+          `Please contact me to discuss this opportunity.`
+        );
+        
+        // Remove any non-numeric characters from phone number for WhatsApp
+        const cleanPhone = selectedListing.contact_phone.replace(/[^0-9]/g, '');
+        const whatsappUrl = `https://wa.me/${cleanPhone}?text=${message}`;
+        window.open(whatsappUrl, '_blank');
+      }
+    };
+
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="container mx-auto px-4">
