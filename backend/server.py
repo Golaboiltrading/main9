@@ -276,6 +276,10 @@ from backend.routers import auth_router as authentication_router # Use an alias
 
 app.include_router(authentication_router.router, prefix="/api/auth", tags=["Authentication"])
 
+# Import the listings router
+from backend.routers import listings_router # Default import, router object is listings_router.router
+app.include_router(listings_router.router, prefix="/api/listings", tags=["Listings"])
+
 
 # Enums (UserRole and TradingRole might be moved or shared from a common location if auth_router defines them)
 # For now, keep them here if other parts of server.py use them, or if they are the central definition.
@@ -314,6 +318,7 @@ class ListingStatus(str, Enum):
 
 # Pydantic models
 # UserCreate and UserLogin have been moved to backend/routers/auth_router.py
+# TradingListing has been moved to backend/routers/listings_router.py
 
 class CompanyProfile(BaseModel):
     company_name: str
@@ -325,21 +330,9 @@ class CompanyProfile(BaseModel):
     trading_hubs: List[str] = []
     certifications: List[str] = []
 
-class TradingListing(BaseModel):
-    title: str
-    product_type: ProductType
-    quantity: float
-    unit: str
-    price_range: str
-    location: str
-    trading_hub: str
-    description: str
-    contact_person: str
-    contact_email: EmailStr
-    contact_phone: str
-    is_featured: bool = False
+# TradingListing model is now in listings_router.py
 
-class SearchFilters(BaseModel):
+class SearchFilters(BaseModel): # This model might use ProductType and TradingRole, so they remain here for now
     product_type: Optional[ProductType] = None
     trading_role: Optional[TradingRole] = None
     location: Optional[str] = None
@@ -437,342 +430,39 @@ async def get_status(request: Request):
         pass
     return {"status": "Oil & Gas Finder API is running", "timestamp": datetime.utcnow()}
 
-@app.post("/api/auth/register")
-async def register_user(user_data: UserCreate, request: Request):
-    try:
-        # Enhanced input validation if available
-        if ENHANCED_SECURITY_AVAILABLE:
-            user_data.email = InputValidator.validate_email(user_data.email)
-            user_data.password = InputValidator.validate_password(user_data.password)
-            user_data.first_name = InputValidator.sanitize_string(user_data.first_name, 100)
-            user_data.last_name = InputValidator.sanitize_string(user_data.last_name, 100)
-            user_data.company_name = InputValidator.sanitize_string(user_data.company_name, 200)
-            user_data.country = InputValidator.sanitize_string(user_data.country, 100)
-            if user_data.phone:
-                user_data.phone = InputValidator.sanitize_string(user_data.phone, 20)
-        else:
-            # Basic validation fallback
-            import re
-            if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', user_data.email):
-                raise HTTPException(status_code=400, detail="Invalid email format")
-            if len(user_data.password) < 8:
-                raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
-        
-        # Check if user already exists
-        existing_user = users_collection.find_one({"email": user_data.email})
-        if existing_user:
-            # Log security event if available
-            if ENHANCED_SECURITY_AVAILABLE and RATE_LIMITING_AVAILABLE:
-                SecurityAuditLogger.log_security_event(
-                    "registration_attempt_duplicate", 
-                    "unknown", 
-                    {"email": user_data.email},
-                    get_remote_address(request)
-                )
-            raise HTTPException(status_code=400, detail="Email already registered")
-        
-        # Create user with enhanced security
-        user_id = str(uuid.uuid4())
-        hashed_password = hash_password(user_data.password)
-        
-        user_doc = {
-            "user_id": user_id,
-            "email": user_data.email,
-            "password_hash": hashed_password,
-            "first_name": user_data.first_name,
-            "last_name": user_data.last_name,
-            "company_name": user_data.company_name,
-            "phone": user_data.phone,
-            "country": user_data.country,
-            "trading_role": user_data.trading_role,
-            "role": UserRole.BASIC,
-            "is_verified": False,
-            "created_at": datetime.utcnow(),
-            "last_login": None,
-            "login_attempts": 0,
-            "account_locked": False
-        }
-        
-        users_collection.insert_one(user_doc)
-        
-        # Create enhanced access token
-        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = create_access_token(
-            data={
-                "sub": user_id, 
-                "role": UserRole.BASIC
-            }, 
-            expires_delta=access_token_expires
-        )
-        
-        # Log successful registration if enhanced security is available
-        if ENHANCED_SECURITY_AVAILABLE and RATE_LIMITING_AVAILABLE:
-            SecurityAuditLogger.log_security_event(
-                "user_registration", 
-                user_id, 
-                {"email": user_data.email, "role": UserRole.BASIC},
-                get_remote_address(request)
-            )
-        
-        # Send welcome email
-        if email_service:
-            try:
-                await email_service.send_welcome_email(user_data.email, user_data.first_name)
-            except Exception as e:
-                print(f"Failed to send welcome email: {e}")
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Registration error: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-    
-    return {
-        "message": "User registered successfully",
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": {
-            "user_id": user_id,
-            "email": user_data.email,
-            "first_name": user_data.first_name,
-            "last_name": user_data.last_name,
-            "role": UserRole.BASIC
-        }
-    }
-
-@app.post("/api/auth/login")
-async def login_user(user_data: UserLogin):
-    user = users_collection.find_one({"email": user_data.email})
-    if not user or not verify_password(user_data.password, user["password_hash"]):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    
-    # Update last login
-    users_collection.update_one(
-        {"user_id": user["user_id"]},
-        {"$set": {"last_login": datetime.utcnow()}}
-    )
-    
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user["user_id"]}, expires_delta=access_token_expires
-    )
-    
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": {
-            "user_id": user["user_id"],
-            "email": user["email"],
-            "first_name": user["first_name"],
-            "last_name": user["last_name"],
-            "role": user["role"],
-            "company_name": user["company_name"],
-            "trading_role": user["trading_role"]
-        }
-    }
+# Authentication routes (/api/auth/register, /api/auth/login) are now in backend/routers/auth_router.py
+# Listings routes are now in backend/routers/listings_router.py
 
 @app.get("/api/user/profile")
-async def get_user_profile(user_id: str = Depends(get_current_user)):
-    user = users_collection.find_one({"user_id": user_id}, {"password_hash": 0})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+async def get_user_profile(user_id: str = Depends(get_current_user)): # user_id here is actually the user document due to Depends(get_current_user)
+    user = user_id # current_user dependency returns the user object
+    if not user: # Should technically be caught by get_current_user if token is invalid/user deleted
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
-    # Remove MongoDB _id field
-    user.pop("_id", None)
-    return user
+    # Create a copy to modify for response, or ensure get_current_user returns a dict
+    user_response = dict(user)
+    user_response.pop("_id", None)
+    user_response.pop("password_hash", None) # Also ensure password hash is not in the response
+    return user_response
 
 @app.put("/api/user/profile")
-async def update_user_profile(profile_data: CompanyProfile, user_id: str = Depends(get_current_user)):
+async def update_user_profile(profile_data: CompanyProfile, current_user: dict = Depends(get_current_user)):
+    user_id = current_user.get("user_id")
     update_data = profile_data.dict()
     update_data["updated_at"] = datetime.utcnow()
     
-    users_collection.update_one(
+    users_collection.update_one( # This needs to be awaited if users_collection is async
         {"user_id": user_id},
         {"$set": update_data}
     )
     
     return {"message": "Profile updated successfully"}
 
-@app.post("/api/listings")
-async def create_listing(listing_data: TradingListing, request: Request, current_user: dict = Depends(get_current_user)):
-    """
-    Enhanced secure trading listing creation with comprehensive validation
-    """
-    try:
-        user_id = current_user.get("user_id")
-        
-        # Enhanced input validation for injection prevention
-        if INJECTION_PREVENTION_AVAILABLE:
-            # Convert Pydantic model to dict for validation
-            raw_data = listing_data.dict()
-            
-            # Validate trading data using enhanced validator
-            validated_data = InputValidator.validate_trade_data({
-                'commodity': raw_data.get('product_type'),
-                'quantity': raw_data.get('quantity'),
-                'price': raw_data.get('price_range'),  # Note: this might need parsing
-                'trading_hub': raw_data.get('trading_hub'),
-                'description': raw_data.get('description'),
-                'contact_email': raw_data.get('contact_email'),
-                'contact_person': raw_data.get('contact_person'),
-                'contact_phone': raw_data.get('contact_phone')
-            })
-            
-            # Update listing_data with validated values
-            listing_data.product_type = validated_data.get('commodity', listing_data.product_type)
-            listing_data.trading_hub = validated_data.get('trading_hub', listing_data.trading_hub)
-            listing_data.description = validated_data.get('description', listing_data.description)
-            listing_data.contact_email = validated_data.get('contact_email', listing_data.contact_email)
-            listing_data.contact_person = validated_data.get('contact_person', listing_data.contact_person)
-            listing_data.contact_phone = validated_data.get('contact_phone', listing_data.contact_phone)
-        
-        # Additional security: Sanitize MongoDB query for user lookup
-        # user_query = {"user_id": user_id} # REMOVE MongoSanitizer call
-        # if INJECTION_PREVENTION_AVAILABLE:
-        #     user_query = MongoSanitizer.sanitize_query(user_query)
-        
-        # User is already fetched and available in current_user from Depends(get_current_user)
-        # user = users_collection.find_one(user_query)
-        # if not user:
-        #     raise HTTPException(status_code=404, detail="User not found")
-        
-        # Generate secure listing ID
-        listing_id = str(uuid.uuid4())
-        
-        # Create sanitized listing document
-        listing_doc = {
-            "listing_id": listing_id,
-            "user_id": user_id,
-            "company_name": user.get("company_name", ""),
-            "status": ListingStatus.FEATURED if listing_data.is_featured else ListingStatus.ACTIVE,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
-        }
-        
-        # Add validated listing data
-        listing_dict = listing_data.dict()
-        for key, value in listing_dict.items():
-            if key != 'is_featured':  # Already handled above
-                listing_doc[key] = value
-        
-        # Sanitize the entire document before insertion # REMOVE MongoSanitizer call
-        # if INJECTION_PREVENTION_AVAILABLE:
-        #     listing_doc = MongoSanitizer.sanitize_query(listing_doc)
-        
-        listings_collection.insert_one(listing_doc)
-        
-        # Log security event
-        if ENHANCED_SECURITY_AVAILABLE and RATE_LIMITING_AVAILABLE:
-            SecurityAuditLogger.log_security_event(
-                "trading_listing_created",
-                user_id,
-                {
-                    "listing_id": listing_id,
-                    "commodity": listing_data.product_type,
-                    "is_featured": listing_data.is_featured
-                },
-                get_remote_address(request)
-            )
-        
-        # Send listing approval email
-        if email_service:
-            try:
-                await email_service.send_listing_approval(
-                    user["email"],
-                    user["first_name"],
-                    listing_data.title,
-                    listing_data.is_featured
-                )
-            except Exception as e:
-                print(f"Failed to send listing approval email: {e}")
-        
-        return {
-            "message": "Listing created successfully",
-            "listing_id": listing_id,
-            "status": "active",
-            "security_validated": INJECTION_PREVENTION_AVAILABLE
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Listing creation error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to create listing")
-
-@app.get("/api/listings")
-async def get_listings(
-    skip: int = 0,
-    limit: int = 20,
-    product_type: Optional[str] = None,
-    location: Optional[str] = None,
-    trading_hub: Optional[str] = None
-):
-    query = {"status": {"$in": [ListingStatus.ACTIVE, ListingStatus.FEATURED]}}
-    
-    if product_type:
-        query["product_type"] = product_type
-    if location:
-        query["location"] = {"$regex": location, "$options": "i"}
-    if trading_hub:
-        query["trading_hub"] = {"$regex": trading_hub, "$options": "i"}
-    
-    # Featured listings first, then by creation date
-    listings = list(
-        listings_collection.find(query, {"_id": 0})
-        .sort([("status", -1), ("created_at", -1)])
-        .skip(skip)
-        .limit(limit)
-    )
-    
-    total_count = listings_collection.count_documents(query)
-    
-    return {
-        "listings": listings,
-        "total": total_count,
-        "skip": skip,
-        "limit": limit
-    }
-
-@app.get("/api/listings/my")
-async def get_my_listings(user_id: str = Depends(get_current_user)):
-    listings = list(
-        listings_collection.find({"user_id": user_id}, {"_id": 0})
-        .sort("created_at", -1)
-    )
-    
-    return {"listings": listings}
-
-@app.put("/api/listings/{listing_id}")
-async def update_listing(
-    listing_id: str,
-    listing_data: TradingListing,
-    user_id: str = Depends(get_current_user)
-):
-    existing_listing = listings_collection.find_one({"listing_id": listing_id, "user_id": user_id})
-    if not existing_listing:
-        raise HTTPException(status_code=404, detail="Listing not found")
-    
-    update_data = listing_data.dict()
-    update_data["updated_at"] = datetime.utcnow()
-    
-    listings_collection.update_one(
-        {"listing_id": listing_id},
-        {"$set": update_data}
-    )
-    
-    return {"message": "Listing updated successfully"}
-
-@app.delete("/api/listings/{listing_id}")
-async def delete_listing(listing_id: str, user_id: str = Depends(get_current_user)):
-    result = listings_collection.delete_one({"listing_id": listing_id, "user_id": user_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Listing not found")
-    
-    return {"message": "Listing deleted successfully"}
 
 @app.post("/api/connections/{listing_id}")
-async def create_connection(listing_id: str, user_id: str = Depends(get_current_user)):
-    listing = listings_collection.find_one({"listing_id": listing_id})
+async def create_connection(listing_id: str, current_user: dict = Depends(get_current_user)):
+    user_id = current_user.get("user_id")
+    listing = listings_collection.find_one({"listing_id": listing_id}) # This needs to be awaited
     if not listing:
         raise HTTPException(status_code=404, detail="Listing not found")
     
