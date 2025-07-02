@@ -1005,6 +1005,256 @@ function App() {
     );
   };
 
+  // Edit Listing Page Component
+  const EditListingPage = () => {
+    const [formData, setFormData] = useState({
+      title: editingListing?.title || '',
+      product_type: editingListing?.product_type || 'crude_oil',
+      quantity: editingListing?.quantity || '',
+      unit: editingListing?.unit || 'barrels',
+      price_range: editingListing?.price_range || '',
+      location: editingListing?.location || '',
+      trading_hub: editingListing?.trading_hub || '',
+      description: editingListing?.description || '',
+      contact_person: editingListing?.contact_person || '',
+      contact_email: editingListing?.contact_email || '',
+      contact_phone: editingListing?.contact_phone || '',
+      is_featured: editingListing?.is_featured || false
+    });
+
+    const handleUpdateListing = async (listingData) => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/listings/${editingListing.listing_id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(listingData)
+        });
+
+        if (response.ok) {
+          alert('Listing updated successfully!');
+          setCurrentPage('dashboard');
+        } else {
+          const errorData = await response.json();
+          alert('Failed to update listing: ' + (errorData.detail || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error updating listing:', error);
+        alert('Failed to update listing');
+      }
+    };
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      const listingData = {
+        ...formData,
+        quantity: parseFloat(formData.quantity)
+      };
+      handleUpdateListing(listingData);
+    };
+
+    const handleChange = (e) => {
+      const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+      setFormData({ ...formData, [e.target.name]: value });
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+            <h2 className="text-2xl font-bold mb-8">Edit Trading Listing</h2>
+            
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Listing Title</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
+                  <select
+                    name="product_type"
+                    value={formData.product_type}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="crude_oil">Crude Oil</option>
+                    <option value="gasoline">Gasoline</option>
+                    <option value="diesel">Diesel</option>
+                    <option value="jet_fuel">Jet Fuel</option>
+                    <option value="natural_gas">Natural Gas</option>
+                    <option value="lng">LNG</option>
+                    <option value="lpg">LPG</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                  <select
+                    name="unit"
+                    value={formData.unit}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="barrels">Barrels</option>
+                    <option value="tons">Tons</option>
+                    <option value="gallons">Gallons</option>
+                    <option value="liters">Liters</option>
+                    <option value="cubic_meters">Cubic Meters</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                  <input
+                    type="number"
+                    name="quantity"
+                    value={formData.quantity}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
+                  <input
+                    type="text"
+                    name="price_range"
+                    value={formData.price_range}
+                    onChange={handleChange}
+                    placeholder="e.g., $80-85 per barrel"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="e.g., Texas, USA"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Trading Hub</label>
+                  <input
+                    type="text"
+                    name="trading_hub"
+                    value={formData.trading_hub}
+                    onChange={handleChange}
+                    placeholder="e.g., Houston, TX"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows="4"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Contact Person</label>
+                  <input
+                    type="text"
+                    name="contact_person"
+                    value={formData.contact_person}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
+                  <input
+                    type="tel"
+                    name="contact_phone"
+                    value={formData.contact_phone}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
+                <input
+                  type="email"
+                  name="contact_email"
+                  value={formData.contact_email}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="is_featured"
+                  checked={formData.is_featured}
+                  onChange={handleChange}
+                  className="mr-2"
+                />
+                <label className="text-sm text-gray-700">
+                  Make this a featured listing (+$10)
+                </label>
+              </div>
+
+              <div className="flex space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage('dashboard')}
+                  className="flex-1 bg-gray-600 hover:bg-gray-500 text-white py-3 px-6 rounded-lg font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-orange-600 hover:bg-orange-500 text-white py-3 px-6 rounded-lg font-semibold"
+                >
+                  Update Listing
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'login':
