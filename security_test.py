@@ -584,9 +584,12 @@ class OWASPSecurityTester:
         print("\n" + "="*80)
         return self.tests_passed == self.tests_run
 
+import os # Add os import
+
 def main():
-    # Get the backend URL from environment variable or use the default
-    backend_url = "https://97cdbb83-8ee9-4f68-b3c2-729c6dd484c8.preview.emergentagent.com"
+    # Get the backend URL from environment variable or use a sensible default for CI/local
+    default_url = "http://localhost:8001"
+    backend_url = os.environ.get("API_BASE_URL_FOR_TESTS", default_url)
     
     print(f"Testing OWASP Top 10 Security Features for Oil & Gas Finder API at: {backend_url}")
     

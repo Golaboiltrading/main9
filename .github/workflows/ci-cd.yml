@@ -158,10 +158,24 @@ jobs:
         SECRET_KEY: test-secret-key-for-ci
         ENVIRONMENT: test
 
-    - name: Test API endpoints
+    - name: Test API status (quick check)
       run: |
         curl -f http://localhost:8001/api/status
         echo "API status check passed"
+
+    - name: Run Backend Integration Tests
+      run: python ../backend_test.py # Adjusted path assuming script is at root
+      env:
+        API_BASE_URL_FOR_TESTS: http://localhost:8001
+        # Add any other ENV VARS your test script might need, e.g., specific test user credentials if not handled within script
+      # No continue-on-error or || true, so it fails the job if tests fail
+
+    - name: Run Backend Security Tests
+      run: python ../security_test.py # Adjusted path assuming script is at root
+      env:
+        API_BASE_URL_FOR_TESTS: http://localhost:8001
+        # Add any other ENV VARS
+      # No continue-on-error or || true
 
   # Deploy to staging
   deploy-staging:

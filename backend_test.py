@@ -962,9 +962,12 @@ class OilGasFinderTester:
                 print(f"❌ Failed - Cache Headers: Not present")
                 return False
 
+import os # Ensure os is imported
+
 def main():
-    # Get the backend URL from environment variable or use the default
-    backend_url = "https://97cdbb83-8ee9-4f68-b3c2-729c6dd484c8.preview.emergentagent.com"
+    # Get the backend URL from environment variable or use a sensible default for CI/local
+    default_url = "http://localhost:8001"
+    backend_url = os.environ.get("API_BASE_URL_FOR_TESTS", default_url)
     
     print(f"Testing Oil & Gas Finder Platform API at: {backend_url}")
     
