@@ -1487,7 +1487,7 @@ function App() {
                         </button>
                       )}
                       
-                      {selectedListing.contact_phone && (
+                      {(selectedListing.contact_phone || selectedListing.whatsapp_number) && (
                         <button
                           onClick={handleWhatsAppTrader}
                           className="bg-green-500 hover:bg-green-400 text-white py-3 px-6 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center"
