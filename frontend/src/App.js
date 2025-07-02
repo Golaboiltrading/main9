@@ -23,6 +23,7 @@ function App() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');
   const [editingListing, setEditingListing] = useState(null);
+  const [selectedListing, setSelectedListing] = useState(null);
 
   // URL routing
   useEffect(() => {
