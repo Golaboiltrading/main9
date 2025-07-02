@@ -13,88 +13,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class MongoSanitizer:
-    """
-    Comprehensive MongoDB injection prevention
-    """
-    
-    # Dangerous MongoDB operators that should be blocked
-    DANGEROUS_OPERATORS = {
-        '$where', '$ne', '$gt', '$gte', '$lt', '$lte', '$in', '$nin',
-        '$or', '$and', '$not', '$nor', '$exists', '$type', '$mod',
-        '$regex', '$text', '$search', '$language', '$caseSensitive',
-        '$diacriticSensitive', '$expr', '$jsonSchema', '$geoIntersects',
-        '$geoWithin', '$near', '$nearSphere', '$all', '$elemMatch',
-        '$size', '$bitsAllClear', '$bitsAllSet', '$bitsAnyClear',
-        '$bitsAnySet', '$comment', '$meta', '$slice'
-    }
-    
-    @classmethod
-    def sanitize_query(cls, query: Dict[str, Any], allow_operators: List[str] = None) -> Dict[str, Any]:
-        """
-        Sanitize MongoDB query to prevent injection attacks
-        
-        Args:
-            query: The query dictionary to sanitize
-            allow_operators: List of operators to allow (default: none)
-        
-        Returns:
-            Sanitized query dictionary
-        """
-        if not isinstance(query, dict):
-            return {}
-        
-        allowed_ops = set(allow_operators or [])
-        sanitized = {}
-        
-        for key, value in query.items():
-            # Block dangerous operators unless explicitly allowed
-            if isinstance(key, str) and key.startswith('$'):
-                if key not in allowed_ops:
-                    logger.warning(f"Blocked dangerous MongoDB operator: {key}")
-                    continue
-            
-            # Recursively sanitize nested dictionaries
-            if isinstance(value, dict):
-                sanitized_value = cls.sanitize_query(value, allow_operators)
-                if sanitized_value:  # Only add if not empty
-                    sanitized[key] = sanitized_value
-            elif isinstance(value, list):
-                # Sanitize list items
-                sanitized_list = []
-                for item in value:
-                    if isinstance(item, dict):
-                        sanitized_item = cls.sanitize_query(item, allow_operators)
-                        if sanitized_item:
-                            sanitized_list.append(sanitized_item)
-                    elif isinstance(item, str):
-                        sanitized_list.append(cls._sanitize_string_value(item))
-                    else:
-                        sanitized_list.append(item)
-                sanitized[key] = sanitized_list
-            elif isinstance(value, str):
-                sanitized[key] = cls._sanitize_string_value(value)
-            else:
-                sanitized[key] = value
-        
-        return sanitized
-    
-    @staticmethod
-    def _sanitize_string_value(value: str) -> str:
-        """Sanitize string values to prevent injection"""
-        if not isinstance(value, str):
-            return value
-        
-        # Remove potentially dangerous characters
-        dangerous_chars = ['$', '{', '}', '\\', '\x00']
-        for char in dangerous_chars:
-            value = value.replace(char, '')
-        
-        # Limit length to prevent DoS
-        if len(value) > 1000:
-            value = value[:1000]
-        
-        return value.strip()
+# REMOVED MongoSanitizer class and sanitize_request_middleware function
 
 class InputValidator:
     """
@@ -404,24 +323,25 @@ async def sanitize_request_middleware(request: Request, call_next):
     """
     Middleware to automatically sanitize incoming requests
     """
-    try:
-        # Only process JSON requests
-        if request.headers.get('content-type') == 'application/json':
-            body = await request.body()
-            if body:
-                try:
-                    data = json.loads(body)
-                    # Sanitize the request data
-                    if isinstance(data, dict):
-                        sanitized_data = MongoSanitizer.sanitize_query(data)
-                        # Note: In a real implementation, you'd need to modify the request body
-                        # This is a simplified example
-                except json.JSONDecodeError:
-                    pass
-        
-        response = await call_next(request)
-        return response
+    # This middleware is being removed. Pydantic validation at the endpoint level is preferred.
+    # try:
+    #     # Only process JSON requests
+    #     if request.headers.get('content-type') == 'application/json':
+    #         body = await request.body()
+    #         if body:
+    #             try:
+    #                 data = json.loads(body)
+    #                 # Sanitize the request data
+    #                 # if isinstance(data, dict):
+    #                 #     sanitized_data = MongoSanitizer.sanitize_query(data) # MongoSanitizer is removed
+    #                     # Note: In a real implementation, you'd need to modify the request body
+    #                     # This is a simplified example
+    #             except json.JSONDecodeError:
+    #                 pass
+
+    response = await call_next(request)
+    return response
     
-    except Exception as e:
-        logger.error(f"Error in sanitization middleware: {e}")
-        raise HTTPException(status_code=500, detail="Request processing error")
+    # except Exception as e:
+    #     logger.error(f"Error in sanitization middleware: {e}")
+    #     raise HTTPException(status_code=500, detail="Request processing error")

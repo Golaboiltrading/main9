@@ -33,16 +33,17 @@ except ImportError as e:
 # Import injection prevention and enhanced validation
 try:
     from injection_prevention import (
-        MongoSanitizer,
+        # MongoSanitizer, # REMOVE
         InputValidator,
-        FileUploadValidator,
-        sanitize_request_middleware
+        FileUploadValidator
+        # sanitize_request_middleware # REMOVE
     )
-    INJECTION_PREVENTION_AVAILABLE = True
-    print("✅ Injection prevention middleware loaded successfully")
+    # INJECTION_PREVENTION_AVAILABLE = True # This flag might still be useful for other validators
+    # For now, let's assume InputValidator and FileUploadValidator are always available if module loads
+    print("✅ InputValidator and FileUploadValidator loaded successfully from injection_prevention module.")
 except ImportError as e:
-    print(f"Warning: Injection prevention not available: {e}")
-    INJECTION_PREVENTION_AVAILABLE = False
+    print(f"Warning: Could not load all components from injection_prevention: {e}")
+    # INJECTION_PREVENTION_AVAILABLE = False # Set based on actual needs if other parts are conditional
 
 # Try to import enhanced security middleware
 try:
@@ -164,9 +165,9 @@ else:
     print("❌ Rate limiting disabled - slowapi not available")
 
 # Add injection prevention middleware
-if INJECTION_PREVENTION_AVAILABLE:
-    app.middleware("http")(sanitize_request_middleware)
-    print("✅ Injection prevention middleware enabled")
+# if INJECTION_PREVENTION_AVAILABLE: # REMOVE Middleware
+#     app.middleware("http")(sanitize_request_middleware)
+#     print("✅ Injection prevention middleware enabled")
 
 # Include SEO router if available
 if seo_router:
@@ -626,13 +627,14 @@ async def create_listing(listing_data: TradingListing, request: Request, current
             listing_data.contact_phone = validated_data.get('contact_phone', listing_data.contact_phone)
         
         # Additional security: Sanitize MongoDB query for user lookup
-        user_query = {"user_id": user_id}
-        if INJECTION_PREVENTION_AVAILABLE:
-            user_query = MongoSanitizer.sanitize_query(user_query)
+        # user_query = {"user_id": user_id} # REMOVE MongoSanitizer call
+        # if INJECTION_PREVENTION_AVAILABLE:
+        #     user_query = MongoSanitizer.sanitize_query(user_query)
         
-        user = users_collection.find_one(user_query)
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+        # User is already fetched and available in current_user from Depends(get_current_user)
+        # user = users_collection.find_one(user_query)
+        # if not user:
+        #     raise HTTPException(status_code=404, detail="User not found")
         
         # Generate secure listing ID
         listing_id = str(uuid.uuid4())
@@ -653,9 +655,9 @@ async def create_listing(listing_data: TradingListing, request: Request, current
             if key != 'is_featured':  # Already handled above
                 listing_doc[key] = value
         
-        # Sanitize the entire document before insertion
-        if INJECTION_PREVENTION_AVAILABLE:
-            listing_doc = MongoSanitizer.sanitize_query(listing_doc)
+        # Sanitize the entire document before insertion # REMOVE MongoSanitizer call
+        # if INJECTION_PREVENTION_AVAILABLE:
+        #     listing_doc = MongoSanitizer.sanitize_query(listing_doc)
         
         listings_collection.insert_one(listing_doc)
         
