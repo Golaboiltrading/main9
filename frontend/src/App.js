@@ -24,7 +24,6 @@ function App() {
   const [selectedTier, setSelectedTier] = useState('');
   const [editingListing, setEditingListing] = useState(null);
   const [editingListing, setEditingListing] = useState(null);
-  const [editingListing, setEditingListing] = useState(null);
 
   // URL routing
   useEffect(() => {
