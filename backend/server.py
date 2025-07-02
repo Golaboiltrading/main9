@@ -348,6 +348,7 @@ class TradingListing(BaseModel):
     contact_person: str
     contact_email: EmailStr
     contact_phone: str
+    whatsapp_number: Optional[str] = None
     is_featured: bool = False
 
 class SearchFilters(BaseModel):
