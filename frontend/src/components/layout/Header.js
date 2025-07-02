@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext'; // Import useAuth
 
-// This component will need access to 'user' state and 'handleLogout' function from App.js
-// For now, we pass them as props. Later, context or state management could be used.
-const Header = ({ user, handleLogout }) => {
+const Header = () => { // Remove user and handleLogout from props
+  const { user, logout } = useAuth(); // Consume context
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -57,7 +57,7 @@ const Header = ({ user, handleLogout }) => {
                   Dashboard
                 </button>
                 <button
-                  onClick={handleLogout}
+                  onClick={logout} // Use logout from context
                   className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg font-semibold transition-colors"
                 >
                   Logout

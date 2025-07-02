@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate, useLocation, Link } from 'react-router-dom'; // Added Link
+// Removed duplicate React import
+import { Routes, Route, useNavigate, useLocation, Link } from 'react-router-dom';
 import './App.css';
 
+import { AuthProvider } from './context/AuthContext'; // ADDED AuthProvider
+
 // Import Page Components
-import HomePage from './pages/HomePage'; // Assuming EnhancedHomePage is now HomePage
+import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import PremiumPage from './pages/PremiumPage';
@@ -21,63 +23,37 @@ import { LeadCaptureForm } from './components/Analytics';
 import { DisclaimerBanner, FooterDisclaimer, HeaderWarning } from './components/DisclaimerBanner';
 import NewsBar from './components/NewsBar'; // NewsSidebar is used within BrowsePage
 
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL; // This might move to an API service later
 
-function App() {
-  // const [currentPage, setCurrentPage] = useState('home'); // REMOVE: Handled by react-router
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [loading, setLoading] = useState(false);
+import { AuthProvider, useAuth } from './context/AuthContext'; // ADDED useAuth here as well
+
+function AppContent() {
+  // App-specific state (non-auth)
   const [stats, setStats] = useState({});
   const [marketData, setMarketData] = useState({});
   const [listings, setListings] = useState([]);
   const [userAnalytics, setUserAnalytics] = useState({});
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');
-  const navigate = useNavigate(); // ADD: For programmatic navigation
-  const location = useLocation(); // ADD: To get current path for active link styling if needed
 
-  // REMOVE: useEffect for manual path parsing
-  // useEffect(() => {
-  //   const path = window.location.pathname;
-  //   if (path === '/browse') setCurrentPage('browse');
-  //   else if (path === '/premium') setCurrentPage('premium');
-  //   else if (path === '/register') setCurrentPage('register');
-  //   else if (path === '/login') setCurrentPage('login');
-  //   else if (path === '/ai-analysis') setCurrentPage('ai-analysis');
-  //   else setCurrentPage('home');
-  // }, []);
+  const navigate = useNavigate(); // Still useful for non-auth navigation if any from AppContent
+  const location = useLocation(); // Still useful for Header's active link styling
 
-  // REMOVE: manual navigateToPage function
-  // const navigateToPage = (page) => {
-  //   setCurrentPage(page);
-  //   window.history.pushState({}, '', `/${page === 'home' ? '' : page}`);
-  // };
-
+  // This useEffect fetches general app data.
+  // If these fetches require a token, they should ideally be moved to a service
+  // that can access the token from AuthContext, or this component
+  // could use useAuth() to get the token.
+  // For now, assuming they are public or will be adapted.
   useEffect(() => {
-    if (token) {
-      fetchUserProfile();
-    }
     fetchStats();
     fetchMarketData();
     fetchListings();
-  }, [token]);
+  }, []); // Re-evaluate dependencies if these fetches depend on auth token. For now, assume public or tokenless.
 
-  const fetchUserProfile = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
+  // REMOVE: fetchUserProfile, it's in AuthProvider
+  // const fetchUserProfile = async () => { ... };
 
-  const fetchStats = async () => {
+  const fetchStats = async () => { // Keep as is if public
     try {
       const response = await fetch(`${API_BASE_URL}/api/stats`);
       const data = await response.json();
@@ -107,100 +83,65 @@ function App() {
     }
   };
 
-  const handleLogin = async (email, password) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setToken(data.access_token);
-        setUser(data.user);
-        localStorage.setItem('token', data.access_token);
-        // setCurrentPage('dashboard'); // REMOVE: Use navigate
-        navigate('/dashboard'); // ADD: Programmatic navigation
-      } else {
-        alert('Login failed. Please check your credentials.');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      alert('Login failed. Please try again.');
+  // REMOVE: handleLogin, handleRegister, handleLogout - they are in AuthProvider
+  // const handleLogin = async (email, password) => { ... };
+  // const handleRegister = async (userData) => { ... };
+  // const handleLogout = () => { ... };
+
+  // DashboardPage will now use useAuth to get user information
+  const DashboardPage = () => {
+    const { user } = useAuth(); // Consume auth context
+    return (
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold">My Dashboard</h1>
+        <p>Welcome to your dashboard, {user?.first_name || 'User'}!</p>
+        {/* More dashboard content here */}
+      </div>
+    );
+  };
+
+  // ProtectedRoute component (can be moved to a separate file later)
+  const ProtectedRoute = ({ children }) => {
+    const { user, isAuthLoading } = useAuth();
+    const location = useLocation();
+
+    if (isAuthLoading) {
+      return <div>Loading session...</div>; // Or a spinner component
     }
-    setLoading(false);
-  };
 
-  const handleRegister = async (userData) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setToken(data.access_token);
-        setUser(data.user);
-        localStorage.setItem('token', data.access_token);
-        // setCurrentPage('dashboard'); // REMOVE: Use navigate
-        navigate('/dashboard'); // ADD: Programmatic navigation
-      } else {
-        const errorData = await response.json();
-        alert(errorData.detail || 'Registration failed');
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      alert('Registration failed. Please try again.');
+    if (!user) {
+      return <Navigate to="/login" state={{ from: location }} replace />;
     }
-    setLoading(false);
+    return children;
   };
 
-  const handleLogout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-    // setCurrentPage('home'); // REMOVE: Use navigate
-    navigate('/'); // ADD: Programmatic navigation to home
-  };
-
-  // The Header component definition has been moved to frontend/src/components/layout/Header.js
-  // Inline page component definitions (LoginPage, RegisterPage, PremiumPage, BrowsePage)
-  // have been moved to their respective files in frontend/src/pages/
-
-  // A placeholder for a DashboardPage - this would need to be created
-  const DashboardPage = () => (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold">My Dashboard</h1>
-      <p>Welcome to your dashboard, {user?.first_name}!</p>
-      {/* More dashboard content here */}
-    </div>
-  );
 
   return (
     <div className="App">
       <DisclaimerBanner />
       <HeaderWarning />
       <NewsBar />
-      {/* Pass user and handleLogout to the imported HeaderComponent */}
-      <HeaderComponent user={user} handleLogout={handleLogout} />
+      <HeaderComponent /> {/* User and logout are now from context within HeaderComponent */}
 
       <Routes>
-        <Route path="/" element={<HomePage />} /> {/* Assuming EnhancedHomePage is now HomePage */}
-        <Route path="/login" element={<LoginPage handleLogin={handleLogin} loading={loading} />} />
-        <Route path="/register" element={<RegisterPage handleRegister={handleRegister} loading={loading} />} />
-        <Route path="/premium" element={<PremiumPage user={user} setSelectedTier={setSelectedTier} setShowPaymentModal={setShowPaymentModal} />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} /> {/* Props removed, will use context */}
+        <Route path="/register" element={<RegisterPage />} /> {/* Props removed, will use context */}
+        {/* PremiumPage will get user from context. Other props remain for now. */}
+        <Route path="/premium" element={<PremiumPage setSelectedTier={setSelectedTier} setShowPaymentModal={setShowPaymentModal} />} />
         <Route path="/browse" element={<BrowsePage listings={listings} />} />
         <Route path="/ai-analysis" element={<AIAnalysisPage />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/disclaimer" element={<Disclaimer />} />
-        <Route path="/dashboard" element={user ? <DashboardPage /> : <LoginPage handleLogin={handleLogin} loading={loading} />} /> {/* Protected Route Example */}
-        {/* Add other routes as needed, e.g., for specific listing details, user profile, etc. */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
       
       <div className="bg-gradient-to-r from-orange-600 to-red-600 py-12">

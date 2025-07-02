@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Added Link
+import { Link } from 'react-router-dom'; // useNavigate is not needed here
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 
-// This component will need 'handleRegister' and 'loading' state from App.js as props.
-const RegisterPage = ({ handleRegister, loading }) => {
+const RegisterPage = () => { // Remove handleRegister and loading from props
+  const { register, loading } = useAuth(); // Consume context
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -13,11 +14,10 @@ const RegisterPage = ({ handleRegister, loading }) => {
     country: '',
     trading_role: 'both' // Default value
   });
-  // const navigate = useNavigate(); // No longer needed if using Link and App.js navigate
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => { // Make async if register function is async
     e.preventDefault();
-    handleRegister(formData); // handleRegister in App.js will use navigate
+    await register(formData); // Call register from context
   };
 
   const handleChange = (e) => {

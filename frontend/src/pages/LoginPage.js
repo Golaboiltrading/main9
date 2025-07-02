@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Added Link
+import { Link } from 'react-router-dom'; // useNavigate is not needed here if login redirects from context
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 
-// This component will need 'handleLogin' and 'loading' state from App.js as props.
-const LoginPage = ({ handleLogin, loading }) => {
+const LoginPage = () => { // Remove handleLogin and loading from props
+  const { login, loading } = useAuth(); // Consume context
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  // const navigate = useNavigate(); // No longer needed if using Link and App.js navigate
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => { // Make async if login function is async
     e.preventDefault();
-    handleLogin(email, password); // handleLogin in App.js will use navigate
+    await login(email, password); // Call login from context
   };
 
   return (
