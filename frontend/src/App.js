@@ -552,7 +552,13 @@ function App() {
                 <p className="text-gray-600 mb-2">Quantity: {listing.quantity} {listing.unit}</p>
                 <p className="text-gray-600 mb-2">Location: {listing.location}</p>
                 <p className="text-gray-600 mb-4">Price: {listing.price_range}</p>
-                <button className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg w-full font-semibold transition-colors">
+                <button 
+                  onClick={() => {
+                    setSelectedListing(listing);
+                    setCurrentPage('trader-detail');
+                  }}
+                  className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg w-full font-semibold transition-colors"
+                >
                   Connect with Trader
                 </button>
               </div>
