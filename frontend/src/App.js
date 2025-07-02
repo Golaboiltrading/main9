@@ -1306,7 +1306,9 @@ function App() {
     };
 
     const handleWhatsAppTrader = () => {
-      if (selectedListing.contact_phone) {
+      // Use WhatsApp number if available, otherwise fall back to regular phone
+      const phoneNumber = selectedListing.whatsapp_number || selectedListing.contact_phone;
+      if (phoneNumber) {
         const message = encodeURIComponent(
           `Hello ${selectedListing.contact_person}, I'm interested in your ${selectedListing.product_type.replace('_', ' ')} listing: "${selectedListing.title}". ` +
           `Quantity: ${selectedListing.quantity} ${selectedListing.unit}, Location: ${selectedListing.location}, Price: ${selectedListing.price_range}. ` +
@@ -1314,7 +1316,7 @@ function App() {
         );
         
         // Remove any non-numeric characters from phone number for WhatsApp
-        const cleanPhone = selectedListing.contact_phone.replace(/[^0-9]/g, '');
+        const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
         const whatsappUrl = `https://wa.me/${cleanPhone}?text=${message}`;
         window.open(whatsappUrl, '_blank');
       }
