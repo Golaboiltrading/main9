@@ -1469,6 +1469,8 @@ function App() {
         return <PremiumPage />;
       case 'browse':
         return <BrowsePage />;
+      case 'trader-detail':
+        return <TraderDetailPage />;
       case 'ai-analysis':
         return <AIAnalysisPage />;
       case 'demo':
