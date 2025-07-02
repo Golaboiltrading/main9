@@ -579,12 +579,395 @@ function App() {
     </div>
   );
 
+  // Dashboard Page Component
+  const DashboardPage = () => {
+    const [activeTab, setActiveTab] = useState('listings');
+    const [myListings, setMyListings] = useState([]);
+
+    useEffect(() => {
+      if (user && token) {
+        fetchMyListings();
+      }
+    }, [user, token]);
+
+    const fetchMyListings = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/listings/my`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        setMyListings(data.listings || []);
+      } catch (error) {
+        console.error('Error fetching my listings:', error);
+      }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <h1 className="text-3xl font-bold mb-8">Trading Dashboard</h1>
+            
+            <div className="flex space-x-4 mb-8">
+              <button
+                onClick={() => setActiveTab('listings')}
+                className={`px-4 py-2 rounded-lg font-semibold ${
+                  activeTab === 'listings'
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                My Listings
+              </button>
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`px-4 py-2 rounded-lg font-semibold ${
+                  activeTab === 'analytics'
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Analytics
+              </button>
+            </div>
+
+            {activeTab === 'listings' && (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-bold">My Trading Listings</h2>
+                  <button
+                    onClick={() => setCurrentPage('create-listing')}
+                    className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-2 rounded-lg font-semibold"
+                  >
+                    Create New Listing
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {myListings.map((listing, index) => (
+                    <div key={index} className="bg-gray-50 p-6 rounded-lg">
+                      <div className="flex justify-between items-start mb-4">
+                        <h4 className="font-semibold text-lg">{listing.title}</h4>
+                        <span className={`px-2 py-1 rounded text-sm font-semibold ${
+                          listing.status === 'featured' 
+                            ? 'bg-orange-500 text-white' 
+                            : 'bg-green-500 text-white'
+                        }`}>
+                          {listing.status}
+                        </span>
+                      </div>
+                      <p className="text-gray-600">{listing.product_type?.replace('_', ' ').toUpperCase()}</p>
+                      <p className="text-gray-600">Quantity: {listing.quantity} {listing.unit}</p>
+                      <p className="text-gray-600">Location: {listing.location}</p>
+                      <p className="text-gray-600">Price: {listing.price_range}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {myListings.length === 0 && (
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">📝</div>
+                    <p className="text-gray-600 mb-4">You haven't created any listings yet.</p>
+                    <button
+                      onClick={() => setCurrentPage('create-listing')}
+                      className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-2 rounded-lg font-semibold"
+                    >
+                      Create Your First Listing
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'analytics' && (
+              <div>
+                <h2 className="text-xl font-bold mb-6">Trading Analytics</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-blue-50 p-6 rounded-lg text-center">
+                    <div className="text-2xl font-bold text-blue-600">{myListings.length}</div>
+                    <div className="text-gray-600">Total Listings</div>
+                  </div>
+                  <div className="bg-green-50 p-6 rounded-lg text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {myListings.filter(l => l.status === 'active').length}
+                    </div>
+                    <div className="text-gray-600">Active Listings</div>
+                  </div>
+                  <div className="bg-orange-50 p-6 rounded-lg text-center">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {myListings.filter(l => l.status === 'featured').length}
+                    </div>
+                    <div className="text-gray-600">Featured Listings</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Create Listing Page Component
+  const CreateListingPage = () => {
+    const [formData, setFormData] = useState({
+      title: '',
+      product_type: 'crude_oil',
+      quantity: '',
+      unit: 'barrels',
+      price_range: '',
+      location: '',
+      trading_hub: '',
+      description: '',
+      contact_person: user?.first_name + ' ' + user?.last_name || '',
+      contact_email: user?.email || '',
+      contact_phone: '',
+      is_featured: false
+    });
+
+    const handleCreateListing = async (listingData) => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/listings`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(listingData)
+        });
+
+        if (response.ok) {
+          alert('Listing created successfully!');
+          setCurrentPage('dashboard');
+        } else {
+          const errorData = await response.json();
+          alert('Failed to create listing: ' + (errorData.detail || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error creating listing:', error);
+        alert('Failed to create listing');
+      }
+    };
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      const listingData = {
+        ...formData,
+        quantity: parseFloat(formData.quantity)
+      };
+      handleCreateListing(listingData);
+    };
+
+    const handleChange = (e) => {
+      const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+      setFormData({ ...formData, [e.target.name]: value });
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+            <h2 className="text-2xl font-bold mb-8">Create Trading Listing</h2>
+            
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Listing Title</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
+                  <select
+                    name="product_type"
+                    value={formData.product_type}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="crude_oil">Crude Oil</option>
+                    <option value="gasoline">Gasoline</option>
+                    <option value="diesel">Diesel</option>
+                    <option value="jet_fuel">Jet Fuel</option>
+                    <option value="natural_gas">Natural Gas</option>
+                    <option value="lng">LNG</option>
+                    <option value="lpg">LPG</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                  <select
+                    name="unit"
+                    value={formData.unit}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="barrels">Barrels</option>
+                    <option value="tons">Tons</option>
+                    <option value="gallons">Gallons</option>
+                    <option value="liters">Liters</option>
+                    <option value="cubic_meters">Cubic Meters</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                  <input
+                    type="number"
+                    name="quantity"
+                    value={formData.quantity}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
+                  <input
+                    type="text"
+                    name="price_range"
+                    value={formData.price_range}
+                    onChange={handleChange}
+                    placeholder="e.g., $80-85 per barrel"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="e.g., Texas, USA"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Trading Hub</label>
+                  <input
+                    type="text"
+                    name="trading_hub"
+                    value={formData.trading_hub}
+                    onChange={handleChange}
+                    placeholder="e.g., Houston, TX"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows="4"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Contact Person</label>
+                  <input
+                    type="text"
+                    name="contact_person"
+                    value={formData.contact_person}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
+                  <input
+                    type="tel"
+                    name="contact_phone"
+                    value={formData.contact_phone}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
+                <input
+                  type="email"
+                  name="contact_email"
+                  value={formData.contact_email}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="is_featured"
+                  checked={formData.is_featured}
+                  onChange={handleChange}
+                  className="mr-2"
+                />
+                <label className="text-sm text-gray-700">
+                  Make this a featured listing (+$10)
+                </label>
+              </div>
+
+              <div className="flex space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage('dashboard')}
+                  className="flex-1 bg-gray-600 hover:bg-gray-500 text-white py-3 px-6 rounded-lg font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-orange-600 hover:bg-orange-500 text-white py-3 px-6 rounded-lg font-semibold"
+                >
+                  Create Listing
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'login':
         return <LoginPage />;
       case 'register':
         return <RegisterPage />;
+      case 'dashboard':
+        return <DashboardPage />;
+      case 'create-listing':
+        return <CreateListingPage />;
       case 'premium':
         return <PremiumPage />;
       case 'browse':
