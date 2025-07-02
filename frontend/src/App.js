@@ -602,6 +602,34 @@ function App() {
       }
     };
 
+    const handleDeleteListing = async (listingId) => {
+      if (!window.confirm('Are you sure you want to delete this listing?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/listings/${listingId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          alert('Listing deleted successfully!');
+          fetchMyListings(); // Refresh the listings
+        } else {
+          alert('Failed to delete listing');
+        }
+      } catch (error) {
+        console.error('Error deleting listing:', error);
+        alert('Failed to delete listing');
+      }
+    };
+
+    const handleEditListing = (listing) => {
+      setEditingListing(listing);
+      setCurrentPage('edit-listing');
+    };
+
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="container mx-auto px-4">
