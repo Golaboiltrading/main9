@@ -1262,6 +1262,197 @@ function App() {
     );
   };
 
+  // Trader Detail Page Component
+  const TraderDetailPage = () => {
+    if (!selectedListing) {
+      return (
+        <div className="min-h-screen bg-gray-50 py-12">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-2xl font-bold mb-4">Listing not found</h2>
+            <button
+              onClick={() => setCurrentPage('browse')}
+              className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-2 rounded-lg font-semibold"
+            >
+              Back to Browse
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    const handleContactTrader = () => {
+      const subject = encodeURIComponent(`Interested in: ${selectedListing.title}`);
+      const body = encodeURIComponent(
+        `Hello ${selectedListing.contact_person},\n\n` +
+        `I'm interested in your ${selectedListing.product_type.replace('_', ' ')} listing:\n\n` +
+        `Title: ${selectedListing.title}\n` +
+        `Quantity: ${selectedListing.quantity} ${selectedListing.unit}\n` +
+        `Location: ${selectedListing.location}\n` +
+        `Price: ${selectedListing.price_range}\n\n` +
+        `Please contact me to discuss this opportunity.\n\n` +
+        `Best regards`
+      );
+      
+      const mailtoLink = `mailto:${selectedListing.contact_email}?subject=${subject}&body=${body}`;
+      window.open(mailtoLink, '_blank');
+    };
+
+    const handleCallTrader = () => {
+      if (selectedListing.contact_phone) {
+        window.open(`tel:${selectedListing.contact_phone}`, '_self');
+      }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            {/* Back Button */}
+            <button
+              onClick={() => setCurrentPage('browse')}
+              className="mb-6 flex items-center text-orange-600 hover:text-orange-500 font-semibold"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Browse
+            </button>
+
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white p-8">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h1 className="text-3xl font-bold mb-2">{selectedListing.title}</h1>
+                    <p className="text-orange-100 text-lg">{selectedListing.company_name}</p>
+                  </div>
+                  {selectedListing.is_featured && (
+                    <span className="bg-yellow-500 text-yellow-900 px-3 py-1 rounded-full text-sm font-semibold">
+                      Featured
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Product Information */}
+                  <div>
+                    <h2 className="text-2xl font-bold mb-6 text-gray-900">Product Details</h2>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center">
+                        <span className="w-24 text-gray-600 font-semibold">Product:</span>
+                        <span className="text-lg text-gray-900">{selectedListing.product_type.replace('_', ' ').toUpperCase()}</span>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <span className="w-24 text-gray-600 font-semibold">Quantity:</span>
+                        <span className="text-lg text-gray-900">{selectedListing.quantity?.toLocaleString()} {selectedListing.unit}</span>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <span className="w-24 text-gray-600 font-semibold">Price:</span>
+                        <span className="text-lg text-green-600 font-bold">{selectedListing.price_range}</span>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <span className="w-24 text-gray-600 font-semibold">Location:</span>
+                        <span className="text-lg text-gray-900">{selectedListing.location}</span>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <span className="w-24 text-gray-600 font-semibold">Hub:</span>
+                        <span className="text-lg text-gray-900">{selectedListing.trading_hub}</span>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="mt-8">
+                      <h3 className="text-xl font-bold mb-4 text-gray-900">Description</h3>
+                      <p className="text-gray-700 leading-relaxed">{selectedListing.description}</p>
+                    </div>
+                  </div>
+
+                  {/* Contact Information */}
+                  <div>
+                    <h2 className="text-2xl font-bold mb-6 text-gray-900">Contact Information</h2>
+                    
+                    <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          <span className="text-gray-900 font-semibold">{selectedListing.contact_person}</span>
+                        </div>
+                        
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-gray-900">{selectedListing.contact_email}</span>
+                        </div>
+                        
+                        {selectedListing.contact_phone && (
+                          <div className="flex items-center">
+                            <svg className="w-5 h-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            <span className="text-gray-900">{selectedListing.contact_phone}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="space-y-3">
+                      <button
+                        onClick={handleContactTrader}
+                        className="w-full bg-orange-600 hover:bg-orange-500 text-white py-3 px-6 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center"
+                      >
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        Send Email
+                      </button>
+                      
+                      {selectedListing.contact_phone && (
+                        <button
+                          onClick={handleCallTrader}
+                          className="w-full bg-green-600 hover:bg-green-500 text-white py-3 px-6 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center"
+                        >
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                          Call Now
+                        </button>
+                      )}
+                      
+                      <button
+                        onClick={() => setCurrentPage('browse')}
+                        className="w-full bg-gray-600 hover:bg-gray-500 text-white py-2 px-6 rounded-lg font-semibold transition-colors"
+                      >
+                        Back to Browse
+                      </button>
+                    </div>
+
+                    {/* Listing Info */}
+                    <div className="mt-6 text-sm text-gray-500">
+                      <p>Listed on: {new Date(selectedListing.created_at).toLocaleDateString()}</p>
+                      <p>Status: <span className="capitalize font-semibold">{selectedListing.status}</span></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'login':
