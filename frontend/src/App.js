@@ -1015,6 +1015,8 @@ function App() {
         return <DashboardPage />;
       case 'create-listing':
         return <CreateListingPage />;
+      case 'edit-listing':
+        return <EditListingPage />;
       case 'premium':
         return <PremiumPage />;
       case 'browse':
