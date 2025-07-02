@@ -757,8 +757,9 @@ async def get_my_listings(current_user: dict = Depends(get_current_user)):
 async def update_listing(
     listing_id: str,
     listing_data: TradingListing,
-    user_id: str = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
+    user_id = current_user.get("user_id")
     existing_listing = listings_collection.find_one({"listing_id": listing_id, "user_id": user_id})
     if not existing_listing:
         raise HTTPException(status_code=404, detail="Listing not found")
@@ -774,7 +775,8 @@ async def update_listing(
     return {"message": "Listing updated successfully"}
 
 @app.delete("/api/listings/{listing_id}")
-async def delete_listing(listing_id: str, user_id: str = Depends(get_current_user)):
+async def delete_listing(listing_id: str, current_user: dict = Depends(get_current_user)):
+    user_id = current_user.get("user_id")
     result = listings_collection.delete_one({"listing_id": listing_id, "user_id": user_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Listing not found")
