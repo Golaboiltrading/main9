@@ -776,6 +776,7 @@ function App() {
       contact_person: user?.first_name + ' ' + user?.last_name || '',
       contact_email: user?.email || '',
       contact_phone: '',
+      whatsapp_number: '',
       is_featured: false
     });
 
