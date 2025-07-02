@@ -1027,6 +1027,7 @@ function App() {
       contact_person: editingListing?.contact_person || '',
       contact_email: editingListing?.contact_email || '',
       contact_phone: editingListing?.contact_phone || '',
+      whatsapp_number: editingListing?.whatsapp_number || '',
       is_featured: editingListing?.is_featured || false
     });
 
