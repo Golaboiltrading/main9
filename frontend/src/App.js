@@ -750,6 +750,22 @@ function App() {
                       <p className="text-gray-600">Quantity: {listing.quantity} {listing.unit}</p>
                       <p className="text-gray-600">Location: {listing.location}</p>
                       <p className="text-gray-600">Price: {listing.price_range}</p>
+                      
+                      {/* Action Buttons */}
+                      <div className="flex space-x-2 mt-4">
+                        <button
+                          onClick={() => handleEditListing(listing)}
+                          className="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteListing(listing.listing_id)}
+                          className="flex-1 bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
