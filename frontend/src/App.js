@@ -603,6 +603,11 @@ function App() {
       }
     };
 
+    const handleEditListing = (listing) => {
+      setEditingListing(listing);
+      setCurrentPage('edit-listing');
+    };
+
     const handleDeleteListing = async (listingId) => {
       if (!window.confirm('Are you sure you want to delete this listing?')) {
         return;
