@@ -270,8 +270,19 @@ if SUBSCRIPTION_MANAGER_AVAILABLE:
 else:
     subscription_manager = None
 
-# Enums
-class UserRole(str, Enum):
+# Import the auth router
+from backend.routers import auth_router as authentication_router # Use an alias
+
+app.include_router(authentication_router.router, prefix="/api/auth", tags=["Authentication"])
+
+
+# Enums (UserRole and TradingRole might be moved or shared from a common location if auth_router defines them)
+# For now, keep them here if other parts of server.py use them, or if they are the central definition.
+# If UserCreate/UserLogin and their direct dependencies like TradingRole were fully moved to auth_router,
+# then TradingRole might not be needed here unless other models in server.py use it.
+# UserRole is likely used by other parts of server.py (e.g. get_current_user, other permission checks).
+
+class UserRole(str, Enum): # Keep if used by other routes in server.py
     BASIC = "basic"
     PREMIUM = "premium"
     ENTERPRISE = "enterprise"
@@ -291,40 +302,17 @@ class TradingRole(str, Enum):
     SELLER = "seller"
     BOTH = "both"
 
+# UserCreate and UserLogin models are now in auth_router.py
+# If TradingRole was only used by UserCreate, it could be moved too.
+# For now, assuming TradingRole might be used by other models or logic in server.py.
+
 class ListingStatus(str, Enum):
     ACTIVE = "active"
     INACTIVE = "inactive"
     FEATURED = "featured"
 
 # Pydantic models
-# Enhanced Pydantic models with validation
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str = Field(..., min_length=8, max_length=128)
-    first_name: str = Field(..., min_length=1, max_length=100)
-    last_name: str = Field(..., min_length=1, max_length=100)
-    company_name: str = Field(..., min_length=1, max_length=200)
-    phone: Optional[str] = Field(None, max_length=20)
-    country: str = Field(..., min_length=2, max_length=100)
-    trading_role: TradingRole
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "email": "user@example.com",
-                "password": "SecurePass123!",
-                "first_name": "John",
-                "last_name": "Doe",
-                "company_name": "Oil Trading Co",
-                "phone": "+1234567890",
-                "country": "United States",
-                "trading_role": "buyer"
-            }
-        }
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str = Field(..., min_length=1, max_length=128)
+# UserCreate and UserLogin have been moved to backend/routers/auth_router.py
 
 class CompanyProfile(BaseModel):
     company_name: str
