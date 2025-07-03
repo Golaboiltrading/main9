@@ -1046,6 +1046,21 @@ function App() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  WhatsApp/Telegram Number
+                  <span className="text-gray-500 text-xs ml-1">(Optional - for direct messaging)</span>
+                </label>
+                <input
+                  type="tel"
+                  name="whatsapp_number"
+                  value={formData.whatsapp_number}
+                  onChange={handleChange}
+                  placeholder="+1-555-987-6543"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Procedure Document Upload
                   <span className="text-gray-500 text-xs ml-1">(Optional - PDF only, max 10MB)</span>
                 </label>
