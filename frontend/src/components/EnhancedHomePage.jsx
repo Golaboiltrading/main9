@@ -1,8 +1,151 @@
 import React, { useState, useEffect } from 'react';
 
-const EnhancedHomePage = () => {
+const EnhancedHomePage = ({ onNavigate, listings = [], onSetSelectedListing }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [stats, setStats] = useState({});
+
+  // Create a ProductFilterPage component
+  const ProductFilterPage = () => {
+    const productTypes = [
+      { key: 'crude_oil', name: 'Crude Oil', icon: '🛢️', color: 'bg-orange-600' },
+      { key: 'natural_gas', name: 'Natural Gas', icon: '⛽', color: 'bg-blue-600' },
+      { key: 'lng', name: 'LNG', icon: '🌊', color: 'bg-indigo-600' },
+      { key: 'lpg', name: 'LPG', icon: '🔥', color: 'bg-purple-600' },
+      { key: 'gasoline', name: 'Gasoline', icon: '⛽', color: 'bg-red-600' },
+      { key: 'diesel', name: 'Diesel', icon: '🚛', color: 'bg-green-600' },
+      { key: 'jet_fuel', name: 'Jet Fuel', icon: '✈️', color: 'bg-gray-600' }
+    ];
+
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold mb-4">Find Oil & Gas Connections</h1>
+            <p className="text-xl text-gray-600 mb-8">Browse buyers and sellers by product type</p>
+            <button
+              onClick={() => onNavigate('home')}
+              className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold"
+            >
+              ← Back to Home
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {productTypes.map((product) => {
+              const productListings = listings.filter(l => l.product_type === product.key);
+              const sellers = productListings.filter(l => l.listing_type === 'sell');
+              const buyers = productListings.filter(l => l.listing_type === 'buy');
+
+              return (
+                <div key={product.key} className={`${product.color} rounded-lg shadow-lg overflow-hidden`}>
+                  <div className="p-6 text-white">
+                    <div className="flex items-center mb-4">
+                      <span className="text-4xl mr-3">{product.icon}</span>
+                      <h3 className="text-2xl font-bold">{product.name}</h3>
+                    </div>
+                    
+                    <div className="space-y-3 mb-6">
+                      <div className="flex justify-between items-center">
+                        <span>🔴 Sellers</span>
+                        <span className="font-bold">{sellers.length}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>🟢 Buyers</span>
+                        <span className="font-bold">{buyers.length}</span>
+                      </div>
+                      <div className="border-t border-white/30 pt-2">
+                        <div className="flex justify-between items-center">
+                          <span>Total Opportunities</span>
+                          <span className="font-bold text-xl">{productListings.length}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {productListings.length > 0 ? (
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => {
+                            // Set a filter and navigate to browse
+                            localStorage.setItem('productFilter', product.key);
+                            localStorage.setItem('listingTypeFilter', 'all');
+                            onNavigate('browse');
+                          }}
+                          className="w-full bg-white/20 hover:bg-white/30 text-white py-2 px-4 rounded-lg font-semibold transition-colors border border-white/30"
+                        >
+                          View All {product.name}
+                        </button>
+                        {sellers.length > 0 && (
+                          <button
+                            onClick={() => {
+                              localStorage.setItem('productFilter', product.key);
+                              localStorage.setItem('listingTypeFilter', 'sellers');
+                              onNavigate('browse');
+                            }}
+                            className="w-full bg-red-500/80 hover:bg-red-500 text-white py-2 px-4 rounded-lg font-semibold transition-colors"
+                          >
+                            View {sellers.length} Sellers
+                          </button>
+                        )}
+                        {buyers.length > 0 && (
+                          <button
+                            onClick={() => {
+                              localStorage.setItem('productFilter', product.key);
+                              localStorage.setItem('listingTypeFilter', 'buyers');
+                              onNavigate('browse');
+                            }}
+                            className="w-full bg-green-500/80 hover:bg-green-500 text-white py-2 px-4 rounded-lg font-semibold transition-colors"
+                          >
+                            View {buyers.length} Buyers
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-white/80 mb-3">No listings yet</p>
+                        <button
+                          onClick={() => onNavigate('register')}
+                          className="bg-white/20 hover:bg-white/30 text-white py-2 px-4 rounded-lg font-semibold transition-colors border border-white/30"
+                        >
+                          Be the First to List
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="text-center mt-12">
+            <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
+              <h3 className="text-2xl font-bold mb-4">Don't see your product?</h3>
+              <p className="text-gray-600 mb-6">Join our platform and create listings for any oil & gas products</p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => onNavigate('register')}
+                  className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-3 rounded-lg font-semibold"
+                >
+                  Create Account
+                </button>
+                <button
+                  onClick={() => onNavigate('browse')}
+                  className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold"
+                >
+                  Browse All Listings
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Check if we should show the product filter page
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('view') === 'products') {
+    return <ProductFilterPage />;
+  }
 
   const heroSlides = [
     {
