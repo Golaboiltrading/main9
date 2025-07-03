@@ -284,6 +284,10 @@ class ProductType(str, Enum):
     NATURAL_GAS = "natural_gas"
     LNG = "lng"
     LPG = "lpg"
+
+class ListingType(str, Enum):
+    BUY = "buy"
+    SELL = "sell"
     GAS_CONDENSATE = "gas_condensate"
 
 class TradingRole(str, Enum):
