@@ -11,6 +11,8 @@ import jwt
 import hashlib
 import secrets
 import uuid
+import shutil
+from pathlib import Path
 from passlib.context import CryptContext
 import logging
 from enum import Enum
