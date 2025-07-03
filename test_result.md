@@ -208,12 +208,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "OWASP Security Hardening - Broken Access Control"
-    - "OWASP Security Hardening - Cryptographic Failures"
-    - "OWASP Security Hardening - Injection Vulnerabilities"
-    - "Rate Limiting Implementation"
-    - "Security Headers and CORS Enhancement"
-    - "Security Audit Logging"
+    - "Homepage to Browse Page Filter Integration"
+    - "Enhanced Filter Display and Product Badge"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
