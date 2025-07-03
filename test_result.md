@@ -350,11 +350,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Listings API with Filter Fields"
     - "Homepage to Browse Page Filter Integration"
     - "Enhanced Filter Display and Product Badge"
-  stuck_tasks: 
-    - "Listings API with Filter Fields"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
