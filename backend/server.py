@@ -342,6 +342,7 @@ class CompanyProfile(BaseModel):
 
 class TradingListing(BaseModel):
     title: str
+    listing_type: ListingType
     product_type: ProductType
     quantity: float
     unit: str
@@ -353,6 +354,7 @@ class TradingListing(BaseModel):
     contact_email: EmailStr
     contact_phone: str
     whatsapp_number: Optional[str] = None
+    procedure_document: Optional[str] = None
     is_featured: bool = False
 
 class SearchFilters(BaseModel):
