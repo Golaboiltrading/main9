@@ -1511,6 +1511,32 @@ function App() {
                       <h3 className="text-xl font-bold mb-4 text-gray-900">Description</h3>
                       <p className="text-gray-700 leading-relaxed">{selectedListing.description}</p>
                     </div>
+
+                    {/* Procedure Document */}
+                    {selectedListing.procedure_document && (
+                      <div className="mt-8">
+                        <h3 className="text-xl font-bold mb-4 text-gray-900">Procedure Document</h3>
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <div className="flex items-center">
+                            <svg className="w-6 h-6 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                            <div className="flex-1">
+                              <p className="text-gray-900 font-semibold">Trading Procedure PDF</p>
+                              <p className="text-gray-600 text-sm">Download detailed trading procedures and documentation</p>
+                            </div>
+                            <a
+                              href={`${API_BASE_URL}/api/download/procedure/${selectedListing.procedure_document}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+                            >
+                              📥 Download PDF
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Contact Information */}
