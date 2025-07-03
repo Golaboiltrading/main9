@@ -1111,6 +1111,7 @@ function App() {
   const EditListingPage = () => {
     const [formData, setFormData] = useState({
       title: editingListing?.title || '',
+      listing_type: editingListing?.listing_type || 'sell',
       product_type: editingListing?.product_type || 'crude_oil',
       quantity: editingListing?.quantity || '',
       unit: editingListing?.unit || 'barrels',
@@ -1122,6 +1123,7 @@ function App() {
       contact_email: editingListing?.contact_email || '',
       contact_phone: editingListing?.contact_phone || '',
       whatsapp_number: editingListing?.whatsapp_number || '',
+      procedure_document: editingListing?.procedure_document || '',
       is_featured: editingListing?.is_featured || false
     });
 
