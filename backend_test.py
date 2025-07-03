@@ -1208,22 +1208,101 @@ def main():
     print("TESTING BACKEND API FUNCTIONALITY FOR OIL & GAS FINDER")
     print("="*80)
     
-    print("\n--- Authentication Endpoints ---")
+    print("\n--- 1. Testing Basic Authentication ---")
     # Register test user for authenticated tests
-    tester.register_test_user()
+    auth_success = tester.register_test_user()
     
-    print("\n--- Listings API ---")
-    tester.test_listings_filter_fields()
-    tester.test_listings_with_filters()
+    print("\n--- 2. Testing Core Listings API ---")
+    # Test basic listings endpoint without filters
+    core_listings_success, listings_data = tester.run_test("Core Listings API", "GET", "listings", 200)
     
-    print("\n--- User-specific Listings ---")
-    tester.test_my_listings()
+    if core_listings_success and 'listings' in listings_data:
+        print(f"✅ Core Listings API returned {len(listings_data['listings'])} listings")
+        
+        # Check if listings have the required fields
+        missing_fields = {'listing_type': 0, 'product_type': 0}
+        for listing in listings_data['listings']:
+            if 'listing_type' not in listing:
+                missing_fields['listing_type'] += 1
+            if 'product_type' not in listing:
+                missing_fields['product_type'] += 1
+        
+        if missing_fields['listing_type'] > 0:
+            print(f"⚠️ Warning: {missing_fields['listing_type']} listings are missing the listing_type field")
+        if missing_fields['product_type'] > 0:
+            print(f"⚠️ Warning: {missing_fields['product_type']} listings are missing the product_type field")
+    else:
+        print("❌ Failed to retrieve listings from core API")
     
-    print("\n--- Upload Functionality ---")
-    tester.test_file_upload()
+    print("\n--- 3. Testing Listings API with listing_type filter ---")
+    # Test listings endpoint with listing_type=buy filter
+    buy_success, buy_data = tester.run_test("Listings API with listing_type=buy", "GET", "listings?listing_type=buy", 200)
+    
+    if buy_success and 'listings' in buy_data:
+        buy_listings = buy_data['listings']
+        print(f"✅ Listings API with listing_type=buy returned {len(buy_listings)} listings")
+        
+        # Check if all returned listings have listing_type=buy
+        incorrect_buy = [listing for listing in buy_listings if listing.get('listing_type') != 'buy']
+        if incorrect_buy:
+            print(f"❌ Error: {len(incorrect_buy)} listings with listing_type=buy filter have incorrect listing_type")
+            for i, listing in enumerate(incorrect_buy[:3]):  # Show first 3 incorrect listings
+                print(f"  - Listing {i+1}: listing_type={listing.get('listing_type', 'missing')}, id={listing.get('listing_id', 'unknown')}")
+        else:
+            print(f"✅ All {len(buy_listings)} listings with listing_type=buy filter have correct listing_type")
+    else:
+        print("❌ Failed to retrieve listings with listing_type=buy filter")
+    
+    # Test listings endpoint with listing_type=sell filter
+    sell_success, sell_data = tester.run_test("Listings API with listing_type=sell", "GET", "listings?listing_type=sell", 200)
+    
+    if sell_success and 'listings' in sell_data:
+        sell_listings = sell_data['listings']
+        print(f"✅ Listings API with listing_type=sell returned {len(sell_listings)} listings")
+        
+        # Check if all returned listings have listing_type=sell
+        incorrect_sell = [listing for listing in sell_listings if listing.get('listing_type') != 'sell']
+        if incorrect_sell:
+            print(f"❌ Error: {len(incorrect_sell)} listings with listing_type=sell filter have incorrect listing_type")
+            for i, listing in enumerate(incorrect_sell[:3]):  # Show first 3 incorrect listings
+                print(f"  - Listing {i+1}: listing_type={listing.get('listing_type', 'missing')}, id={listing.get('listing_id', 'unknown')}")
+        else:
+            print(f"✅ All {len(sell_listings)} listings with listing_type=sell filter have correct listing_type")
+    else:
+        print("❌ Failed to retrieve listings with listing_type=sell filter")
     
     # Print summary
     success = tester.print_summary()
+    
+    # Additional summary for the specific requirements
+    print("\n" + "="*80)
+    print("FOCUSED TEST SUMMARY FOR HOMEPAGE FILTERING INTEGRATION")
+    print("="*80)
+    
+    # 1. Authentication
+    print(f"1. Basic Authentication: {'✅ PASSED' if auth_success else '❌ FAILED'}")
+    
+    # 2. Core Listings API
+    core_listings_status = "✅ PASSED" if core_listings_success else "❌ FAILED"
+    if core_listings_success and (missing_fields['listing_type'] > 0 or missing_fields['product_type'] > 0):
+        core_listings_status += f" (with warnings: {missing_fields['listing_type']} missing listing_type, {missing_fields['product_type']} missing product_type)"
+    print(f"2. Core Listings API: {core_listings_status}")
+    
+    # 3. Listings API with listing_type filter
+    buy_filter_status = "✅ PASSED" if buy_success and not incorrect_buy else "❌ FAILED"
+    if buy_success and incorrect_buy:
+        buy_filter_status = f"❌ FAILED ({len(incorrect_buy)} incorrect listings)"
+    
+    sell_filter_status = "✅ PASSED" if sell_success and not incorrect_sell else "❌ FAILED"
+    if sell_success and incorrect_sell:
+        sell_filter_status = f"❌ FAILED ({len(incorrect_sell)} incorrect listings)"
+    
+    print(f"3. Listings API with listing_type filter:")
+    print(f"   - listing_type=buy: {buy_filter_status}")
+    print(f"   - listing_type=sell: {sell_filter_status}")
+    
+    print("\n" + "="*80)
+    
     return 0 if success else 1
 
 if __name__ == "__main__":
