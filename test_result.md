@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: Implement critical security hardening (OWASP Top 10) and performance optimization for the Oil & Gas Finder platform
+user_problem_statement: Complete the implementation of homepage filtering integration - connecting homepage buttons to filtered browse results for buyers and sellers
 
 backend:
   - task: "OWASP Security Hardening - Broken Access Control"
