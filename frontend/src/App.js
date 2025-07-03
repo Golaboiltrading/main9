@@ -532,51 +532,122 @@ function App() {
     );
   };
 
-  const BrowsePage = () => (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Main Content */}
-      <div className="flex-1 py-12">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold text-center mb-12">Browse Oil & Gas Traders</h1>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {listings.map((listing, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-bold">{listing.title}</h3>
-                  {listing.is_featured && (
-                    <span className="bg-orange-500 text-white px-2 py-1 rounded text-sm">Featured</span>
-                  )}
-                </div>
-                <p className="text-gray-600 mb-2 font-semibold">{listing.product_type?.replace('_', ' ').toUpperCase()}</p>
-                <p className="text-gray-600 mb-2">Quantity: {listing.quantity} {listing.unit}</p>
-                <p className="text-gray-600 mb-2">Location: {listing.location}</p>
-                <p className="text-gray-600 mb-4">Price: {listing.price_range}</p>
-                <button 
-                  onClick={() => {
-                    setSelectedListing(listing);
-                    setCurrentPage('trader-detail');
-                  }}
-                  className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg w-full font-semibold transition-colors"
+  const BrowsePage = () => {
+    const [filter, setFilter] = useState('all');
+    
+    // Filter listings based on current filter
+    const filteredListings = listings.filter(listing => {
+      if (filter === 'all') return true;
+      if (filter === 'buyers') return listing.listing_type === 'buy';
+      if (filter === 'sellers') return listing.listing_type === 'sell';
+      return true;
+    });
+
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        {/* Main Content */}
+        <div className="flex-1 py-12">
+          <div className="container mx-auto px-4">
+            <h1 className="text-4xl font-bold text-center mb-8">Browse Oil & Gas Traders</h1>
+            
+            {/* Filter Buttons */}
+            <div className="flex justify-center mb-8">
+              <div className="bg-white rounded-lg shadow-md p-2 flex space-x-2">
+                <button
+                  onClick={() => setFilter('all')}
+                  className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                    filter === 'all'
+                      ? 'bg-orange-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
                 >
-                  Connect with Trader
+                  All Traders ({listings.length})
+                </button>
+                <button
+                  onClick={() => setFilter('sellers')}
+                  className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                    filter === 'sellers'
+                      ? 'bg-red-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  🔴 Sellers ({listings.filter(l => l.listing_type === 'sell').length})
+                </button>
+                <button
+                  onClick={() => setFilter('buyers')}
+                  className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                    filter === 'buyers'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  🟢 Buyers ({listings.filter(l => l.listing_type === 'buy').length})
                 </button>
               </div>
-            ))}
-          </div>
-          
-          {listings.length === 0 && (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🛢️</div>
-              <p className="text-gray-600 mb-4">No listings found.</p>
-              <button
-                onClick={() => setCurrentPage('register')}
-                className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-2 rounded-lg font-semibold"
-              >
-                Create Account to Post
-              </button>
             </div>
-          )}
+
+            {/* Current Filter Display */}
+            <div className="text-center mb-6">
+              <p className="text-gray-600">
+                {filter === 'all' && `Showing all ${filteredListings.length} trading opportunities`}
+                {filter === 'sellers' && `Showing ${filteredListings.length} sellers offering products`}
+                {filter === 'buyers' && `Showing ${filteredListings.length} buyers seeking products`}
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredListings.map((listing, index) => (
+                <div key={index} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-lg font-bold">{listing.title}</h3>
+                      <span className={`inline-block mt-1 px-2 py-1 rounded text-xs font-bold ${
+                        listing.listing_type === 'sell' 
+                          ? 'bg-red-100 text-red-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {listing.listing_type === 'sell' ? '🔴 SELLING' : '🟢 BUYING'}
+                      </span>
+                    </div>
+                    {listing.is_featured && (
+                      <span className="bg-orange-500 text-white px-2 py-1 rounded text-sm">Featured</span>
+                    )}
+                  </div>
+                  <p className="text-gray-600 mb-2 font-semibold">{listing.product_type?.replace('_', ' ').toUpperCase()}</p>
+                  <p className="text-gray-600 mb-2">Quantity: {listing.quantity} {listing.unit}</p>
+                  <p className="text-gray-600 mb-2">Location: {listing.location}</p>
+                  <p className="text-gray-600 mb-4">Price: {listing.price_range}</p>
+                  <button 
+                    onClick={() => {
+                      setSelectedListing(listing);
+                      setCurrentPage('trader-detail');
+                    }}
+                    className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg w-full font-semibold transition-colors"
+                  >
+                    Connect with Trader
+                  </button>
+                </div>
+              ))}
+            </div>
+            
+            {filteredListings.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">
+                  {filter === 'sellers' ? '🔴' : filter === 'buyers' ? '🟢' : '🛢️'}
+                </div>
+                <p className="text-gray-600 mb-4">
+                  {filter === 'sellers' && 'No sellers found.'}
+                  {filter === 'buyers' && 'No buyers found.'}
+                  {filter === 'all' && 'No listings found.'}
+                </p>
+                <button
+                  onClick={() => setCurrentPage('register')}
+                  className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-2 rounded-lg font-semibold"
+                >
+                  Create Account to Post
+                </button>
+              </div>
+            )}
         </div>
       </div>
 
