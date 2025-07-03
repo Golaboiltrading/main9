@@ -23,7 +23,10 @@ const EnhancedHomePage = ({ onNavigate, listings = [], onSetSelectedListing }) =
             <h1 className="text-4xl font-bold mb-4">Find Oil & Gas Connections</h1>
             <p className="text-xl text-gray-600 mb-8">Browse buyers and sellers by product type</p>
             <button
-              onClick={() => onNavigate('home')}
+              onClick={() => {
+                window.history.pushState({}, '', '/');
+                window.location.reload();
+              }}
               className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold"
             >
               ← Back to Home
