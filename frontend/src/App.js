@@ -1472,6 +1472,15 @@ function App() {
                     
                     <div className="space-y-4">
                       <div className="flex items-center">
+                        <span className="w-24 text-gray-600 font-semibold">Type:</span>
+                        <span className={`text-lg font-bold ${
+                          selectedListing.listing_type === 'sell' ? 'text-red-600' : 'text-green-600'
+                        }`}>
+                          {selectedListing.listing_type === 'sell' ? '🔴 SELLING' : '🟢 BUYING'}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center">
                         <span className="w-24 text-gray-600 font-semibold">Product:</span>
                         <span className="text-lg text-gray-900">{selectedListing.product_type.replace('_', ' ').toUpperCase()}</span>
                       </div>
