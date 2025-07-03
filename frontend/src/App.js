@@ -1130,6 +1130,43 @@ function App() {
       is_featured: editingListing?.is_featured || false
     });
 
+    const [uploadedFile, setUploadedFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
+
+    const handleFileUpload = async (file) => {
+      if (!file) return null;
+      
+      setUploading(true);
+      try {
+        const fileFormData = new FormData();
+        fileFormData.append('file', file);
+        
+        const response = await fetch(`${API_BASE_URL}/api/upload/procedure`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: fileFormData
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          setUploadedFile(result);
+          return result.file_path;
+        } else {
+          const error = await response.json();
+          alert('File upload failed: ' + (error.detail || 'Unknown error'));
+          return null;
+        }
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        alert('File upload failed');
+        return null;
+      } finally {
+        setUploading(false);
+      }
+    };
+
     const handleUpdateListing = async (listingData) => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/listings/${editingListing.listing_id}`, {
