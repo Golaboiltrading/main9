@@ -119,15 +119,18 @@ backend:
 
   - task: "Listings API with Filter Fields"
     implemented: true
-    working: false
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         -working: false
         -agent: "testing"
         -comment: "The listings API is partially working. Product_type filtering works correctly, but there's an issue with listing_type field. Many listings are missing the listing_type field, and filtering by listing_type doesn't work properly."
+        -working: true
+        -agent: "testing"
+        -comment: "Retested the listings API with listing_type filter. The API now correctly filters listings by listing_type=buy and listing_type=sell. All listings returned with these filters have the correct listing_type value. However, 11 out of 16 listings in the database are still missing the listing_type field, which means they won't appear in filtered results. The filter functionality itself is working correctly."
 
   - task: "User-specific Listings"
     implemented: true
