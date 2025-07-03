@@ -179,6 +179,15 @@ function App() {
                 Browse Traders
               </button>
               <button 
+                onClick={() => {
+                  window.history.pushState({}, '', '?view=products');
+                  window.location.reload();
+                }}
+                className="hover:text-orange-300 font-semibold"
+              >
+                Find Connections
+              </button>
+              <button 
                 onClick={() => navigateToPage('ai-analysis')}
                 className={`hover:text-orange-300 font-semibold ${currentPage === 'ai-analysis' ? 'text-orange-300 border-b-2 border-orange-300' : ''}`}
               >
