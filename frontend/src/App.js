@@ -889,6 +889,20 @@ function App() {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Listing Type</label>
+                <select
+                  name="listing_type"
+                  value={formData.listing_type}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  required
+                >
+                  <option value="sell">🔴 Selling - I have this product to sell</option>
+                  <option value="buy">🟢 Buying - I want to purchase this product</option>
+                </select>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
