@@ -269,10 +269,19 @@ const EnhancedHomePage = ({ onNavigate, listings = [], onSetSelectedListing }) =
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-6 justify-center animate-fade-in-up delay-600">
-                  <button className="bg-orange-600 hover:bg-orange-500 text-white px-10 py-4 rounded-lg text-xl font-bold transform hover:scale-105 transition-all duration-300 shadow-2xl">
+                  <button 
+                    onClick={() => onNavigate('browse')}
+                    className="bg-orange-600 hover:bg-orange-500 text-white px-10 py-4 rounded-lg text-xl font-bold transform hover:scale-105 transition-all duration-300 shadow-2xl"
+                  >
                     {slide.cta}
                   </button>
-                  <button className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-10 py-4 rounded-lg text-xl font-bold transform hover:scale-105 transition-all duration-300">
+                  <button 
+                    onClick={() => {
+                      window.history.pushState({}, '', '?view=products');
+                      window.location.reload();
+                    }}
+                    className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-10 py-4 rounded-lg text-xl font-bold transform hover:scale-105 transition-all duration-300"
+                  >
                     View Network Data
                   </button>
                 </div>
