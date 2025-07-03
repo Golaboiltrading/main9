@@ -436,11 +436,20 @@ const EnhancedHomePage = ({ onNavigate, listings = [], onSetSelectedListing }) =
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <button className="bg-white text-orange-600 px-10 py-5 rounded-lg text-xl font-bold hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-2xl">
+            <button 
+              onClick={() => {
+                window.history.pushState({}, '', '?view=products');
+                window.location.reload();
+              }}
+              className="bg-white text-orange-600 px-10 py-5 rounded-lg text-xl font-bold hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-2xl"
+            >
               Find Partners Now
             </button>
-            <button className="border-3 border-white text-white px-10 py-5 rounded-lg text-xl font-bold hover:bg-white hover:text-orange-600 transform hover:scale-105 transition-all duration-300">
-              Explore Network
+            <button 
+              onClick={() => onNavigate('browse')}
+              className="border-3 border-white text-white px-10 py-5 rounded-lg text-xl font-bold hover:bg-white hover:text-orange-600 transform hover:scale-105 transition-all duration-300"
+            >
+              Browse All Traders
             </button>
           </div>
           <div className="mt-12 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
