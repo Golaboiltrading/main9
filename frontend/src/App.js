@@ -619,7 +619,27 @@ function App() {
                 {filter === 'all' && `Showing all ${filteredListings.length} trading opportunities`}
                 {filter === 'sellers' && `Showing ${filteredListings.length} sellers offering products`}
                 {filter === 'buyers' && `Showing ${filteredListings.length} buyers seeking products`}
+                {productFilter !== 'all' && (
+                  <span className="ml-2 font-semibold">
+                    for {productFilter.replace('_', ' ').toUpperCase()}
+                  </span>
+                )}
               </p>
+              
+              {/* Product Filter Badge */}
+              {productFilter !== 'all' && (
+                <div className="mt-2 flex justify-center">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+                    🛢️ {productFilter.replace('_', ' ').toUpperCase()}
+                    <button
+                      onClick={() => setProductFilter('all')}
+                      className="ml-2 text-orange-600 hover:text-orange-800"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                </div>
+              )}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
