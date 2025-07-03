@@ -766,6 +766,7 @@ function App() {
   const CreateListingPage = () => {
     const [formData, setFormData] = useState({
       title: '',
+      listing_type: 'sell',
       product_type: 'crude_oil',
       quantity: '',
       unit: 'barrels',
@@ -777,8 +778,12 @@ function App() {
       contact_email: user?.email || '',
       contact_phone: '',
       whatsapp_number: '',
+      procedure_document: '',
       is_featured: false
     });
+    
+    const [uploadedFile, setUploadedFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
 
     const handleCreateListing = async (listingData) => {
       try {
