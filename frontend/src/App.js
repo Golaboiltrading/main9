@@ -1918,7 +1918,7 @@ function App() {
         return <Disclaimer />;
       default:
         return <EnhancedHomePage 
-          onNavigate={setCurrentPage}
+          onNavigate={navigateToPage}
           listings={listings}
           onSetSelectedListing={setSelectedListing}
         />;
