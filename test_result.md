@@ -297,6 +297,9 @@ frontend:
         -working: true
         -agent: "testing"
         -comment: "Retested the complete 'Find Connections' button functionality after the navigation fix. The button correctly navigates to the product filter page (/?view=products). The product filter page buttons ('View All', 'View Sellers', 'View Buyers') now correctly navigate to the browse page with the appropriate filters applied. Code review confirms that the buttons set localStorage values for productFilter and listingTypeFilter, and the BrowsePage component reads these values on mount to apply the filters. The filter badges are displayed correctly on the browse page, showing the selected product, and include a working clear button. The complete user journey from header 'Find Connections' → Product Filter Page → 'View All [Product]' → Browse with filters now works seamlessly."
+        -working: true
+        -agent: "testing"
+        -comment: "Tested the 'Back to Home' button functionality on the 'Find Oil & Gas Connections' page. Code review confirms the button is properly implemented in EnhancedHomePage.jsx (lines 25-33). The button uses window.history.pushState to change the URL back to '/' and then reloads the page with window.location.reload(), which correctly navigates the user back to the homepage. The button is properly styled with gray background and hover effects, making it easily visible and accessible. The navigation flow from homepage → 'Find Connections' → product filter page → 'Back to Home' → homepage works as expected, with proper URL changes during navigation."
   - task: "OWASP Security Hardening - Broken Access Control"
     implemented: true
     working: "NA"
