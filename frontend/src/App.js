@@ -534,13 +534,40 @@ function App() {
 
   const BrowsePage = () => {
     const [filter, setFilter] = useState('all');
+    const [productFilter, setProductFilter] = useState('all');
     
-    // Filter listings based on current filter
+    // Read filters from localStorage on mount
+    useEffect(() => {
+      const savedListingTypeFilter = localStorage.getItem('listingTypeFilter');
+      const savedProductFilter = localStorage.getItem('productFilter');
+      
+      if (savedListingTypeFilter) {
+        setFilter(savedListingTypeFilter);
+        // Clear the filter from localStorage after using it
+        localStorage.removeItem('listingTypeFilter');
+      }
+      
+      if (savedProductFilter) {
+        setProductFilter(savedProductFilter);
+        // Clear the filter from localStorage after using it
+        localStorage.removeItem('productFilter');
+      }
+    }, []);
+    
+    // Filter listings based on current filters
     const filteredListings = listings.filter(listing => {
-      if (filter === 'all') return true;
-      if (filter === 'buyers') return listing.listing_type === 'buy';
-      if (filter === 'sellers') return listing.listing_type === 'sell';
-      return true;
+      // Filter by listing type (buy/sell)
+      let typeMatch = true;
+      if (filter === 'buyers') typeMatch = listing.listing_type === 'buy';
+      if (filter === 'sellers') typeMatch = listing.listing_type === 'sell';
+      
+      // Filter by product type
+      let productMatch = true;
+      if (productFilter !== 'all') {
+        productMatch = listing.product_type === productFilter;
+      }
+      
+      return typeMatch && productMatch;
     });
 
     return (
