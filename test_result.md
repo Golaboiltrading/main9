@@ -392,6 +392,7 @@ test_plan:
     - "Homepage to Browse Page Filter Integration"
     - "Enhanced Filter Display and Product Badge"
     - "Hero Section CTA Buttons Navigation"
+    - "Find Connections Button in Header Navigation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
