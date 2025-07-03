@@ -795,6 +795,7 @@ async def get_listings(
     skip: int = 0,
     limit: int = 20,
     product_type: Optional[str] = None,
+    listing_type: Optional[str] = None,
     location: Optional[str] = None,
     trading_hub: Optional[str] = None
 ):
@@ -802,6 +803,8 @@ async def get_listings(
     
     if product_type:
         query["product_type"] = product_type
+    if listing_type:
+        query["listing_type"] = listing_type
     if location:
         query["location"] = {"$regex": location, "$options": "i"}
     if trading_hub:
