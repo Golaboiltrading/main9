@@ -613,6 +613,78 @@ async def update_user_profile(profile_data: CompanyProfile, user_id: str = Depen
     
     return {"message": "Profile updated successfully"}
 
+# Create uploads directory if it doesn't exist
+UPLOADS_DIR = Path("/app/uploads")
+UPLOADS_DIR.mkdir(exist_ok=True)
+
+@app.post("/api/upload/procedure")
+async def upload_procedure_document(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload PDF procedure document for trading listings"""
+    try:
+        # Validate file type
+        if not file.filename.lower().endswith('.pdf'):
+            raise HTTPException(
+                status_code=400, 
+                detail="Only PDF files are allowed"
+            )
+        
+        # Validate file size (10MB limit)
+        if not file.size or file.size > 10 * 1024 * 1024:
+            raise HTTPException(
+                status_code=400,
+                detail="File size must be less than 10MB"
+            )
+        
+        # Generate unique filename
+        file_id = str(uuid.uuid4())
+        file_extension = ".pdf"
+        filename = f"{file_id}{file_extension}"
+        file_path = UPLOADS_DIR / filename
+        
+        # Save file
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # Return file info
+        return {
+            "message": "File uploaded successfully",
+            "file_id": file_id,
+            "filename": file.filename,
+            "file_path": filename,
+            "file_size": file.size
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"File upload error: {e}")
+        raise HTTPException(status_code=500, detail="File upload failed")
+
+@app.get("/api/download/procedure/{file_path}")
+async def download_procedure_document(file_path: str):
+    """Download procedure document"""
+    try:
+        file_full_path = UPLOADS_DIR / file_path
+        
+        if not file_full_path.exists():
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        from fastapi.responses import FileResponse
+        return FileResponse(
+            path=str(file_full_path),
+            media_type='application/pdf',
+            filename=file_path
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"File download error: {e}")
+        raise HTTPException(status_code=500, detail="File download failed")
+
 @app.post("/api/listings")
 async def create_listing(listing_data: TradingListing, request: Request, current_user: dict = Depends(get_current_user)):
     """
