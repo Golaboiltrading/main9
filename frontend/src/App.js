@@ -704,6 +704,7 @@ function App() {
       </div>
     </div>
   );
+};
 
   // Dashboard Page Component
   const DashboardPage = () => {
