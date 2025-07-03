@@ -1342,6 +1342,29 @@ function App() {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Update Procedure Document
+                  <span className="text-gray-500 text-xs ml-1">(Optional - PDF only, max 10MB)</span>
+                </label>
+                <div className="space-y-3">
+                  {formData.procedure_document && (
+                    <div className="flex items-center text-blue-600 bg-blue-50 p-3 rounded-lg">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                      Current document uploaded
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                  />
+                  <p className="text-xs text-gray-500">Upload a new PDF to replace the current document</p>
+                </div>
+              </div>
+
               <div className="flex items-center">
                 <input
                   type="checkbox"
