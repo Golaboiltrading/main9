@@ -843,11 +843,24 @@ function App() {
       }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
+      
+      let procedureFilePath = formData.procedure_document;
+      
+      // Upload file if selected
+      const fileInput = e.target.querySelector('input[type="file"]');
+      if (fileInput && fileInput.files[0]) {
+        procedureFilePath = await handleFileUpload(fileInput.files[0]);
+        if (!procedureFilePath) {
+          return; // File upload failed
+        }
+      }
+      
       const listingData = {
         ...formData,
-        quantity: parseFloat(formData.quantity)
+        quantity: parseFloat(formData.quantity),
+        procedure_document: procedureFilePath
       };
       handleCreateListing(listingData);
     };
