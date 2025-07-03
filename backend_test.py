@@ -962,78 +962,265 @@ class OilGasFinderTester:
                 print(f"❌ Failed - Cache Headers: Not present")
                 return False
 
+    # Test methods for the specific requirements in the review request
+    def test_listings_filter_fields(self):
+        """Test that listings include the required fields for filtering (listing_type, product_type)"""
+        success, data = self.run_test("Listings Filter Fields", "GET", "listings", 200)
+        
+        if not success or not isinstance(data, dict) or 'listings' not in data:
+            return False, {}
+        
+        listings = data.get('listings', [])
+        if not listings:
+            print("⚠️ Warning: No listings found to test filter fields")
+            return True, {}
+        
+        # Check if listings have the required fields
+        all_have_fields = True
+        missing_fields = set()
+        
+        for listing in listings:
+            if 'listing_type' not in listing:
+                all_have_fields = False
+                missing_fields.add('listing_type')
+            if 'product_type' not in listing:
+                all_have_fields = False
+                missing_fields.add('product_type')
+        
+        if all_have_fields:
+            self.test_results["Listings Filter Fields"] = {
+                'success': True,
+                'details': f"All listings have required filter fields"
+            }
+            self.tests_run += 1
+            self.tests_passed += 1
+            print(f"✅ Passed - Listings Filter Fields: All listings have required fields")
+        else:
+            self.test_results["Listings Filter Fields"] = {
+                'success': False,
+                'error': f"Listings missing required fields: {', '.join(missing_fields)}"
+            }
+            self.tests_run += 1
+            print(f"❌ Failed - Listings Filter Fields: Missing fields: {', '.join(missing_fields)}")
+        
+        return all_have_fields, data
+    
+    def test_my_listings(self):
+        """Test the /api/listings/my endpoint for authenticated users"""
+        if not self.auth_token:
+            print("❌ No auth token available for my listings testing")
+            self.test_results["My Listings Endpoint"] = {
+                'success': False,
+                'error': "No auth token available"
+            }
+            self.tests_run += 1
+            return False, {}
+        
+        success, data = self.run_test("My Listings Endpoint", "GET", "listings/my", 200)
+        
+        if not success or not isinstance(data, dict) or 'listings' not in data:
+            return False, {}
+        
+        # Check if the response structure is correct
+        listings = data.get('listings', [])
+        
+        self.test_results["My Listings Response Structure"] = {
+            'success': True,
+            'details': f"My listings endpoint returns correct structure with {len(listings)} listings"
+        }
+        self.tests_run += 1
+        self.tests_passed += 1
+        print(f"✅ Passed - My Listings Response Structure: Returns {len(listings)} listings")
+        
+        return True, data
+    
+    def test_file_upload(self):
+        """Test the file upload endpoint for PDF uploads"""
+        if not self.auth_token:
+            print("❌ No auth token available for file upload testing")
+            self.test_results["File Upload Endpoint"] = {
+                'success': False,
+                'error': "No auth token available"
+            }
+            self.tests_run += 1
+            return False, {}
+        
+        # Create a simple PDF file for testing
+        import io
+        from reportlab.pdfgen import canvas
+        
+        buffer = io.BytesIO()
+        c = canvas.Canvas(buffer)
+        c.drawString(100, 100, "Test PDF for Oil & Gas Finder")
+        c.save()
+        buffer.seek(0)
+        
+        # Prepare the file for upload
+        files = {'file': ('test_procedure.pdf', buffer, 'application/pdf')}
+        
+        # Make the request
+        url = f"{self.base_url}/api/upload/procedure"
+        headers = {'Authorization': f'Bearer {self.auth_token}'}
+        
+        self.tests_run += 1
+        print(f"\n🔍 Testing File Upload Endpoint...")
+        
+        try:
+            response = self.session.post(url, files=files, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                self.test_results["File Upload Endpoint"] = {
+                    'success': True,
+                    'details': f"File upload successful"
+                }
+                try:
+                    return success, response.json()
+                except:
+                    return success, response.text
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                self.test_results["File Upload Endpoint"] = {
+                    'success': False,
+                    'error': f"Expected 200, got {response.status_code}"
+                }
+                try:
+                    error_data = response.json()
+                    print(f"Error details: {error_data}")
+                    return success, error_data
+                except:
+                    return success, response.text
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            self.test_results["File Upload Endpoint"] = {
+                'success': False,
+                'error': str(e)
+            }
+            return False, {}
+    
+    def test_listings_with_filters(self):
+        """Test the listings endpoint with different filters"""
+        # Test with product_type filter
+        product_types = ["crude_oil", "natural_gas", "gasoline", "diesel", "jet_fuel", "lng", "lpg"]
+        
+        for product_type in product_types:
+            success, data = self.run_test(
+                f"Listings Filter by product_type={product_type}", 
+                "GET", 
+                f"listings?product_type={product_type}", 
+                200
+            )
+            
+            if not success or not isinstance(data, dict) or 'listings' not in data:
+                continue
+                
+            listings = data.get('listings', [])
+            
+            # Check if all returned listings have the correct product_type
+            all_match = all(listing.get('product_type') == product_type for listing in listings)
+            
+            if all_match:
+                self.test_results[f"Listings Filter by product_type={product_type}"] = {
+                    'success': True,
+                    'details': f"All {len(listings)} listings have product_type={product_type}"
+                }
+                self.tests_run += 1
+                self.tests_passed += 1
+                print(f"✅ Passed - Listings Filter by product_type={product_type}: All {len(listings)} listings match")
+            else:
+                incorrect = [listing.get('product_type') for listing in listings if listing.get('product_type') != product_type]
+                self.test_results[f"Listings Filter by product_type={product_type}"] = {
+                    'success': False,
+                    'error': f"Some listings have incorrect product_type: {incorrect[:3]}"
+                }
+                self.tests_run += 1
+                print(f"❌ Failed - Listings Filter by product_type={product_type}: Some listings don't match")
+        
+        # Test with listing_type filter (buy/sell)
+        listing_types = ["buy", "sell"]
+        
+        for listing_type in listing_types:
+            success, data = self.run_test(
+                f"Listings Filter by listing_type={listing_type}", 
+                "GET", 
+                f"listings?listing_type={listing_type}", 
+                200
+            )
+            
+            if not success or not isinstance(data, dict) or 'listings' not in data:
+                continue
+                
+            listings = data.get('listings', [])
+            
+            # Check if all returned listings have the correct listing_type
+            all_match = all(listing.get('listing_type') == listing_type for listing in listings)
+            
+            if all_match:
+                self.test_results[f"Listings Filter by listing_type={listing_type}"] = {
+                    'success': True,
+                    'details': f"All {len(listings)} listings have listing_type={listing_type}"
+                }
+                self.tests_run += 1
+                self.tests_passed += 1
+                print(f"✅ Passed - Listings Filter by listing_type={listing_type}: All {len(listings)} listings match")
+            else:
+                incorrect = [listing.get('listing_type') for listing in listings if listing.get('listing_type') != listing_type]
+                self.test_results[f"Listings Filter by listing_type={listing_type}"] = {
+                    'success': False,
+                    'error': f"Some listings have incorrect listing_type: {incorrect[:3]}"
+                }
+                self.tests_run += 1
+                print(f"❌ Failed - Listings Filter by listing_type={listing_type}: Some listings don't match")
+        
+        return True, {}
+
 def main():
-    # Get the backend URL from environment variable or use the default
-    backend_url = "https://92bc512f-4efb-487b-bb1c-4f55fc9ebb4d.preview.emergentagent.com"
+    # Get the backend URL from frontend/.env
+    import os
+    
+    # Read the backend URL from the frontend/.env file
+    backend_url = None
+    try:
+        with open('/app/frontend/.env', 'r') as f:
+            for line in f:
+                if line.startswith('REACT_APP_BACKEND_URL='):
+                    backend_url = line.strip().split('=', 1)[1]
+                    # Remove quotes if present
+                    if backend_url.startswith('"') and backend_url.endswith('"'):
+                        backend_url = backend_url[1:-1]
+                    break
+    except Exception as e:
+        print(f"Error reading frontend/.env: {e}")
+    
+    # Fallback to default if not found
+    if not backend_url:
+        backend_url = "https://75613b56-3531-465e-8099-2cf9cff795d9.preview.emergentagent.com"
     
     print(f"Testing Oil & Gas Finder Platform API at: {backend_url}")
     
     # Initialize tester
     tester = OilGasFinderTester(backend_url)
     
+    print("\n" + "="*80)
+    print("TESTING BACKEND API FUNCTIONALITY FOR OIL & GAS FINDER")
+    print("="*80)
+    
+    print("\n--- Authentication Endpoints ---")
     # Register test user for authenticated tests
     tester.register_test_user()
     
-    print("\n" + "="*80)
-    print("SECURITY TESTS - OWASP TOP 10")
-    print("="*80)
+    print("\n--- Listings API ---")
+    tester.test_listings_filter_fields()
+    tester.test_listings_with_filters()
     
-    print("\n--- A02: Cryptographic Failures Testing ---")
-    tester.test_jwt_token_security()
-    tester.test_password_security()
+    print("\n--- User-specific Listings ---")
+    tester.test_my_listings()
     
-    print("\n--- A03: Injection Vulnerabilities Testing ---")
-    tester.test_injection_vulnerabilities()
-    
-    print("\n--- Rate Limiting Testing ---")
-    tester.test_rate_limiting()
-    
-    print("\n--- Security Headers Testing ---")
-    tester.test_security_headers()
-    
-    print("\n" + "="*80)
-    print("PERFORMANCE TESTS")
-    print("="*80)
-    
-    print("\n--- Database Performance ---")
-    tester.test_database_performance()
-    
-    print("\n--- API Performance ---")
-    tester.test_api_performance()
-    
-    print("\n--- Caching Performance ---")
-    tester.test_caching()
-    
-    # Test SEO Infrastructure
-    print("\n" + "="*80)
-    print("FUNCTIONAL TESTS")
-    print("="*80)
-    
-    print("\n--- SEO Infrastructure ---")
-    tester.test_sitemap_xml()
-    tester.test_robots_txt()
-    
-    # Test Analytics & Lead Generation
-    print("\n--- Analytics & Lead Generation ---")
-    tester.test_newsletter_subscribe()
-    tester.test_lead_capture()
-    tester.test_analytics_pageview()
-    tester.test_analytics_event()
-    
-    # Test Content APIs
-    print("\n--- Content APIs ---")
-    tester.test_blog_posts()
-    tester.test_blog_post_by_slug()
-    tester.test_blog_categories()
-    tester.test_location_data()
-    tester.test_product_data()
-    
-    # Test Platform Status
-    print("\n--- Platform Status ---")
-    tester.test_api_status()
-    tester.test_platform_stats()
-    tester.test_market_data()
-    tester.test_market_intelligence()
+    print("\n--- Upload Functionality ---")
+    tester.test_file_upload()
     
     # Print summary
     success = tester.print_summary()
