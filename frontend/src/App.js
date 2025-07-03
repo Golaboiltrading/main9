@@ -1860,7 +1860,11 @@ function App() {
       case 'disclaimer':
         return <Disclaimer />;
       default:
-        return <EnhancedHomePage />;
+        return <EnhancedHomePage 
+          onNavigate={setCurrentPage}
+          listings={listings}
+          onSetSelectedListing={setSelectedListing}
+        />;
     }
   };
 
