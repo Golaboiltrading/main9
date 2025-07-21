@@ -183,7 +183,7 @@ function App() {
                   window.history.pushState({}, '', '?view=products');
                   window.location.reload();
                 }}
-                className="hover:text-orange-300 font-semibold"
+                className={`hover:text-orange-300 font-semibold ${currentPage === 'find-connections' ? 'text-orange-300 border-b-2 border-orange-300' : ''}`}
               >
                 Find Connections
               </button>
