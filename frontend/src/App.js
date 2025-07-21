@@ -180,10 +180,14 @@ function App() {
               </button>
               <button 
                 onClick={() => {
-                  window.history.pushState({}, '', '?view=products');
-                  window.location.reload();
+                  // Navigate to product filter page
+                  setCurrentPage('home'); // Set to home first
+                  setTimeout(() => {
+                    window.history.pushState({}, '', '?view=products');
+                    window.location.reload();
+                  }, 100);
                 }}
-                className={`hover:text-orange-300 font-semibold ${currentPage === 'find-connections' ? 'text-orange-300 border-b-2 border-orange-300' : ''}`}
+                className="hover:text-orange-300 font-semibold"
               >
                 Find Connections
               </button>
