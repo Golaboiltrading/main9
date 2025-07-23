@@ -1913,6 +1913,12 @@ function App() {
         return <PrivacyPolicy />;
       case 'disclaimer':
         return <Disclaimer />;
+      case 'find-connections':
+        return <EnhancedHomePage 
+          onNavigate={navigateToPage}
+          listings={listings}
+          onSetSelectedListing={setSelectedListing}
+        />;
       default:
         return <EnhancedHomePage 
           onNavigate={navigateToPage}
