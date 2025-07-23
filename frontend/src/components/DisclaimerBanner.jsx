@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 // Modal Banner Component
 export const DisclaimerBanner = () => {
   const [showModal, setShowModal] = useState(false);
+  const [countdown, setCountdown] = useState(10);
 
   useEffect(() => {
     // Show modal on first visit
@@ -10,12 +11,18 @@ export const DisclaimerBanner = () => {
     if (!hasSeenDisclaimer) {
       setShowModal(true);
       
-      // Auto-dismiss after 10 seconds to prevent navigation blocking
-      const autoDismissTimer = setTimeout(() => {
-        acceptDisclaimer();
-      }, 10000);
+      // Countdown timer
+      const countdownInterval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            acceptDisclaimer();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
       
-      return () => clearTimeout(autoDismissTimer);
+      return () => clearInterval(countdownInterval);
     }
   }, []);
 
