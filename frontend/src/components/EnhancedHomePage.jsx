@@ -146,7 +146,7 @@ const EnhancedHomePage = ({ onNavigate, listings = [], onSetSelectedListing, sho
 
   // Check if we should show the product filter page
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('view') === 'products') {
+  if (urlParams.get('view') === 'products' || showProductFilter) {
     return <ProductFilterPage />;
   }
 
