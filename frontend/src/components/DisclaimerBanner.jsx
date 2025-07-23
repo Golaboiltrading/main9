@@ -9,6 +9,13 @@ export const DisclaimerBanner = () => {
     const hasSeenDisclaimer = localStorage.getItem('oil_gas_finder_disclaimer_accepted');
     if (!hasSeenDisclaimer) {
       setShowModal(true);
+      
+      // Auto-dismiss after 10 seconds to prevent navigation blocking
+      const autoDismissTimer = setTimeout(() => {
+        acceptDisclaimer();
+      }, 10000);
+      
+      return () => clearTimeout(autoDismissTimer);
     }
   }, []);
 
