@@ -179,11 +179,8 @@ function App() {
                 Browse Traders
               </button>
               <button 
-                onClick={() => {
-                  setCurrentPage('home');
-                  window.location.search = '?view=products';
-                }}
-                className="hover:text-orange-300 font-semibold"
+                onClick={() => navigateToPage('find-connections')}
+                className={`hover:text-orange-300 font-semibold ${currentPage === 'find-connections' ? 'text-orange-300 border-b-2 border-orange-300' : ''}`}
               >
                 Find Connections
               </button>
