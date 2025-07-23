@@ -1918,6 +1918,7 @@ function App() {
           onNavigate={navigateToPage}
           listings={listings}
           onSetSelectedListing={setSelectedListing}
+          showProductFilter={true}
         />;
       default:
         return <EnhancedHomePage 
