@@ -89,7 +89,7 @@ export const DisclaimerBanner = () => {
               onClick={acceptDisclaimer}
               className="flex-1 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold"
             >
-              I Understand & Accept
+              I Understand & Accept {countdown > 0 && `(Auto-accept in ${countdown}s)`}
             </button>
             <button
               onClick={() => window.location.href = 'https://google.com'}
@@ -101,6 +101,7 @@ export const DisclaimerBanner = () => {
 
           <p className="text-xs text-gray-500 mt-4 text-center">
             By using this platform, you acknowledge that you have read and understood these warnings.
+            {countdown > 0 && ` This modal will auto-dismiss in ${countdown} seconds.`}
           </p>
         </div>
       </div>
