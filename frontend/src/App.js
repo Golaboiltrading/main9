@@ -180,12 +180,8 @@ function App() {
               </button>
               <button 
                 onClick={() => {
-                  // Navigate to product filter page
-                  setCurrentPage('home'); // Set to home first
-                  setTimeout(() => {
-                    window.history.pushState({}, '', '?view=products');
-                    window.location.reload();
-                  }, 100);
+                  setCurrentPage('home');
+                  window.location.search = '?view=products';
                 }}
                 className="hover:text-orange-300 font-semibold"
               >
