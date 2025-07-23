@@ -144,12 +144,6 @@ const EnhancedHomePage = ({ onNavigate, listings = [], onSetSelectedListing, sho
     );
   };
 
-  // Check if we should show the product filter page
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('view') === 'products' || showProductFilter) {
-    return <ProductFilterPage />;
-  }
-
   const heroSlides = [
     {
       image: "https://images.unsplash.com/photo-1613909207039-6905ac2eb19e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80",
