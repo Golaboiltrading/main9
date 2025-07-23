@@ -239,6 +239,12 @@ const EnhancedHomePage = ({ onNavigate, listings = [], onSetSelectedListing, sho
     fetchStats();
   }, []);
 
+  // Check if we should show the product filter page
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('view') === 'products' || showProductFilter) {
+    return <ProductFilterPage />;
+  }
+
   return (
     <div className="min-h-screen">
       {/* Industry-Focused Hero Slideshow */}
