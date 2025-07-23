@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const EnhancedHomePage = ({ onNavigate, listings = [], onSetSelectedListing }) => {
+const EnhancedHomePage = ({ onNavigate, listings = [], onSetSelectedListing, showProductFilter = false }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [stats, setStats] = useState({});
 
