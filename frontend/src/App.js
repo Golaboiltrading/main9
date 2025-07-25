@@ -529,8 +529,8 @@ function App() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
               >
-                <span className="text-xl">📱</span>
-                <span>Join Telegram Group</span>
+                <span className="text-2xl">✈️</span>
+                <span>Join Community</span>
               </a>
             </div>
           </div>
