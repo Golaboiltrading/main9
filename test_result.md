@@ -434,13 +434,15 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Live Site Registration Internal Server Error Fix"
     - "Homepage to Browse Page Filter Integration"
     - "Enhanced Filter Display and Product Badge"
     - "Hero Section CTA Buttons Navigation"
     - "Find Connections Button in Header Navigation"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Live Site Registration Internal Server Error Fix"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "critical_first"
 
   - task: "MongoDB Database Index Optimization"
     implemented: true
