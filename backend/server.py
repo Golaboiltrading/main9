@@ -193,9 +193,10 @@ if ai_router:
 allowed_origins = [
     "http://localhost:3000",
     "https://localhost:3000",
-    os.environ.get('FRONTEND_URL', 'https://oilgasfinder.com'),
     "https://oilgasfinder.com",
-    "https://www.oilgasfinder.com"
+    "https://www.oilgasfinder.com",
+    "http://oilgasfinder.com",
+    "http://www.oilgasfinder.com"
 ]
 
 app.add_middleware(
