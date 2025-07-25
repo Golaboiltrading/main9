@@ -204,8 +204,7 @@ function App() {
                 rel="noopener noreferrer"
                 className="hover:text-orange-300 font-semibold flex items-center space-x-1"
               >
-                <span>📱</span>
-                <span>Telegram</span>
+                <span className="text-blue-400 text-xl">✈️</span>
               </a>
             </nav>
           </div>
