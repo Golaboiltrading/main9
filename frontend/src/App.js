@@ -175,10 +175,9 @@ function App() {
                 className="hover:opacity-80 transition-opacity flex items-center"
               >
                 <img 
-                  src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/telegram.svg"
+                  src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg"
                   alt="Telegram"
-                  className="w-8 h-8 filter brightness-0 invert"
-                  style={{filter: 'invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%)'}}
+                  className="w-8 h-8"
                 />
               </a>
               <button 
