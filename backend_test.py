@@ -263,7 +263,10 @@ class OilGasFinderTester:
             if tests:
                 passed = sum(1 for _, result in tests if result.get('success', False))
                 total = len(tests)
-                print(f"\n{category} Tests: {passed}/{total} passed ({passed/total*100:.1f}%)")
+                if total > 0:
+                    print(f"\n{category} Tests: {passed}/{total} passed ({passed/total*100:.1f}%)")
+                else:
+                    print(f"\n{category} Tests: {passed}/{total} passed (0.0%)")
         
         # Print details of failed tests
         if self.tests_passed < self.tests_run:
