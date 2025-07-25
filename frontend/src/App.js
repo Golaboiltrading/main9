@@ -172,11 +172,14 @@ function App() {
                 href="https://t.me/OilandGasFinder"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-orange-300 font-semibold flex items-center space-x-1"
+                className="hover:opacity-80 transition-opacity flex items-center"
               >
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-400 transition-colors">
-                  <span className="text-white text-sm font-bold">✈</span>
-                </div>
+                <img 
+                  src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/telegram.svg"
+                  alt="Telegram"
+                  className="w-8 h-8 filter brightness-0 invert"
+                  style={{filter: 'invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%)'}}
+                />
               </a>
               <button 
                 onClick={() => navigateToPage('home')}
