@@ -534,9 +534,11 @@ function App() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center space-x-3 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
               >
-                <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 text-sm font-bold">✈</span>
-                </div>
+                <img 
+                  src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/telegram.svg"
+                  alt="Telegram"
+                  className="w-6 h-6 filter brightness-0 invert"
+                />
                 <span>Join Community</span>
               </a>
             </div>
