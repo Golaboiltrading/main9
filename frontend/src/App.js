@@ -535,11 +535,6 @@ function App() {
               </a>
             </div>
           </div>
-                buttonText="Request Demo"
-                fields={['email', 'name', 'company']}
-              />
-            </div>
-          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {subscriptionPlans.map((plan) => (
