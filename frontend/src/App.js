@@ -168,6 +168,16 @@ function App() {
               </div>
             </div>
             <nav className="hidden md:flex space-x-6">
+              <a 
+                href="https://t.me/OilandGasFinder"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-orange-300 font-semibold flex items-center space-x-1"
+              >
+                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-400 transition-colors">
+                  <span className="text-white text-sm font-bold">✈</span>
+                </div>
+              </a>
               <button 
                 onClick={() => navigateToPage('home')}
                 className={`hover:text-orange-300 font-semibold ${currentPage === 'home' ? 'text-orange-300 border-b-2 border-orange-300' : ''}`}
@@ -198,16 +208,6 @@ function App() {
               >
                 Premium
               </button>
-              <a 
-                href="https://t.me/OilandGasFinder"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-orange-300 font-semibold flex items-center space-x-1"
-              >
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-bold">✈</span>
-                </div>
-              </a>
             </nav>
           </div>
           <div className="flex items-center space-x-4">
