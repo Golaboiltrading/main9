@@ -519,15 +519,22 @@ function App() {
             <p className="text-xl text-gray-600">Unlock advanced features and grow your energy trading business</p>
           </div>
 
-          {/* Demo Request Form */}
+          {/* Telegram Community */}
           <div className="max-w-md mx-auto mb-12">
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 text-center">
-              <h3 className="text-lg font-semibold text-orange-800 mb-2">Want to See Premium Features?</h3>
-              <p className="text-orange-600 mb-4">Schedule a personalized demo and see how premium features can grow your energy business.</p>
-              <LeadCaptureForm 
-                formType="demo_request"
-                title=""
-                description=""
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">Join Our Trading Community</h3>
+              <p className="text-blue-600 mb-4">Connect with other oil & gas traders, get market updates, and share opportunities.</p>
+              <a 
+                href="https://t.me/OilandGasFinder"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+              >
+                <span className="text-xl">📱</span>
+                <span>Join Telegram Group</span>
+              </a>
+            </div>
+          </div>
                 buttonText="Request Demo"
                 fields={['email', 'name', 'company']}
               />
