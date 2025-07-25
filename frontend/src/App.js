@@ -160,9 +160,9 @@ function App() {
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-orange-500 to-yellow-500 p-2 rounded-lg flex items-center space-x-2">
-                <div className="text-2xl">⚡</div>
-                <h1 className="text-xl font-bold cursor-pointer text-white hover:text-gray-100 transition-colors" onClick={() => setCurrentPage('home')}>
+              <div className="bg-slate-800 px-3 py-2 rounded-lg flex items-center space-x-2 border border-orange-400">
+                <div className="text-orange-400 text-xl">🏭</div>
+                <h1 className="text-lg font-bold cursor-pointer text-orange-400 hover:text-orange-300 transition-colors" onClick={() => setCurrentPage('home')}>
                   Oil & Gas Finder
                 </h1>
               </div>
