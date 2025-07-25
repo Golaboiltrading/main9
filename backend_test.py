@@ -963,6 +963,187 @@ class OilGasFinderTester:
                 return False
 
     # REGISTRATION TESTING METHODS - As requested in review
+    def test_production_registration_bug_investigation(self):
+        """URGENT: Production bug investigation for registration endpoint internal server error"""
+        print("\n🚨 PRODUCTION BUG INVESTIGATION: REGISTRATION ENDPOINT")
+        print("="*80)
+        print("Testing registration endpoint with actual user data to identify internal server error")
+        print("="*80)
+        
+        # Test with the exact data format specified in the review request
+        production_test_data = {
+            "email": "test.user@example.com",
+            "password": "TestPass123!",
+            "first_name": "Test",
+            "last_name": "User",
+            "company_name": "Test Company",
+            "country": "United States",
+            "phone": "+1234567890",
+            "trading_role": "buyer"
+        }
+        
+        print(f"Testing with production-like data:")
+        print(f"  Email: {production_test_data['email']}")
+        print(f"  Password: {production_test_data['password']}")
+        print(f"  First Name: {production_test_data['first_name']}")
+        print(f"  Last Name: {production_test_data['last_name']}")
+        print(f"  Company: {production_test_data['company_name']}")
+        print(f"  Country: {production_test_data['country']}")
+        print(f"  Phone: {production_test_data['phone']}")
+        print(f"  Trading Role: {production_test_data['trading_role']}")
+        
+        # Test 1: Basic registration with production data
+        print(f"\n--- CRITICAL TEST: Production Registration Data ---")
+        
+        try:
+            url = f"{self.base_url}/api/auth/register"
+            headers = {'Content-Type': 'application/json'}
+            
+            print(f"Making POST request to: {url}")
+            print(f"Request headers: {headers}")
+            print(f"Request data: {json.dumps(production_test_data, indent=2)}")
+            
+            response = self.session.post(url, json=production_test_data, headers=headers)
+            
+            print(f"\n📊 RESPONSE ANALYSIS:")
+            print(f"Status Code: {response.status_code}")
+            print(f"Response Headers: {dict(response.headers)}")
+            
+            # Check for 500 Internal Server Error
+            if response.status_code == 500:
+                print(f"🚨 CRITICAL: Internal Server Error (500) detected!")
+                print(f"Response Text: {response.text}")
+                
+                # Try to get more details from response
+                try:
+                    error_data = response.json()
+                    print(f"Error JSON: {json.dumps(error_data, indent=2)}")
+                except:
+                    print(f"Raw response text: {response.text}")
+                
+                # Log the exact error for debugging
+                self.test_results["Production Registration Bug"] = {
+                    'success': False,
+                    'status_code': 500,
+                    'error': 'Internal Server Error detected',
+                    'response_text': response.text,
+                    'response_headers': dict(response.headers)
+                }
+                
+                return False, {"error": "Internal Server Error", "details": response.text}
+            
+            elif response.status_code == 200 or response.status_code == 201:
+                print(f"✅ Registration successful with status {response.status_code}")
+                try:
+                    response_data = response.json()
+                    print(f"Success Response: {json.dumps(response_data, indent=2)}")
+                    
+                    # Verify response structure
+                    required_fields = ['message', 'access_token', 'token_type', 'user']
+                    missing_fields = [field for field in required_fields if field not in response_data]
+                    
+                    if missing_fields:
+                        print(f"⚠️ Warning: Response missing fields: {missing_fields}")
+                    else:
+                        print(f"✅ Response contains all required fields")
+                    
+                    self.test_results["Production Registration Bug"] = {
+                        'success': True,
+                        'status_code': response.status_code,
+                        'response_data': response_data
+                    }
+                    
+                    return True, response_data
+                    
+                except Exception as json_error:
+                    print(f"❌ Error parsing JSON response: {json_error}")
+                    print(f"Raw response: {response.text}")
+                    return False, {"error": "JSON parsing error", "details": str(json_error)}
+            
+            elif response.status_code == 400:
+                print(f"❌ Bad Request (400) - Validation Error")
+                try:
+                    error_data = response.json()
+                    print(f"Validation Error: {json.dumps(error_data, indent=2)}")
+                    
+                    self.test_results["Production Registration Bug"] = {
+                        'success': False,
+                        'status_code': 400,
+                        'error': 'Validation Error',
+                        'error_data': error_data
+                    }
+                    
+                    return False, error_data
+                except:
+                    print(f"Raw error response: {response.text}")
+                    return False, {"error": "Bad Request", "details": response.text}
+            
+            elif response.status_code == 422:
+                print(f"❌ Unprocessable Entity (422) - Field Validation Error")
+                try:
+                    error_data = response.json()
+                    print(f"Field Validation Error: {json.dumps(error_data, indent=2)}")
+                    
+                    self.test_results["Production Registration Bug"] = {
+                        'success': False,
+                        'status_code': 422,
+                        'error': 'Field Validation Error',
+                        'error_data': error_data
+                    }
+                    
+                    return False, error_data
+                except:
+                    print(f"Raw error response: {response.text}")
+                    return False, {"error": "Unprocessable Entity", "details": response.text}
+            
+            else:
+                print(f"❌ Unexpected status code: {response.status_code}")
+                print(f"Response: {response.text}")
+                
+                self.test_results["Production Registration Bug"] = {
+                    'success': False,
+                    'status_code': response.status_code,
+                    'error': f'Unexpected status code: {response.status_code}',
+                    'response_text': response.text
+                }
+                
+                return False, {"error": f"Unexpected status code: {response.status_code}", "details": response.text}
+                
+        except requests.exceptions.ConnectionError as conn_error:
+            print(f"🚨 CONNECTION ERROR: Cannot connect to backend server")
+            print(f"Error: {conn_error}")
+            
+            self.test_results["Production Registration Bug"] = {
+                'success': False,
+                'error': 'Connection Error',
+                'details': str(conn_error)
+            }
+            
+            return False, {"error": "Connection Error", "details": str(conn_error)}
+            
+        except requests.exceptions.Timeout as timeout_error:
+            print(f"🚨 TIMEOUT ERROR: Request timed out")
+            print(f"Error: {timeout_error}")
+            
+            self.test_results["Production Registration Bug"] = {
+                'success': False,
+                'error': 'Timeout Error',
+                'details': str(timeout_error)
+            }
+            
+            return False, {"error": "Timeout Error", "details": str(timeout_error)}
+            
+        except Exception as e:
+            print(f"🚨 UNEXPECTED ERROR: {str(e)}")
+            
+            self.test_results["Production Registration Bug"] = {
+                'success': False,
+                'error': 'Unexpected Error',
+                'details': str(e)
+            }
+            
+            return False, {"error": "Unexpected Error", "details": str(e)}
+
     def test_registration_endpoint_comprehensive(self):
         """Comprehensive test of the registration endpoint as requested"""
         print("\n🔍 COMPREHENSIVE REGISTRATION ENDPOINT TESTING")
