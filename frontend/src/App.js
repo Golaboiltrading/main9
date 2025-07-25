@@ -333,7 +333,10 @@ function App() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
           <div className="text-center mb-8">
-            <div className="text-4xl mb-4">🛢️</div>
+            <div className="bg-gradient-to-r from-orange-500 to-yellow-500 p-3 rounded-lg inline-flex items-center space-x-2 mb-4">
+              <div className="text-2xl">⚡</div>
+              <span className="text-xl font-bold text-white">Oil & Gas Finder</span>
+            </div>
             <h2 className="text-2xl font-bold text-gray-900">Join Oil & Gas Finder</h2>
             <p className="text-gray-600 mt-2">Connect with global energy markets</p>
           </div>
