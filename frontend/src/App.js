@@ -534,9 +534,9 @@ function App() {
                 className="inline-flex items-center space-x-3 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
               >
                 <img 
-                  src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/telegram.svg"
+                  src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg"
                   alt="Telegram"
-                  className="w-6 h-6 filter brightness-0 invert"
+                  className="w-6 h-6"
                 />
                 <span>Join Community</span>
               </a>
