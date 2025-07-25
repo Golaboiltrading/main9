@@ -198,12 +198,15 @@ function App() {
               >
                 Premium
               </button>
-              <button 
-                onClick={() => navigateToPage('demo')}
-                className={`hover:text-orange-300 font-semibold ${currentPage === 'demo' ? 'text-orange-300 border-b-2 border-orange-300' : ''}`}
+              <a 
+                href="https://t.me/OilandGasFinder"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-orange-300 font-semibold flex items-center space-x-1"
               >
-                Revenue Demo
-              </button>
+                <span>📱</span>
+                <span>Telegram</span>
+              </a>
             </nav>
           </div>
           <div className="flex items-center space-x-4">
