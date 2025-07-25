@@ -962,6 +962,350 @@ class OilGasFinderTester:
                 print(f"❌ Failed - Cache Headers: Not present")
                 return False
 
+    # REGISTRATION TESTING METHODS - As requested in review
+    def test_registration_endpoint_comprehensive(self):
+        """Comprehensive test of the registration endpoint as requested"""
+        print("\n🔍 COMPREHENSIVE REGISTRATION ENDPOINT TESTING")
+        print("="*60)
+        
+        # Test 1: Valid Registration
+        print("\n--- Test 1: Valid Registration ---")
+        valid_user_data = {
+            "email": f"john.smith.{uuid.uuid4().hex[:8]}@test.com",
+            "password": "SecurePass123!",
+            "first_name": "John",
+            "last_name": "Smith",
+            "company_name": "Test Oil Company",
+            "phone": "+1234567890",
+            "country": "United States",
+            "trading_role": "buyer"
+        }
+        
+        success, data = self.run_test("Valid Registration", "POST", "auth/register", 201, valid_user_data)
+        
+        if success and isinstance(data, dict):
+            # Check response structure
+            required_fields = ['message', 'access_token', 'token_type', 'user']
+            missing_fields = [field for field in required_fields if field not in data]
+            
+            if not missing_fields:
+                print("✅ Registration response contains all required fields")
+                
+                # Check JWT token
+                if data.get('token_type') == 'bearer' and data.get('access_token'):
+                    print("✅ JWT token generated successfully")
+                    
+                    # Store token for further tests
+                    test_token = data.get('access_token')
+                    
+                    # Check user data in response
+                    user_data = data.get('user', {})
+                    if user_data.get('email') == valid_user_data['email']:
+                        print("✅ User data correctly returned in response")
+                        
+                        # Test immediate login with credentials
+                        login_success, login_data = self.run_test(
+                            "Immediate Login After Registration", 
+                            "POST", 
+                            "auth/login", 
+                            200, 
+                            {
+                                "email": valid_user_data['email'],
+                                "password": valid_user_data['password']
+                            }
+                        )
+                        
+                        if login_success:
+                            print("✅ User can immediately login after registration")
+                        else:
+                            print("❌ User cannot login immediately after registration")
+                    else:
+                        print("❌ User data in response doesn't match registration data")
+                else:
+                    print("❌ JWT token not properly generated")
+            else:
+                print(f"❌ Registration response missing fields: {missing_fields}")
+        else:
+            print("❌ Valid registration failed")
+        
+        # Test 2: Input Validation Testing
+        print("\n--- Test 2: Input Validation Testing ---")
+        
+        # Test missing required fields
+        missing_field_tests = [
+            ("Missing Email", {"password": "SecurePass123!", "first_name": "John", "last_name": "Smith", "company_name": "Test Oil Company", "phone": "+1234567890", "country": "United States", "trading_role": "buyer"}),
+            ("Missing Password", {"email": f"missing.pass.{uuid.uuid4().hex[:8]}@test.com", "first_name": "John", "last_name": "Smith", "company_name": "Test Oil Company", "phone": "+1234567890", "country": "United States", "trading_role": "buyer"}),
+            ("Missing First Name", {"email": f"missing.fname.{uuid.uuid4().hex[:8]}@test.com", "password": "SecurePass123!", "last_name": "Smith", "company_name": "Test Oil Company", "phone": "+1234567890", "country": "United States", "trading_role": "buyer"}),
+            ("Missing Last Name", {"email": f"missing.lname.{uuid.uuid4().hex[:8]}@test.com", "password": "SecurePass123!", "first_name": "John", "company_name": "Test Oil Company", "phone": "+1234567890", "country": "United States", "trading_role": "buyer"}),
+            ("Missing Company", {"email": f"missing.company.{uuid.uuid4().hex[:8]}@test.com", "password": "SecurePass123!", "first_name": "John", "last_name": "Smith", "phone": "+1234567890", "country": "United States", "trading_role": "buyer"}),
+            ("Missing Country", {"email": f"missing.country.{uuid.uuid4().hex[:8]}@test.com", "password": "SecurePass123!", "first_name": "John", "last_name": "Smith", "company_name": "Test Oil Company", "phone": "+1234567890", "trading_role": "buyer"}),
+            ("Missing Trading Role", {"email": f"missing.role.{uuid.uuid4().hex[:8]}@test.com", "password": "SecurePass123!", "first_name": "John", "last_name": "Smith", "company_name": "Test Oil Company", "phone": "+1234567890", "country": "United States"})
+        ]
+        
+        for test_name, test_data in missing_field_tests:
+            success, data = self.run_test(test_name, "POST", "auth/register", 422, test_data)
+            if success:
+                print(f"✅ {test_name}: Properly rejected with 422")
+            else:
+                print(f"❌ {test_name}: Should have been rejected with 422")
+        
+        # Test invalid email formats
+        invalid_email_tests = [
+            ("Invalid Email - No @", {"email": "invalidemail.com", "password": "SecurePass123!", "first_name": "John", "last_name": "Smith", "company_name": "Test Oil Company", "phone": "+1234567890", "country": "United States", "trading_role": "buyer"}),
+            ("Invalid Email - No Domain", {"email": "invalid@", "password": "SecurePass123!", "first_name": "John", "last_name": "Smith", "company_name": "Test Oil Company", "phone": "+1234567890", "country": "United States", "trading_role": "buyer"}),
+            ("Invalid Email - No TLD", {"email": "invalid@domain", "password": "SecurePass123!", "first_name": "John", "last_name": "Smith", "company_name": "Test Oil Company", "phone": "+1234567890", "country": "United States", "trading_role": "buyer"})
+        ]
+        
+        for test_name, test_data in invalid_email_tests:
+            success, data = self.run_test(test_name, "POST", "auth/register", 422, test_data)
+            if success:
+                print(f"✅ {test_name}: Properly rejected with 422")
+            else:
+                print(f"❌ {test_name}: Should have been rejected with 422")
+        
+        # Test duplicate email
+        print("\n--- Test 3: Duplicate Email Testing ---")
+        duplicate_email = f"duplicate.{uuid.uuid4().hex[:8]}@test.com"
+        
+        # First registration
+        first_user = {
+            "email": duplicate_email,
+            "password": "SecurePass123!",
+            "first_name": "First",
+            "last_name": "User",
+            "company_name": "First Oil Company",
+            "phone": "+1234567890",
+            "country": "United States",
+            "trading_role": "buyer"
+        }
+        
+        first_success, first_data = self.run_test("First Registration", "POST", "auth/register", 201, first_user)
+        
+        if first_success:
+            print("✅ First registration successful")
+            
+            # Second registration with same email
+            second_user = {
+                "email": duplicate_email,
+                "password": "DifferentPass123!",
+                "first_name": "Second",
+                "last_name": "User",
+                "company_name": "Second Oil Company",
+                "phone": "+0987654321",
+                "country": "Canada",
+                "trading_role": "seller"
+            }
+            
+            duplicate_success, duplicate_data = self.run_test("Duplicate Email Registration", "POST", "auth/register", 400, second_user)
+            
+            if duplicate_success:
+                print("✅ Duplicate email properly rejected with 400")
+            else:
+                print("❌ Duplicate email should have been rejected with 400")
+        else:
+            print("❌ First registration failed, cannot test duplicate email")
+        
+        # Test 4: Password Requirements Testing
+        print("\n--- Test 4: Password Requirements Testing ---")
+        
+        password_tests = [
+            ("Short Password", f"short.{uuid.uuid4().hex[:8]}@test.com", "short", 422),
+            ("Weak Password", f"weak.{uuid.uuid4().hex[:8]}@test.com", "password", 422),
+            ("Numeric Only", f"numeric.{uuid.uuid4().hex[:8]}@test.com", "12345678", 422),
+            ("Strong Password", f"strong.{uuid.uuid4().hex[:8]}@test.com", "StrongP@ssw0rd123!", 201)
+        ]
+        
+        for test_name, email, password, expected_status in password_tests:
+            password_user = {
+                "email": email,
+                "password": password,
+                "first_name": "Test",
+                "last_name": "User",
+                "company_name": "Test Oil Company",
+                "phone": "+1234567890",
+                "country": "United States",
+                "trading_role": "buyer"
+            }
+            
+            success, data = self.run_test(test_name, "POST", "auth/register", expected_status, password_user)
+            if success:
+                print(f"✅ {test_name}: Handled correctly with {expected_status}")
+            else:
+                print(f"❌ {test_name}: Should have returned {expected_status}")
+        
+        print("\n" + "="*60)
+        return True
+    
+    def test_database_integration_registration(self):
+        """Test database integration for registration"""
+        print("\n🔍 DATABASE INTEGRATION TESTING FOR REGISTRATION")
+        print("="*60)
+        
+        # Create a test user
+        test_email = f"db.test.{uuid.uuid4().hex[:8]}@test.com"
+        test_user_data = {
+            "email": test_email,
+            "password": "DatabaseTest123!",
+            "first_name": "Database",
+            "last_name": "Test",
+            "company_name": "Database Test Oil Company",
+            "phone": "+1234567890",
+            "country": "United States",
+            "trading_role": "buyer"
+        }
+        
+        success, data = self.run_test("Database Integration Registration", "POST", "auth/register", 201, test_user_data)
+        
+        if success and isinstance(data, dict):
+            print("✅ User successfully stored in database")
+            
+            # Test that user can login (verifies password hashing worked)
+            login_success, login_data = self.run_test(
+                "Database Password Verification", 
+                "POST", 
+                "auth/login", 
+                200, 
+                {
+                    "email": test_email,
+                    "password": "DatabaseTest123!"
+                }
+            )
+            
+            if login_success:
+                print("✅ Password properly hashed and verified")
+                
+                # Test that wrong password fails
+                wrong_pass_success, wrong_pass_data = self.run_test(
+                    "Wrong Password Rejection", 
+                    "POST", 
+                    "auth/login", 
+                    401, 
+                    {
+                        "email": test_email,
+                        "password": "WrongPassword123!"
+                    }
+                )
+                
+                if wrong_pass_success:
+                    print("✅ Wrong password properly rejected")
+                else:
+                    print("❌ Wrong password should have been rejected")
+                
+                # Test user ID generation and uniqueness
+                if 'user' in data and 'user_id' in data['user']:
+                    user_id = data['user']['user_id']
+                    if user_id and len(user_id) > 10:  # UUID should be longer than 10 chars
+                        print("✅ User ID properly generated")
+                    else:
+                        print("❌ User ID not properly generated")
+                else:
+                    print("❌ User ID not found in response")
+            else:
+                print("❌ Password hashing/verification failed")
+        else:
+            print("❌ User registration failed - database integration issue")
+        
+        print("="*60)
+        return success
+    
+    def test_registration_response_validation(self):
+        """Test registration response validation"""
+        print("\n🔍 REGISTRATION RESPONSE VALIDATION TESTING")
+        print("="*60)
+        
+        # Test successful registration response
+        test_email = f"response.test.{uuid.uuid4().hex[:8]}@test.com"
+        test_user_data = {
+            "email": test_email,
+            "password": "ResponseTest123!",
+            "first_name": "Response",
+            "last_name": "Test",
+            "company_name": "Response Test Oil Company",
+            "phone": "+1234567890",
+            "country": "United States",
+            "trading_role": "seller"
+        }
+        
+        success, data = self.run_test("Response Validation Registration", "POST", "auth/register", 201, test_user_data)
+        
+        if success and isinstance(data, dict):
+            # Check success response structure
+            expected_fields = {
+                'message': str,
+                'access_token': str,
+                'token_type': str,
+                'user': dict
+            }
+            
+            all_fields_correct = True
+            
+            for field, expected_type in expected_fields.items():
+                if field not in data:
+                    print(f"❌ Missing field in response: {field}")
+                    all_fields_correct = False
+                elif not isinstance(data[field], expected_type):
+                    print(f"❌ Incorrect type for field {field}: expected {expected_type}, got {type(data[field])}")
+                    all_fields_correct = False
+                else:
+                    print(f"✅ Field {field} present with correct type")
+            
+            if all_fields_correct:
+                print("✅ Success response structure is correct")
+                
+                # Check user object structure
+                user_data = data.get('user', {})
+                expected_user_fields = ['user_id', 'email', 'first_name', 'last_name', 'role']
+                
+                user_fields_correct = True
+                for field in expected_user_fields:
+                    if field not in user_data:
+                        print(f"❌ Missing field in user object: {field}")
+                        user_fields_correct = False
+                    else:
+                        print(f"✅ User field {field} present")
+                
+                if user_fields_correct:
+                    print("✅ User object structure is correct")
+                    
+                    # Check that password is not included in response
+                    if 'password' not in user_data and 'password_hash' not in user_data:
+                        print("✅ Password not exposed in response")
+                    else:
+                        print("❌ Password exposed in response - security issue")
+                else:
+                    print("❌ User object structure is incorrect")
+            else:
+                print("❌ Success response structure is incorrect")
+        else:
+            print("❌ Registration failed - cannot validate response")
+        
+        # Test error response validation
+        print("\n--- Error Response Validation ---")
+        
+        # Test with invalid data to get error response
+        invalid_user_data = {
+            "email": "invalid-email",
+            "password": "short",
+            "first_name": "",
+            "last_name": "",
+            "company_name": "",
+            "country": "",
+            "trading_role": "invalid_role"
+        }
+        
+        error_success, error_data = self.run_test("Error Response Validation", "POST", "auth/register", 422, invalid_user_data)
+        
+        if error_success and isinstance(error_data, dict):
+            if 'detail' in error_data:
+                print("✅ Error response contains detail field")
+            else:
+                print("❌ Error response missing detail field")
+        else:
+            print("❌ Error response validation failed")
+        
+        print("="*60)
+        return success
+
     # Test methods for the specific requirements in the review request
     def test_listings_filter_fields(self):
         """Test that listings include the required fields for filtering (listing_type, product_type)"""
