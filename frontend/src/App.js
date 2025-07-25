@@ -204,7 +204,9 @@ function App() {
                 rel="noopener noreferrer"
                 className="hover:text-orange-300 font-semibold flex items-center space-x-1"
               >
-                <span className="text-blue-400 text-xl">✈️</span>
+                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">✈</span>
+                </div>
               </a>
             </nav>
           </div>
