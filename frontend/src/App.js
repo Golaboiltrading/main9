@@ -529,9 +529,11 @@ function App() {
                 href="https://t.me/OilandGasFinder"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                className="inline-flex items-center space-x-3 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
               >
-                <span className="text-2xl">✈️</span>
+                <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                  <span className="text-blue-600 text-sm font-bold">✈</span>
+                </div>
                 <span>Join Community</span>
               </a>
             </div>
