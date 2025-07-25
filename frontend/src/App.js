@@ -136,12 +136,18 @@ function App() {
         localStorage.setItem('token', data.access_token);
         setCurrentPage('dashboard');
       } else {
-        const errorData = await response.json();
-        alert(errorData.detail || 'Registration failed');
+        let errorMessage = 'Registration failed';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || `Server error: ${response.status}`;
+        } catch (e) {
+          errorMessage = `Server error: ${response.status} - ${response.statusText}`;
+        }
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Registration error:', error);
-      alert('Registration failed. Please try again.');
+      alert('Network error: Unable to connect to server. Please check your internet connection and try again.');
     }
     setLoading(false);
   };
