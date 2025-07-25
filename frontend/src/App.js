@@ -9,7 +9,7 @@ import AIAnalysisPage from './components/AIAnalysisPage';
 import PayPalButton from './PayPalButton';
 
 
-const API_BASE_URL = 'https://oilgasfinder.com';
+const API_BASE_URL = 'https://75613b56-3531-465e-8099-2cf9cff795d9.preview.emergentagent.com';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
