@@ -238,7 +238,10 @@ class OilGasFinderTester:
         print("\n" + "="*80)
         print(f"🔍 OIL & GAS FINDER PLATFORM TESTING SUMMARY")
         print("="*80)
-        print(f"✅ Tests passed: {self.tests_passed}/{self.tests_run} ({self.tests_passed/self.tests_run*100:.1f}%)")
+        if self.tests_run > 0:
+            print(f"✅ Tests passed: {self.tests_passed}/{self.tests_run} ({self.tests_passed/self.tests_run*100:.1f}%)")
+        else:
+            print(f"✅ Tests passed: {self.tests_passed}/{self.tests_run} (0.0%)")
         
         # Group test results by category
         categories = {
