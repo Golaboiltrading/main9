@@ -9,7 +9,7 @@ import AIAnalysisPage from './components/AIAnalysisPage';
 import PayPalButton from './PayPalButton';
 
 
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
+const API_BASE_URL = 'https://oilgasfinder.com';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
