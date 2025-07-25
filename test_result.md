@@ -105,6 +105,18 @@
 user_problem_statement: Complete the implementation of homepage filtering integration - connecting homepage buttons to filtered browse results for buyers and sellers
 
 backend:
+  - task: "Live Site Registration Internal Server Error Fix"
+    implemented: false
+    working: false
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+        -working: false
+        -agent: "testing"
+        -comment: "🚨 CRITICAL PRODUCTION ISSUE CONFIRMED: Live site testing at https://oilgasfinder.com reveals that the registration endpoint /api/auth/register is returning HTTP 500 Internal Server Error. Multiple API endpoints are failing (/api/stats, /api/listings, /api/auth/register) with 500 responses. Frontend registration form works correctly and sends proper API requests, but backend server is failing to process them. Browser console shows 'Internal S...' error messages being truncated. This is a backend server issue on the production environment requiring immediate attention. Root cause appears to be backend server configuration, database connectivity, or environment variable issues on the live production site."
+
   - task: "Authentication Endpoints"
     implemented: true
     working: true
