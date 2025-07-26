@@ -1123,6 +1123,49 @@ async def export_listings_csv(admin: dict = Depends(get_admin_user)):
         headers={"Content-Disposition": "attachment; filename=listings_export.csv"}
     )
 
+@app.get("/api/admin/email-config")
+async def get_email_config(admin: dict = Depends(get_admin_user)):
+    """Get email configuration status for admin"""
+    return get_email_config_status()
+
+@app.post("/api/admin/test-email")
+async def test_email_config(admin: dict = Depends(get_admin_user)):
+    """Test email configuration by sending a test email to admin"""
+    
+    admin_email = admin.get("email")
+    if not admin_email:
+        raise HTTPException(status_code=400, detail="Admin email not found")
+    
+    # Create test email
+    html_body = """
+    <h2>🧪 Email Configuration Test</h2>
+    <p>This is a test email from your Oil & Gas Finder platform.</p>
+    <p>If you received this email, your SMTP configuration is working correctly!</p>
+    <p><strong>Sent from:</strong> Oil & Gas Finder Admin System</p>
+    """
+    
+    text_body = """
+    Email Configuration Test
+    
+    This is a test email from your Oil & Gas Finder platform.
+    If you received this email, your SMTP configuration is working correctly!
+    
+    Sent from: Oil & Gas Finder Admin System
+    """
+    
+    # Send test email
+    success = send_email(
+        to_email=admin_email,
+        subject="🧪 Test Email - Oil & Gas Finder",
+        html_body=html_body,
+        text_body=text_body
+    )
+    
+    if success:
+        return {"message": f"Test email sent successfully to {admin_email}"}
+    else:
+        return {"message": f"Failed to send test email to {admin_email}. Check email configuration."}
+
 @app.get("/api/user/profile")
 async def get_user_profile(user_id: str = Depends(get_current_user)):
     user = users_collection.find_one({"user_id": user_id}, {"password_hash": 0})
