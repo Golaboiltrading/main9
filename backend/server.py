@@ -284,6 +284,8 @@ class UserRole(str, Enum):
     BASIC = "basic"
     PREMIUM = "premium"
     ENTERPRISE = "enterprise"
+    ADMIN = "admin"
+    SUPER_ADMIN = "super_admin"
 
 class ProductType(str, Enum):
     CRUDE_OIL = "crude_oil"
