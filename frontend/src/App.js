@@ -173,6 +173,7 @@ function App() {
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('user'); // Clear user data
     setCurrentPage('home');
   };
 
