@@ -666,6 +666,297 @@ async def reset_password(request: ResetPasswordRequest):
     
     return {"message": "Password has been reset successfully"}
 
+# Admin models
+class AdminStats(BaseModel):
+    total_users: int
+    total_listings: int
+    active_listings: int
+    premium_users: int
+    registrations_today: int
+    registrations_this_month: int
+
+class UserManagementData(BaseModel):
+    users: List[Dict[str, Any]]
+    total_count: int
+    
+class AdminUserAction(BaseModel):
+    user_id: str
+    action: str  # activate, deactivate, promote, demote
+    
+# Admin authentication helper
+async def get_admin_user(user_id: str = Depends(get_current_user)):
+    user = users_collection.find_one({"user_id": user_id})
+    if not user or user.get("role") not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+async def get_super_admin_user(user_id: str = Depends(get_current_user)):
+    user = users_collection.find_one({"user_id": user_id})
+    if not user or user.get("role") != UserRole.SUPER_ADMIN:
+        raise HTTPException(status_code=403, detail="Super admin access required")
+    return user
+
+# Admin Dashboard Routes
+@app.get("/api/admin/stats")
+async def get_admin_stats(admin: dict = Depends(get_admin_user)):
+    """Get comprehensive platform statistics for admin dashboard"""
+    
+    # Get current date for time-based queries
+    today = datetime.utcnow().date()
+    month_start = datetime(today.year, today.month, 1)
+    today_start = datetime.combine(today, datetime.min.time())
+    
+    # Basic counts
+    total_users = users_collection.count_documents({})
+    total_listings = listings_collection.count_documents({})
+    active_listings = listings_collection.count_documents({"status": "active"})
+    premium_users = users_collection.count_documents({"role": {"$in": ["premium", "enterprise"]}})
+    
+    # Time-based registrations
+    registrations_today = users_collection.count_documents({
+        "created_at": {"$gte": today_start}
+    })
+    registrations_this_month = users_collection.count_documents({
+        "created_at": {"$gte": month_start}
+    })
+    
+    # User role distribution
+    user_roles = list(users_collection.aggregate([
+        {"$group": {"_id": "$role", "count": {"$sum": 1}}}
+    ]))
+    
+    # Product type distribution
+    product_stats = list(listings_collection.aggregate([
+        {"$group": {"_id": "$product_type", "count": {"$sum": 1}}}
+    ]))
+    
+    # Listing type distribution (buy/sell)
+    listing_type_stats = list(listings_collection.aggregate([
+        {"$group": {"_id": "$listing_type", "count": {"$sum": 1}}}
+    ]))
+    
+    # Recent user activity (last 7 days)
+    week_ago = datetime.utcnow() - timedelta(days=7)
+    recent_activity = list(users_collection.aggregate([
+        {"$match": {"last_login": {"$gte": week_ago}}},
+        {"$group": {
+            "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$last_login"}},
+            "active_users": {"$sum": 1}
+        }},
+        {"$sort": {"_id": 1}}
+    ]))
+    
+    return {
+        "basic_stats": {
+            "total_users": total_users,
+            "total_listings": total_listings,
+            "active_listings": active_listings,
+            "premium_users": premium_users,
+            "registrations_today": registrations_today,
+            "registrations_this_month": registrations_this_month
+        },
+        "user_roles": user_roles,
+        "product_stats": product_stats,
+        "listing_type_stats": listing_type_stats,
+        "recent_activity": recent_activity
+    }
+
+@app.get("/api/admin/users")
+async def get_users_management(
+    admin: dict = Depends(get_admin_user),
+    skip: int = 0,
+    limit: int = 50,
+    search: Optional[str] = None,
+    role: Optional[str] = None
+):
+    """Get users for admin management with filtering and pagination"""
+    
+    query = {}
+    if search:
+        query["$or"] = [
+            {"email": {"$regex": search, "$options": "i"}},
+            {"first_name": {"$regex": search, "$options": "i"}},
+            {"last_name": {"$regex": search, "$options": "i"}},
+            {"company_name": {"$regex": search, "$options": "i"}}
+        ]
+    
+    if role:
+        query["role"] = role
+    
+    # Get users without password hash
+    users = list(users_collection.find(
+        query,
+        {"password_hash": 0, "reset_token": 0, "reset_token_expires": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit))
+    
+    # Remove MongoDB _id field
+    for user in users:
+        user.pop("_id", None)
+    
+    total_count = users_collection.count_documents(query)
+    
+    return {
+        "users": users,
+        "total_count": total_count,
+        "skip": skip,
+        "limit": limit
+    }
+
+@app.put("/api/admin/users/{user_id}")
+async def manage_user(
+    user_id: str,
+    action_data: AdminUserAction,
+    admin: dict = Depends(get_admin_user)
+):
+    """Manage user accounts (activate, deactivate, change roles)"""
+    
+    target_user = users_collection.find_one({"user_id": user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Prevent admin from modifying super admin accounts (unless they are super admin)
+    if target_user.get("role") == UserRole.SUPER_ADMIN and admin.get("role") != UserRole.SUPER_ADMIN:
+        raise HTTPException(status_code=403, detail="Cannot modify super admin accounts")
+    
+    update_data = {}
+    
+    if action_data.action == "activate":
+        update_data["status"] = "active"
+    elif action_data.action == "deactivate":
+        update_data["status"] = "inactive"
+    elif action_data.action == "promote":
+        if admin.get("role") == UserRole.SUPER_ADMIN:
+            update_data["role"] = UserRole.ADMIN
+        else:
+            raise HTTPException(status_code=403, detail="Only super admin can promote users")
+    elif action_data.action == "demote":
+        if admin.get("role") == UserRole.SUPER_ADMIN:
+            update_data["role"] = UserRole.BASIC
+        else:
+            raise HTTPException(status_code=403, detail="Only super admin can demote users")
+    else:
+        raise HTTPException(status_code=400, detail="Invalid action")
+    
+    # Log admin action
+    admin_log = {
+        "admin_id": admin["user_id"],
+        "action": action_data.action,
+        "target_user_id": user_id,
+        "timestamp": datetime.utcnow(),
+        "details": f"Admin {admin['email']} performed {action_data.action} on user {target_user['email']}"
+    }
+    
+    # Insert log (create admin_logs collection if it doesn't exist)
+    db.admin_logs.insert_one(admin_log)
+    
+    # Update user
+    users_collection.update_one(
+        {"user_id": user_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": f"User {action_data.action} successful"}
+
+@app.get("/api/admin/export/users")
+async def export_users_csv(admin: dict = Depends(get_admin_user)):
+    """Export all users to CSV format"""
+    
+    users = list(users_collection.find(
+        {},
+        {
+            "user_id": 1, "email": 1, "first_name": 1, "last_name": 1,
+            "company_name": 1, "role": 1, "country": 1, "trading_role": 1,
+            "created_at": 1, "last_login": 1, "status": 1, "_id": 0
+        }
+    ).sort("created_at", -1))
+    
+    # Convert to CSV format
+    import csv
+    import io
+    
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=[
+        'user_id', 'email', 'first_name', 'last_name', 'company_name',
+        'role', 'country', 'trading_role', 'created_at', 'last_login', 'status'
+    ])
+    
+    writer.writeheader()
+    for user in users:
+        # Convert datetime objects to strings
+        if user.get('created_at'):
+            user['created_at'] = user['created_at'].isoformat()
+        if user.get('last_login'):
+            user['last_login'] = user['last_login'].isoformat()
+        writer.writerow(user)
+    
+    csv_content = output.getvalue()
+    output.close()
+    
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=users_export.csv"}
+    )
+
+@app.get("/api/admin/export/listings")
+async def export_listings_csv(admin: dict = Depends(get_admin_user)):
+    """Export all listings to CSV format"""
+    
+    # Get listings with user information
+    listings = list(listings_collection.aggregate([
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "user_id",
+                "foreignField": "user_id",
+                "as": "user_info"
+            }
+        },
+        {
+            "$project": {
+                "listing_id": 1,
+                "title": 1,
+                "product_type": 1,
+                "listing_type": 1,
+                "quantity": 1,
+                "unit": 1,
+                "price_per_unit": 1,
+                "location": 1,
+                "trading_hub": 1,
+                "status": 1,
+                "created_at": 1,
+                "user_email": {"$arrayElemAt": ["$user_info.email", 0]},
+                "user_company": {"$arrayElemAt": ["$user_info.company_name", 0]}
+            }
+        }
+    ]))
+    
+    import csv
+    import io
+    
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=[
+        'listing_id', 'title', 'product_type', 'listing_type', 'quantity',
+        'unit', 'price_per_unit', 'location', 'trading_hub', 'status',
+        'created_at', 'user_email', 'user_company'
+    ])
+    
+    writer.writeheader()
+    for listing in listings:
+        # Convert datetime objects to strings
+        if listing.get('created_at'):
+            listing['created_at'] = listing['created_at'].isoformat()
+        writer.writerow(listing)
+    
+    csv_content = output.getvalue()
+    output.close()
+    
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=listings_export.csv"}
+    )
+
 @app.get("/api/user/profile")
 async def get_user_profile(user_id: str = Depends(get_current_user)):
     user = users_collection.find_one({"user_id": user_id}, {"password_hash": 0})
