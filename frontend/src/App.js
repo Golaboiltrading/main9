@@ -2058,6 +2058,8 @@ function App() {
         return <LoginPage />;
       case 'register':
         return <RegisterPage />;
+      case 'forgot-password':
+        return <ForgotPasswordPage />;
       case 'dashboard':
         return <DashboardPage />;
       case 'create-listing':
