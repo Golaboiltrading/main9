@@ -346,7 +346,9 @@ function App() {
         });
         
         if (response.ok) {
+          setLoading(false);
           setIsSubmitted(true);
+          return; // Exit early to prevent further execution
         } else {
           const errorData = await response.json();
           alert(errorData.detail || 'Failed to send reset email');
