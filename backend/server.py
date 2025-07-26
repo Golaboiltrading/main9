@@ -268,6 +268,154 @@ listings_collection = db.listings
 connections_collection = db.connections
 subscriptions_collection = db.subscriptions
 usage_collection = db.usage
+
+# Email Configuration
+SMTP_SERVER = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
+SMTP_PORT = int(os.environ.get('SMTP_PORT', '587'))
+SMTP_USERNAME = os.environ.get('SMTP_USERNAME', '')
+SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
+FROM_EMAIL = os.environ.get('FROM_EMAIL', 'noreply@oilgasfinder.com')
+
+# Email configuration validation
+EMAIL_CONFIGURED = bool(SMTP_USERNAME and SMTP_PASSWORD)
+
+def get_email_config_status():
+    """Get email configuration status for admin"""
+    return {
+        "configured": EMAIL_CONFIGURED,
+        "smtp_server": SMTP_SERVER,
+        "smtp_port": SMTP_PORT,
+        "from_email": FROM_EMAIL,
+        "smtp_username": SMTP_USERNAME if SMTP_USERNAME else "NOT CONFIGURED",
+        "smtp_password": "CONFIGURED" if SMTP_PASSWORD else "NOT CONFIGURED"
+    }
+
+def send_email(to_email: str, subject: str, html_body: str, text_body: str = None):
+    """Send email using configured SMTP settings"""
+    
+    if not EMAIL_CONFIGURED:
+        print(f"❌ EMAIL NOT CONFIGURED - Cannot send email to {to_email}")
+        print(f"   Subject: {subject}")
+        print(f"   SMTP Username: {SMTP_USERNAME if SMTP_USERNAME else 'NOT SET'}")
+        print(f"   SMTP Password: {'SET' if SMTP_PASSWORD else 'NOT SET'}")
+        return False
+    
+    try:
+        # Create message
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = FROM_EMAIL
+        msg['To'] = to_email
+        
+        # Add text and HTML parts
+        if text_body:
+            text_part = MIMEText(text_body, 'plain')
+            msg.attach(text_part)
+        
+        html_part = MIMEText(html_body, 'html')
+        msg.attach(html_part)
+        
+        # Send email
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            server.send_message(msg)
+        
+        print(f"✅ EMAIL SENT SUCCESSFULLY to {to_email}")
+        print(f"   From: {FROM_EMAIL}")
+        print(f"   SMTP Server: {SMTP_SERVER}:{SMTP_PORT}")
+        print(f"   Subject: {subject}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ EMAIL SENDING FAILED to {to_email}")
+        print(f"   Error: {str(e)}")
+        print(f"   SMTP Server: {SMTP_SERVER}:{SMTP_PORT}")
+        print(f"   From Email: {FROM_EMAIL}")
+        print(f"   SMTP Username: {SMTP_USERNAME}")
+        return False
+
+def create_password_reset_email(reset_link: str, user_name: str = "User"):
+    """Create HTML email for password reset"""
+    
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>Password Reset - Oil & Gas Finder</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">🏭 Oil & Gas Finder</h1>
+            <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Global Energy Trading Platform</p>
+        </div>
+        
+        <div style="background: white; padding: 40px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+            <h2 style="color: #1f2937; margin-top: 0;">Password Reset Request</h2>
+            
+            <p style="color: #4b5563; line-height: 1.6;">Hello {user_name},</p>
+            
+            <p style="color: #4b5563; line-height: 1.6;">
+                We received a request to reset your password for your Oil & Gas Finder account. 
+                Click the button below to create a new password:
+            </p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{reset_link}" 
+                   style="background: #f97316; color: white; padding: 12px 30px; text-decoration: none; 
+                          border-radius: 6px; font-weight: bold; display: inline-block;">
+                    Reset Your Password
+                </a>
+            </div>
+            
+            <p style="color: #6b7280; line-height: 1.6; font-size: 14px;">
+                If the button doesn't work, copy and paste this link into your browser:
+            </p>
+            <p style="color: #3b82f6; word-break: break-all; font-size: 14px;">
+                {reset_link}
+            </p>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
+                    <strong>Security Note:</strong> This link will expire in 1 hour for your security. 
+                    If you didn't request this password reset, please ignore this email.
+                </p>
+                
+                <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
+                    Need help? Contact us at support@oilgasfinder.com
+                </p>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 12px;">
+            <p>© 2024 Oil & Gas Finder. All rights reserved.</p>
+            <p>This is an automated message, please do not reply to this email.</p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    text_body = f"""
+    Oil & Gas Finder - Password Reset Request
+    
+    Hello {user_name},
+    
+    We received a request to reset your password for your Oil & Gas Finder account.
+    
+    Click this link to reset your password:
+    {reset_link}
+    
+    This link will expire in 1 hour for security reasons.
+    
+    If you didn't request this password reset, please ignore this email.
+    
+    Need help? Contact us at support@oilgasfinder.com
+    
+    © 2024 Oil & Gas Finder. All rights reserved.
+    """
+    
+    return html_body, text_body
 analytics_pageviews = db.analytics_pageviews
 analytics_events = db.analytics_events
 leads_collection = db.leads
