@@ -784,13 +784,26 @@ async def forgot_password(request: ForgotPasswordRequest):
         }
     )
     
-    # In a real application, send email here
-    # For now, we'll just log the reset link
+    # Create reset link
     reset_link = f"https://oilgasfinder.com/reset-password?token={reset_token}"
-    print(f"Password reset link for {request.email}: {reset_link}")
     
-    # TODO: Send actual email with reset link
-    # send_password_reset_email(request.email, reset_link)
+    # Create email content
+    user_name = f"{user.get('first_name', 'User')} {user.get('last_name', '')}"
+    html_body, text_body = create_password_reset_email(reset_link, user_name.strip())
+    
+    # Attempt to send email
+    email_sent = send_email(
+        to_email=request.email,
+        subject="Password Reset - Oil & Gas Finder",
+        html_body=html_body,
+        text_body=text_body
+    )
+    
+    if not email_sent:
+        # If email sending fails, still log the reset link for admin
+        print(f"📧 PASSWORD RESET LINK (email failed): {reset_link}")
+        print(f"   For user: {request.email}")
+        print(f"   Email config status: {get_email_config_status()}")
     
     return {"message": "If this email exists, a password reset link has been sent"}
 
