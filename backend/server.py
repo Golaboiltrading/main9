@@ -12,6 +12,9 @@ import csv
 import io
 import hashlib
 import secrets
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import uuid
 import shutil
 from pathlib import Path
