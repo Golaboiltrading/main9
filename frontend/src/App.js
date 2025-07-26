@@ -336,10 +336,11 @@ function App() {
   const ForgotPasswordPage = () => {
     const [email, setEmail] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [localLoading, setLocalLoading] = useState(false);
 
     const handleSubmit = async (e) => {
       e.preventDefault();
-      setLoading(true);
+      setLocalLoading(true);
       
       try {
         const response = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
@@ -349,7 +350,7 @@ function App() {
         });
         
         if (response.ok) {
-          setLoading(false);
+          setLocalLoading(false);
           setIsSubmitted(true);
           return; // Exit early to prevent further execution
         } else {
@@ -360,7 +361,7 @@ function App() {
         console.error('Forgot password error:', error);
         alert('Network error. Please try again.');
       }
-      setLoading(false);
+      setLocalLoading(false);
     };
 
     if (isSubmitted) {
