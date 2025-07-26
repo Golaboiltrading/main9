@@ -432,6 +432,148 @@ function App() {
     );
   };
 
+  const ResetPasswordPage = () => {
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setError('');
+      
+      if (password !== confirmPassword) {
+        setError('Passwords do not match');
+        return;
+      }
+      
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters');
+        return;
+      }
+      
+      setLoading(true);
+      
+      try {
+        // Get token from URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        
+        if (!token) {
+          setError('Invalid reset link');
+          setLoading(false);
+          return;
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, new_password: password })
+        });
+        
+        if (response.ok) {
+          setIsSubmitted(true);
+        } else {
+          const errorData = await response.json();
+          setError(errorData.detail || 'Failed to reset password');
+        }
+      } catch (error) {
+        console.error('Reset password error:', error);
+        setError('Network error. Please try again.');
+      }
+      setLoading(false);
+    };
+
+    if (isSubmitted) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+            <div className="text-center">
+              <div className="bg-slate-800 px-4 py-3 rounded-lg inline-flex items-center space-x-2 mb-6 border border-orange-400">
+                <div className="text-orange-400 text-xl">🏭</div>
+                <span className="text-lg font-bold text-orange-400">Oil & Gas Finder</span>
+              </div>
+              <div className="text-green-600 text-5xl mb-4">✓</div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Password Reset Successful</h2>
+              <p className="text-gray-600 mb-6">
+                Your password has been successfully reset. You can now login with your new password.
+              </p>
+              <button
+                onClick={() => setCurrentPage('login')}
+                className="w-full bg-orange-600 hover:bg-orange-500 text-white py-2 rounded-lg font-semibold"
+              >
+                Go to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+          <div className="text-center mb-8">
+            <div className="bg-slate-800 px-4 py-3 rounded-lg inline-flex items-center space-x-2 mb-4 border border-orange-400">
+              <div className="text-orange-400 text-xl">🏭</div>
+              <span className="text-lg font-bold text-orange-400">Oil & Gas Finder</span>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Set New Password</h2>
+            <p className="text-gray-600 mt-2">Enter your new password below</p>
+          </div>
+          
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {error}
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Enter new password"
+                required
+                minLength="6"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Confirm new password"
+                required
+                minLength="6"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-orange-600 hover:bg-orange-500 text-white py-2 rounded-lg font-semibold disabled:opacity-50"
+            >
+              {loading ? 'Updating...' : 'Update Password'}
+            </button>
+          </form>
+          <p className="text-center mt-6 text-gray-600">
+            <button 
+              onClick={() => setCurrentPage('login')}
+              className="text-orange-600 hover:text-orange-500 font-semibold"
+            >
+              Back to Login
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   const RegisterPage = () => {
     const [formData, setFormData] = useState({
       email: '',
