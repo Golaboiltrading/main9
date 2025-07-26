@@ -2686,6 +2686,8 @@ function App() {
           onSetSelectedListing={setSelectedListing}
           showProductFilter={true}
         />;
+      case 'admin':
+        return <AdminDashboard />;
       default:
         return <EnhancedHomePage 
           onNavigate={navigateToPage}
