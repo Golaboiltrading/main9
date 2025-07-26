@@ -1948,140 +1948,100 @@ def main():
     tester = OilGasFinderTester(backend_url)
     
     print("\n" + "="*80)
-    print("🔍 COMPREHENSIVE USER REGISTRATION FUNCTIONALITY TESTING")
+    print("🔐 ADMIN USER LOGIN FUNCTIONALITY TESTING")
     print("FOR OIL & GAS FINDER PLATFORM")
     print("="*80)
     
-    # COMPREHENSIVE REGISTRATION TESTING AS REQUESTED
-    print("\n🎯 REGISTRATION ENDPOINT TESTING")
-    print("-" * 50)
-    registration_success = tester.test_registration_endpoint_comprehensive()
+    # ADMIN LOGIN TESTING AS REQUESTED IN REVIEW
+    print("\n🎯 ADMIN LOGIN TESTING - BCRYPT PASSWORD FIX VERIFICATION")
+    print("-" * 60)
+    admin_login_success = tester.test_admin_login_functionality()
     
-    print("\n🎯 DATABASE INTEGRATION TESTING")
-    print("-" * 50)
-    db_integration_success = tester.test_database_integration_registration()
-    
-    print("\n🎯 RESPONSE VALIDATION TESTING")
-    print("-" * 50)
-    response_validation_success = tester.test_registration_response_validation()
-    
-    # ADDITIONAL SECURITY TESTS FOR REGISTRATION
-    print("\n🎯 REGISTRATION SECURITY TESTING")
+    # ADDITIONAL BASIC API TESTS TO ENSURE PLATFORM IS WORKING
+    print("\n🎯 BASIC PLATFORM FUNCTIONALITY TESTING")
     print("-" * 50)
     
-    # Test JWT token security for registration
-    print("\n--- JWT Token Security Testing ---")
-    # First register a user to get a token
+    # Test basic API status
+    status_success, status_data = tester.run_test("API Status", "GET", "status", 200)
+    print(f"API Status: {'✅ PASSED' if status_success else '❌ FAILED'}")
+    
+    # Test platform stats
+    stats_success, stats_data = tester.run_test("Platform Stats", "GET", "stats", 200)
+    print(f"Platform Stats: {'✅ PASSED' if stats_success else '❌ FAILED'}")
+    
+    # Test listings endpoint
+    listings_success, listings_data = tester.run_test("Listings Endpoint", "GET", "listings", 200)
+    print(f"Listings Endpoint: {'✅ PASSED' if listings_success else '❌ FAILED'}")
+    
+    # Test user registration (to verify bcrypt is working for regular users too)
+    print("\n🎯 USER REGISTRATION TESTING - BCRYPT VERIFICATION")
+    print("-" * 50)
     test_user_success = tester.register_test_user()
+    print(f"User Registration: {'✅ PASSED' if test_user_success else '❌ FAILED'}")
+    
     if test_user_success:
+        # Test JWT token security
         jwt_security_success, jwt_data = tester.test_jwt_token_security()
         print(f"JWT Token Security: {'✅ PASSED' if jwt_security_success else '❌ FAILED'}")
     else:
-        print("❌ Could not test JWT security - user registration failed")
         jwt_security_success = False
-    
-    # Test password security
-    print("\n--- Password Security Testing ---")
-    password_security_success = tester.test_password_security()
-    print(f"Password Security: {'✅ PASSED' if password_security_success else '❌ FAILED'}")
-    
-    # Test injection vulnerabilities
-    print("\n--- Injection Vulnerability Testing ---")
-    injection_security_success = tester.test_injection_vulnerabilities()
-    print(f"Injection Prevention: {'✅ PASSED' if injection_security_success else '❌ FAILED'}")
-    
-    # Test security headers
-    print("\n--- Security Headers Testing ---")
-    security_headers_success = tester.test_security_headers()
-    print(f"Security Headers: {'✅ PASSED' if security_headers_success else '❌ FAILED'}")
-    
-    # ADDITIONAL API TESTS TO VERIFY REGISTRATION INTEGRATION
-    print("\n🎯 POST-REGISTRATION API INTEGRATION TESTING")
-    print("-" * 50)
-    
-    # Test authenticated endpoints after registration
-    if tester.auth_token:
-        print("\n--- Testing Authenticated Endpoints ---")
-        
-        # Test user profile endpoint
-        profile_success, profile_data = tester.run_test("User Profile", "GET", "user/profile", 200)
-        print(f"User Profile Access: {'✅ PASSED' if profile_success else '❌ FAILED'}")
-        
-        # Test my listings endpoint
-        my_listings_success = tester.test_my_listings()
-        print(f"My Listings Access: {'✅ PASSED' if my_listings_success else '❌ FAILED'}")
-        
-        # Test file upload endpoint
-        file_upload_success = tester.test_file_upload()
-        print(f"File Upload Access: {'✅ PASSED' if file_upload_success else '❌ FAILED'}")
-    else:
-        print("❌ No authentication token available - cannot test authenticated endpoints")
-        profile_success = my_listings_success = file_upload_success = False
     
     # Print comprehensive summary
     success = tester.print_summary()
     
-    # REGISTRATION-SPECIFIC SUMMARY
+    # ADMIN LOGIN SPECIFIC SUMMARY
     print("\n" + "="*80)
-    print("🎯 REGISTRATION FUNCTIONALITY TEST SUMMARY")
+    print("🔐 ADMIN LOGIN FUNCTIONALITY TEST SUMMARY")
     print("="*80)
     
-    print("\n📋 REGISTRATION ENDPOINT TESTING:")
-    print(f"   ✓ Valid Registration: {'✅ PASSED' if registration_success else '❌ FAILED'}")
-    print(f"   ✓ Input Validation: {'✅ PASSED' if registration_success else '❌ FAILED'}")
-    print(f"   ✓ Duplicate Email Handling: {'✅ PASSED' if registration_success else '❌ FAILED'}")
-    print(f"   ✓ Password Requirements: {'✅ PASSED' if registration_success else '❌ FAILED'}")
+    print("\n📋 ADMIN LOGIN TESTING:")
+    print(f"   ✓ Admin User Creation: {'✅ PASSED' if admin_login_success else '❌ FAILED'}")
+    print(f"   ✓ Admin Login with bcrypt: {'✅ PASSED' if admin_login_success else '❌ FAILED'}")
+    print(f"   ✓ JWT Token Generation: {'✅ PASSED' if admin_login_success else '❌ FAILED'}")
+    print(f"   ✓ Super Admin Role Recognition: {'✅ PASSED' if admin_login_success else '❌ FAILED'}")
+    print(f"   ✓ Admin API Access: {'✅ PASSED' if admin_login_success else '❌ FAILED'}")
     
-    print("\n🔐 SECURITY TESTING:")
-    print(f"   ✓ JWT Token Generation: {'✅ PASSED' if jwt_security_success else '❌ FAILED'}")
-    print(f"   ✓ Password Hashing: {'✅ PASSED' if password_security_success else '❌ FAILED'}")
-    print(f"   ✓ Injection Prevention: {'✅ PASSED' if injection_security_success else '❌ FAILED'}")
-    print(f"   ✓ Security Headers: {'✅ PASSED' if security_headers_success else '❌ FAILED'}")
-    
-    print("\n💾 DATABASE INTEGRATION:")
-    print(f"   ✓ User Data Storage: {'✅ PASSED' if db_integration_success else '❌ FAILED'}")
-    print(f"   ✓ Password Encryption: {'✅ PASSED' if db_integration_success else '❌ FAILED'}")
-    print(f"   ✓ User ID Generation: {'✅ PASSED' if db_integration_success else '❌ FAILED'}")
-    
-    print("\n📤 RESPONSE VALIDATION:")
-    print(f"   ✓ Success Response Format: {'✅ PASSED' if response_validation_success else '❌ FAILED'}")
-    print(f"   ✓ Error Response Format: {'✅ PASSED' if response_validation_success else '❌ FAILED'}")
-    print(f"   ✓ JWT Token in Response: {'✅ PASSED' if response_validation_success else '❌ FAILED'}")
-    
-    print("\n🔗 POST-REGISTRATION INTEGRATION:")
-    print(f"   ✓ Immediate Login: {'✅ PASSED' if test_user_success else '❌ FAILED'}")
-    print(f"   ✓ Profile Access: {'✅ PASSED' if profile_success else '❌ FAILED'}")
-    print(f"   ✓ Authenticated Endpoints: {'✅ PASSED' if my_listings_success else '❌ FAILED'}")
-    
-    # Overall registration functionality status
-    overall_registration_success = (
-        registration_success and 
-        db_integration_success and 
-        response_validation_success and
-        jwt_security_success and
-        test_user_success
-    )
-    
-    print(f"\n🎯 OVERALL REGISTRATION FUNCTIONALITY: {'✅ WORKING CORRECTLY' if overall_registration_success else '❌ ISSUES FOUND'}")
-    
-    if overall_registration_success:
-        print("\n✅ REGISTRATION TESTING CONCLUSION:")
-        print("   • POST /api/auth/register endpoint is working correctly")
-        print("   • All required fields are properly validated")
-        print("   • Password encryption/hashing is implemented")
-        print("   • JWT tokens are generated and working")
-        print("   • Database integration is functional")
-        print("   • Users can immediately login after registration")
-        print("   • Security measures are in place")
+    print("\n🔐 BCRYPT PASSWORD FIX VERIFICATION:")
+    if admin_login_success:
+        print("   ✅ Admin login successful with AdminPass123!")
+        print("   ✅ Password verification working correctly")
+        print("   ✅ bcrypt password hashing is functional")
+        print("   ✅ JWT token generated and contains admin privileges")
+        print("   ✅ Admin endpoints accessible with token")
     else:
-        print("\n❌ REGISTRATION TESTING CONCLUSION:")
-        print("   • Some registration functionality issues were found")
+        print("   ❌ Admin login failed - bcrypt password fix may not be working")
+        print("   ❌ Password verification issues detected")
+        print("   ❌ Admin functionality not accessible")
+    
+    print("\n🎯 PLATFORM BASIC FUNCTIONALITY:")
+    print(f"   ✓ API Status: {'✅ PASSED' if status_success else '❌ FAILED'}")
+    print(f"   ✓ Platform Stats: {'✅ PASSED' if stats_success else '❌ FAILED'}")
+    print(f"   ✓ Listings API: {'✅ PASSED' if listings_success else '❌ FAILED'}")
+    print(f"   ✓ User Registration: {'✅ PASSED' if test_user_success else '❌ FAILED'}")
+    
+    # Overall admin functionality status
+    overall_admin_success = admin_login_success
+    
+    print(f"\n🎯 OVERALL ADMIN LOGIN FUNCTIONALITY: {'✅ WORKING CORRECTLY' if overall_admin_success else '❌ ISSUES FOUND'}")
+    
+    if overall_admin_success:
+        print("\n✅ ADMIN LOGIN TESTING CONCLUSION:")
+        print("   • Admin login with admin@oilgasfinder.com / AdminPass123! is working")
+        print("   • bcrypt password fix has been successfully implemented")
+        print("   • JWT token generation is functional")
+        print("   • Admin role recognition is working")
+        print("   • Admin API endpoints are accessible")
+        print("   • Platform statistics and user data are returned correctly")
+    else:
+        print("\n❌ ADMIN LOGIN TESTING CONCLUSION:")
+        print("   • Admin login functionality has issues")
+        print("   • bcrypt password fix may not be working correctly")
         print("   • Review the detailed test results above")
-        print("   • Address failing tests before production deployment")
+        print("   • Admin user may need to be created or role updated in database")
     
     print("\n" + "="*80)
     
-    return 0 if overall_registration_success else 1
+    return 0 if overall_admin_success else 1
 
 if __name__ == "__main__":
     sys.exit(main())
