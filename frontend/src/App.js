@@ -45,14 +45,26 @@ function App() {
     window.history.pushState({}, '', `/${page === 'home' ? '' : page}`);
   };
 
+  // Initialize app
   useEffect(() => {
-    if (token) {
+    const savedToken = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+    
+    if (savedToken) {
+      setToken(savedToken);
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (e) {
+          console.error('Error parsing saved user data:', e);
+        }
+      }
       fetchUserProfile();
     }
     fetchStats();
     fetchMarketData();
     fetchListings();
-  }, [token]);
+  }, []);
 
   const fetchUserProfile = async () => {
     try {
