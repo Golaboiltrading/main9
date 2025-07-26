@@ -246,9 +246,15 @@ async def add_security_headers(request: Request, call_next):
     return response
 
 # MongoDB connection
+# MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+# client = MongoClient(MONGO_URL)
+# db = client.oil_gas_finder
+
+# MongoDB connection
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 client = MongoClient(MONGO_URL)
 db = client.oil_gas_finder
+
 
 # Collections
 users_collection = db.users
