@@ -233,6 +233,215 @@ class OilGasFinderTester:
         """Test market intelligence API"""
         return self.run_test("Market Intelligence", "GET", "market-intelligence", 200)
 
+    def test_admin_login_functionality(self):
+        """Test admin user login functionality to verify bcrypt password fix"""
+        print("\n🔐 ADMIN LOGIN FUNCTIONALITY TESTING")
+        print("="*60)
+        print("Testing admin user login with credentials: admin@oilgasfinder.com / AdminPass123!")
+        
+        # First, try to create admin user if it doesn't exist
+        print("\n--- Step 1: Creating Admin User (if needed) ---")
+        admin_user_data = {
+            "email": "admin@oilgasfinder.com",
+            "password": "AdminPass123!",
+            "first_name": "Admin",
+            "last_name": "User",
+            "company_name": "Oil & Gas Finder Admin",
+            "phone": "+1234567890",
+            "country": "United States",
+            "trading_role": "both"
+        }
+        
+        # Try to register admin user (might fail if already exists)
+        admin_reg_success, admin_reg_data = self.run_test(
+            "Admin User Registration", 
+            "POST", 
+            "auth/register", 
+            200, 
+            admin_user_data
+        )
+        
+        if admin_reg_success:
+            print("✅ Admin user created successfully")
+            
+            # Now we need to manually update the user role to super_admin
+            # This would normally be done through database seeding or admin panel
+            print("⚠️ Note: Admin user created with basic role. In production, this should be upgraded to super_admin role through database seeding.")
+        else:
+            print("ℹ️ Admin user might already exist, proceeding with login test")
+        
+        # Step 2: Test Admin Login
+        print("\n--- Step 2: Testing Admin Login ---")
+        admin_login_data = {
+            "email": "admin@oilgasfinder.com",
+            "password": "AdminPass123!"
+        }
+        
+        login_success, login_response = self.run_test(
+            "Admin User Login", 
+            "POST", 
+            "auth/login", 
+            200, 
+            admin_login_data
+        )
+        
+        if login_success and isinstance(login_response, dict):
+            print("✅ Admin login successful")
+            
+            # Check JWT token generation
+            if 'access_token' in login_response and 'token_type' in login_response:
+                admin_token = login_response['access_token']
+                token_type = login_response['token_type']
+                
+                if token_type == 'bearer' and admin_token:
+                    print("✅ JWT token generated correctly")
+                    
+                    # Check user role in response
+                    user_data = login_response.get('user', {})
+                    user_role = user_data.get('role', '')
+                    
+                    print(f"ℹ️ User role returned: {user_role}")
+                    
+                    if user_role == 'super_admin':
+                        print("✅ User role is correctly returned as 'super_admin'")
+                    else:
+                        print(f"⚠️ User role is '{user_role}' instead of 'super_admin'. This may need database role update.")
+                    
+                    # Step 3: Test Admin API Access
+                    print("\n--- Step 3: Testing Admin API Access ---")
+                    
+                    # Store the admin token for API calls
+                    original_token = self.auth_token
+                    self.auth_token = admin_token
+                    
+                    # Test admin stats endpoint
+                    stats_success, stats_data = self.run_test(
+                        "Admin Stats Endpoint", 
+                        "GET", 
+                        "admin/stats", 
+                        200
+                    )
+                    
+                    if stats_success:
+                        print("✅ Admin stats endpoint accessible")
+                        
+                        # Verify stats data structure
+                        if isinstance(stats_data, dict) and 'basic_stats' in stats_data:
+                            print("✅ Admin stats returns correct data structure")
+                            
+                            basic_stats = stats_data['basic_stats']
+                            expected_stats = ['total_users', 'total_listings', 'active_listings', 'premium_users']
+                            
+                            if all(stat in basic_stats for stat in expected_stats):
+                                print("✅ Platform statistics returned correctly")
+                            else:
+                                print("❌ Platform statistics missing some expected fields")
+                        else:
+                            print("❌ Admin stats data structure incorrect")
+                    else:
+                        print("❌ Admin stats endpoint not accessible")
+                    
+                    # Test admin users endpoint
+                    users_success, users_data = self.run_test(
+                        "Admin Users Endpoint", 
+                        "GET", 
+                        "admin/users", 
+                        200
+                    )
+                    
+                    if users_success:
+                        print("✅ Admin users endpoint accessible")
+                        
+                        # Verify users data structure
+                        if isinstance(users_data, dict) and 'users' in users_data:
+                            print("✅ Admin users returns correct data structure")
+                            
+                            users_list = users_data['users']
+                            if isinstance(users_list, list):
+                                print(f"✅ User list returned with {len(users_list)} users")
+                            else:
+                                print("❌ Users data is not a list")
+                        else:
+                            print("❌ Admin users data structure incorrect")
+                    else:
+                        print("❌ Admin users endpoint not accessible")
+                    
+                    # Restore original token
+                    self.auth_token = original_token
+                    
+                    # Step 4: Verify Admin Role Recognition
+                    print("\n--- Step 4: Admin Role Recognition Summary ---")
+                    
+                    if user_role == 'super_admin':
+                        print("✅ Admin role correctly recognized as 'super_admin'")
+                        print("✅ JWT token contains admin privileges")
+                        
+                        if stats_success and users_success:
+                            print("✅ Admin API endpoints accessible with token")
+                            print("✅ Platform statistics and user data returned correctly")
+                            
+                            # Overall success
+                            self.test_results["Admin Login Functionality"] = {
+                                'success': True,
+                                'details': "Admin login successful, JWT generated, role verified, API access confirmed"
+                            }
+                            self.tests_run += 1
+                            self.tests_passed += 1
+                            
+                            print("\n🎉 ADMIN LOGIN FUNCTIONALITY: FULLY WORKING")
+                            return True
+                        else:
+                            print("❌ Admin API endpoints not fully accessible")
+                    else:
+                        print(f"⚠️ Admin role is '{user_role}' instead of 'super_admin'")
+                        print("ℹ️ This may require database role update for full admin functionality")
+                        
+                        # Partial success - login works but role needs update
+                        self.test_results["Admin Login Functionality"] = {
+                            'success': False,
+                            'details': f"Admin login successful but role is '{user_role}' instead of 'super_admin'"
+                        }
+                        self.tests_run += 1
+                        
+                        print("\n⚠️ ADMIN LOGIN FUNCTIONALITY: PARTIALLY WORKING (Role Update Needed)")
+                        return False
+                else:
+                    print("❌ JWT token not properly generated")
+            else:
+                print("❌ Login response missing token information")
+        else:
+            print("❌ Admin login failed")
+            
+            # Check if it's a password issue (bcrypt fix verification)
+            if isinstance(login_response, dict) and 'detail' in login_response:
+                error_detail = login_response['detail']
+                if 'password' in error_detail.lower():
+                    print("🚨 PASSWORD VERIFICATION FAILED - This indicates the bcrypt password fix may not be working")
+                    
+                    self.test_results["Admin Login Functionality"] = {
+                        'success': False,
+                        'error': 'Password verification failed - bcrypt fix may not be working',
+                        'details': error_detail
+                    }
+                else:
+                    self.test_results["Admin Login Functionality"] = {
+                        'success': False,
+                        'error': 'Admin login failed',
+                        'details': error_detail
+                    }
+            else:
+                self.test_results["Admin Login Functionality"] = {
+                    'success': False,
+                    'error': 'Admin login failed with unknown error'
+                }
+            
+            self.tests_run += 1
+            print("\n❌ ADMIN LOGIN FUNCTIONALITY: FAILED")
+            return False
+        
+        print("="*60)
+        return False
+
     def print_summary(self):
         """Print test summary"""
         print("\n" + "="*80)
@@ -247,11 +456,14 @@ class OilGasFinderTester:
         categories = {
             "Functional": [],
             "Security": [],
-            "Performance": []
+            "Performance": [],
+            "Admin": []
         }
         
         for name, result in self.test_results.items():
-            if any(security_term in name for security_term in ["JWT", "Password", "Injection", "Rate", "CORS", "Header"]):
+            if any(admin_term in name for admin_term in ["Admin", "admin"]):
+                categories["Admin"].append((name, result))
+            elif any(security_term in name for security_term in ["JWT", "Password", "Injection", "Rate", "CORS", "Header"]):
                 categories["Security"].append((name, result))
             elif any(perf_term in name for perf_term in ["Performance", "Response Time", "Cache"]):
                 categories["Performance"].append((name, result))
