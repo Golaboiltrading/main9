@@ -2223,6 +2223,100 @@ function App() {
     );
   };
 
+  const EmailConfigStatus = () => {
+    const [emailConfig, setEmailConfig] = useState(null);
+    const [testResult, setTestResult] = useState('');
+
+    const fetchEmailConfig = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/email-config`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setEmailConfig(data);
+        }
+      } catch (error) {
+        console.error('Email config error:', error);
+      }
+    };
+
+    const testEmailConfig = async () => {
+      setTestResult('Sending test email...');
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/test-email`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setTestResult(`✅ ${data.message}`);
+        } else {
+          const error = await response.json();
+          setTestResult(`❌ ${error.detail || 'Test failed'}`);
+        }
+      } catch (error) {
+        setTestResult('❌ Network error during test');
+      }
+    };
+
+    useEffect(() => {
+      fetchEmailConfig();
+    }, []);
+
+    if (!emailConfig) {
+      return <div className="text-sm text-gray-600">Loading email config...</div>;
+    }
+
+    return (
+      <div className="space-y-3">
+        <div className={`flex items-center space-x-2 ${emailConfig.configured ? 'text-green-600' : 'text-red-600'}`}>
+          <span className="text-lg">{emailConfig.configured ? '✅' : '❌'}</span>
+          <span className="font-semibold">
+            {emailConfig.configured ? 'Email Configured' : 'Email NOT Configured'}
+          </span>
+        </div>
+        
+        <div className="text-sm space-y-1">
+          <p><strong>SMTP Server:</strong> {emailConfig.smtp_server}:{emailConfig.smtp_port}</p>
+          <p><strong>From Email:</strong> {emailConfig.from_email}</p>
+          <p><strong>Username:</strong> {emailConfig.smtp_username}</p>
+          <p><strong>Password:</strong> {emailConfig.smtp_password}</p>
+        </div>
+
+        {emailConfig.configured ? (
+          <div>
+            <button
+              onClick={testEmailConfig}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded text-sm"
+            >
+              Send Test Email
+            </button>
+            {testResult && (
+              <p className="text-xs mt-2 p-2 bg-gray-100 rounded">{testResult}</p>
+            )}
+          </div>
+        ) : (
+          <div className="text-xs text-red-600">
+            <p><strong>Required Environment Variables:</strong></p>
+            <p>• SMTP_USERNAME</p>
+            <p>• SMTP_PASSWORD</p>
+            <p>• SMTP_SERVER (optional)</p>
+            <p>• FROM_EMAIL (optional)</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [adminStats, setAdminStats] = useState(null);
