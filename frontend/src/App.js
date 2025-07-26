@@ -2208,6 +2208,447 @@ function App() {
     );
   };
 
+  const AdminDashboard = () => {
+    const [activeTab, setActiveTab] = useState('dashboard');
+    const [adminStats, setAdminStats] = useState(null);
+    const [users, setUsers] = useState([]);
+    const [totalUsers, setTotalUsers] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [roleFilter, setRoleFilter] = useState('');
+    const [currentPage, setCurrentUsersPage] = useState(0);
+    const [adminLoading, setAdminLoading] = useState(false);
+
+    // Fetch admin statistics
+    const fetchAdminStats = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/stats`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setAdminStats(data);
+        } else {
+          alert('Failed to fetch admin statistics');
+        }
+      } catch (error) {
+        console.error('Admin stats error:', error);
+        alert('Network error fetching statistics');
+      }
+    };
+
+    // Fetch users for management
+    const fetchUsers = async (page = 0) => {
+      setAdminLoading(true);
+      try {
+        const params = new URLSearchParams({
+          skip: (page * 50).toString(),
+          limit: '50'
+        });
+        
+        if (searchTerm) params.append('search', searchTerm);
+        if (roleFilter) params.append('role', roleFilter);
+        
+        const response = await fetch(`${API_BASE_URL}/api/admin/users?${params}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setUsers(data.users);
+          setTotalUsers(data.total_count);
+        } else {
+          alert('Failed to fetch users');
+        }
+      } catch (error) {
+        console.error('Fetch users error:', error);
+        alert('Network error fetching users');
+      }
+      setAdminLoading(false);
+    };
+
+    // Manage user action (activate, deactivate, etc.)
+    const handleUserAction = async (userId, action) => {
+      if (!confirm(`Are you sure you want to ${action} this user?`)) return;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ user_id: userId, action })
+        });
+        
+        if (response.ok) {
+          alert(`User ${action} successful`);
+          fetchUsers(currentPage);
+        } else {
+          const error = await response.json();
+          alert(error.detail || `Failed to ${action} user`);
+        }
+      } catch (error) {
+        console.error('User action error:', error);
+        alert('Network error');
+      }
+    };
+
+    // Export data
+    const handleExport = async (type) => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/export/${type}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${type}_export.csv`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        } else {
+          alert(`Failed to export ${type}`);
+        }
+      } catch (error) {
+        console.error('Export error:', error);
+        alert('Network error during export');
+      }
+    };
+
+    useEffect(() => {
+      if (activeTab === 'dashboard') {
+        fetchAdminStats();
+      } else if (activeTab === 'users') {
+        fetchUsers(0);
+      }
+    }, [activeTab]);
+
+    useEffect(() => {
+      fetchUsers(currentPage);
+    }, [searchTerm, roleFilter, currentPage]);
+
+    // Check if user is admin
+    if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
+            <p className="text-gray-600 mb-4">You need admin privileges to access this page.</p>
+            <button
+              onClick={() => setCurrentPage('home')}
+              className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-2 rounded-lg"
+            >
+              Back to Home
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Admin Header */}
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+                <p className="text-gray-600">Oil & Gas Finder Management Panel</p>
+              </div>
+              <div className="flex space-x-4">
+                <button
+                  onClick={() => handleExport('users')}
+                  className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg"
+                >
+                  Export Users
+                </button>
+                <button
+                  onClick={() => handleExport('listings')}
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg"
+                >
+                  Export Listings
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="bg-white rounded-lg shadow-sm mb-8">
+            <div className="border-b border-gray-200">
+              <nav className="flex">
+                <button
+                  onClick={() => setActiveTab('dashboard')}
+                  className={`px-6 py-3 font-medium ${
+                    activeTab === 'dashboard'
+                      ? 'border-b-2 border-orange-500 text-orange-600'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => setActiveTab('users')}
+                  className={`px-6 py-3 font-medium ${
+                    activeTab === 'users'
+                      ? 'border-b-2 border-orange-500 text-orange-600'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  User Management
+                </button>
+                <button
+                  onClick={() => setActiveTab('reports')}
+                  className={`px-6 py-3 font-medium ${
+                    activeTab === 'reports'
+                      ? 'border-b-2 border-orange-500 text-orange-600'
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  Reports
+                </button>
+              </nav>
+            </div>
+
+            {/* Tab Content */}
+            <div className="p-6">
+              {activeTab === 'dashboard' && (
+                <div>
+                  <h2 className="text-xl font-bold mb-6">Platform Statistics</h2>
+                  
+                  {adminStats ? (
+                    <>
+                      {/* Key Metrics */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div className="bg-blue-50 p-6 rounded-lg">
+                          <h3 className="text-lg font-semibold text-blue-900">Total Users</h3>
+                          <p className="text-3xl font-bold text-blue-600">{adminStats.basic_stats.total_users}</p>
+                        </div>
+                        <div className="bg-green-50 p-6 rounded-lg">
+                          <h3 className="text-lg font-semibold text-green-900">Active Listings</h3>
+                          <p className="text-3xl font-bold text-green-600">{adminStats.basic_stats.active_listings}</p>
+                        </div>
+                        <div className="bg-purple-50 p-6 rounded-lg">
+                          <h3 className="text-lg font-semibold text-purple-900">Premium Users</h3>
+                          <p className="text-3xl font-bold text-purple-600">{adminStats.basic_stats.premium_users}</p>
+                        </div>
+                        <div className="bg-orange-50 p-6 rounded-lg">
+                          <h3 className="text-lg font-semibold text-orange-900">Today's Signups</h3>
+                          <p className="text-3xl font-bold text-orange-600">{adminStats.basic_stats.registrations_today}</p>
+                        </div>
+                      </div>
+
+                      {/* Charts Section */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* User Roles */}
+                        <div className="bg-gray-50 p-6 rounded-lg">
+                          <h3 className="text-lg font-semibold mb-4">User Roles Distribution</h3>
+                          {adminStats.user_roles.map((role, index) => (
+                            <div key={index} className="flex justify-between items-center mb-2">
+                              <span className="capitalize">{role._id}</span>
+                              <span className="font-bold">{role.count}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Product Types */}
+                        <div className="bg-gray-50 p-6 rounded-lg">
+                          <h3 className="text-lg font-semibold mb-4">Popular Products</h3>
+                          {adminStats.product_stats.slice(0, 5).map((product, index) => (
+                            <div key={index} className="flex justify-between items-center mb-2">
+                              <span className="capitalize">{product._id?.replace('_', ' ')}</span>
+                              <span className="font-bold">{product.count}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+                      <p className="mt-2 text-gray-600">Loading statistics...</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'users' && (
+                <div>
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold">User Management</h2>
+                    <p className="text-gray-600">Total: {totalUsers} users</p>
+                  </div>
+
+                  {/* Search and Filter */}
+                  <div className="flex gap-4 mb-6">
+                    <input
+                      type="text"
+                      placeholder="Search users..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                    <select
+                      value={roleFilter}
+                      onChange={(e) => setRoleFilter(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    >
+                      <option value="">All Roles</option>
+                      <option value="basic">Basic</option>
+                      <option value="premium">Premium</option>
+                      <option value="enterprise">Enterprise</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+
+                  {/* Users Table */}
+                  {adminLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full bg-white border border-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trading Role</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {users.map((user) => (
+                            <tr key={user.user_id}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900">
+                                    {user.first_name} {user.last_name}
+                                  </div>
+                                  <div className="text-sm text-gray-500">{user.email}</div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {user.company_name}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                                  user.role === 'premium' ? 'bg-purple-100 text-purple-800' :
+                                  user.role === 'enterprise' ? 'bg-blue-100 text-blue-800' :
+                                  user.role === 'admin' ? 'bg-red-100 text-red-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {user.role}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">
+                                {user.trading_role}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {new Date(user.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div className="flex space-x-2">
+                                  {user.status !== 'inactive' ? (
+                                    <button
+                                      onClick={() => handleUserAction(user.user_id, 'deactivate')}
+                                      className="text-red-600 hover:text-red-900"
+                                    >
+                                      Deactivate
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick={() => handleUserAction(user.user_id, 'activate')}
+                                      className="text-green-600 hover:text-green-900"
+                                    >
+                                      Activate
+                                    </button>
+                                  )}
+                                  {user.role === 'basic' && user.role !== 'super_admin' && (
+                                    <button
+                                      onClick={() => handleUserAction(user.user_id, 'promote')}
+                                      className="text-blue-600 hover:text-blue-900"
+                                    >
+                                      Promote
+                                    </button>
+                                  )}
+                                  {user.role === 'admin' && user.role !== 'super_admin' && (
+                                    <button
+                                      onClick={() => handleUserAction(user.user_id, 'demote')}
+                                      className="text-orange-600 hover:text-orange-900"
+                                    >
+                                      Demote
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'reports' && (
+                <div>
+                  <h2 className="text-xl font-bold mb-6">Data Reports</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-gray-50 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-4">Export Options</h3>
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => handleExport('users')}
+                          className="w-full bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg"
+                        >
+                          Export All Users (CSV)
+                        </button>
+                        <button
+                          onClick={() => handleExport('listings')}
+                          className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg"
+                        >
+                          Export All Listings (CSV)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-4">Quick Stats</h3>
+                      {adminStats && (
+                        <div className="space-y-2">
+                          <p>This Month's Registrations: <strong>{adminStats.basic_stats.registrations_this_month}</strong></p>
+                          <p>Total Listings: <strong>{adminStats.basic_stats.total_listings}</strong></p>
+                          <p>Premium Conversion Rate: <strong>
+                            {((adminStats.basic_stats.premium_users / adminStats.basic_stats.total_users) * 100).toFixed(1)}%
+                          </strong></p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'login':
