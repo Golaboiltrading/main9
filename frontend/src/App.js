@@ -2202,6 +2202,8 @@ function App() {
         return <RegisterPage />;
       case 'forgot-password':
         return <ForgotPasswordPage />;
+      case 'reset-password':
+        return <ResetPasswordPage />;
       case 'dashboard':
         return <DashboardPage />;
       case 'create-listing':
