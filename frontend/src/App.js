@@ -112,6 +112,7 @@ function App() {
         setToken(data.access_token);
         setUser(data.user);
         localStorage.setItem('token', data.access_token);
+        localStorage.setItem('user', JSON.stringify(data.user)); // Store user data
         setCurrentPage('dashboard');
       } else {
         alert('Login failed. Please check your credentials.');
