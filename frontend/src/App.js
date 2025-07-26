@@ -28,11 +28,14 @@ function App() {
   // URL routing
   useEffect(() => {
     const path = window.location.pathname;
+    const urlParams = new URLSearchParams(window.location.search);
+    
     if (path === '/browse') setCurrentPage('browse');
     else if (path === '/premium') setCurrentPage('premium');
     else if (path === '/register') setCurrentPage('register');
     else if (path === '/login') setCurrentPage('login');
     else if (path === '/ai-analysis') setCurrentPage('ai-analysis');
+    else if (path === '/reset-password' || urlParams.get('token')) setCurrentPage('reset-password');
     else setCurrentPage('home');
   }, []);
 
