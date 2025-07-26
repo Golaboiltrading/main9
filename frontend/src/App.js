@@ -225,6 +225,14 @@ function App() {
             {user ? (
               <>
                 <span className="text-sm text-gray-300">Welcome, {user.first_name}</span>
+                {user.role === 'admin' || user.role === 'super_admin' ? (
+                  <button 
+                    onClick={() => setCurrentPage('admin')}
+                    className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg font-semibold transition-colors"
+                  >
+                    Admin Panel
+                  </button>
+                ) : null}
                 <button 
                   onClick={() => setCurrentPage('dashboard')}
                   className="bg-orange-600 hover:bg-orange-500 px-4 py-2 rounded-lg font-semibold transition-colors"
