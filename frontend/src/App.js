@@ -418,10 +418,10 @@ function App() {
             </div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={localLoading}
               className="w-full bg-orange-600 hover:bg-orange-500 text-white py-2 rounded-lg font-semibold disabled:opacity-50"
             >
-              {loading ? 'Sending...' : 'Send Reset Link'}
+              {localLoading ? 'Sending...' : 'Send Reset Link'}
             </button>
           </form>
           <p className="text-center mt-6 text-gray-600">
