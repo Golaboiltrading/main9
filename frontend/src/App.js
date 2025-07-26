@@ -2622,8 +2622,8 @@ function App() {
 
               {activeTab === 'reports' && (
                 <div>
-                  <h2 className="text-xl font-bold mb-6">Data Reports</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <h2 className="text-xl font-bold mb-6">Data Reports & Configuration</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-gray-50 p-6 rounded-lg">
                       <h3 className="text-lg font-semibold mb-4">Export Options</h3>
                       <div className="space-y-3">
@@ -2653,6 +2653,11 @@ function App() {
                           </strong></p>
                         </div>
                       )}
+                    </div>
+
+                    <div className="bg-yellow-50 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-4">Email Configuration</h3>
+                      <EmailConfigStatus />
                     </div>
                   </div>
                 </div>
