@@ -14,7 +14,7 @@ const API_BASE_URL = 'https://75613b56-3531-465e-8099-2cf9cff795d9.preview.emerg
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({});
   const [marketData, setMarketData] = useState({});
