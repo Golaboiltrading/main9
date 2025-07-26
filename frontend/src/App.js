@@ -306,6 +306,16 @@ function App() {
               {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
+          
+          <div className="text-center mt-4">
+            <button 
+              onClick={() => setCurrentPage('forgot-password')}
+              className="text-orange-600 hover:text-orange-500 font-semibold text-sm"
+            >
+              Forgot your password?
+            </button>
+          </div>
+          
           <p className="text-center mt-4 text-gray-600">
             Don't have an account?{' '}
             <button 
