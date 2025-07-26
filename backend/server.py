@@ -598,6 +598,72 @@ async def login_user(user_data: UserLogin):
         }
     }
 
+# Password reset models
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+@app.post("/api/auth/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    """Send password reset email to user"""
+    user = users_collection.find_one({"email": request.email})
+    if not user:
+        # Don't reveal if email exists or not for security
+        return {"message": "If this email exists, a password reset link has been sent"}
+    
+    # Generate reset token (expires in 1 hour)
+    reset_token = secrets.token_urlsafe(32)
+    expires_at = datetime.utcnow() + timedelta(hours=1)
+    
+    # Store reset token in database
+    users_collection.update_one(
+        {"email": request.email},
+        {
+            "$set": {
+                "reset_token": reset_token,
+                "reset_token_expires": expires_at
+            }
+        }
+    )
+    
+    # In a real application, send email here
+    # For now, we'll just log the reset link
+    reset_link = f"https://oilgasfinder.com/reset-password?token={reset_token}"
+    print(f"Password reset link for {request.email}: {reset_link}")
+    
+    # TODO: Send actual email with reset link
+    # send_password_reset_email(request.email, reset_link)
+    
+    return {"message": "If this email exists, a password reset link has been sent"}
+
+@app.post("/api/auth/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    """Reset user password with valid token"""
+    user = users_collection.find_one({
+        "reset_token": request.token,
+        "reset_token_expires": {"$gt": datetime.utcnow()}
+    })
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+    
+    # Hash new password
+    hashed_password = hash_password(request.new_password)
+    
+    # Update password and remove reset token
+    users_collection.update_one(
+        {"user_id": user["user_id"]},
+        {
+            "$set": {"password_hash": hashed_password},
+            "$unset": {"reset_token": "", "reset_token_expires": ""}
+        }
+    )
+    
+    return {"message": "Password has been reset successfully"}
+
 @app.get("/api/user/profile")
 async def get_user_profile(user_id: str = Depends(get_current_user)):
     user = users_collection.find_one({"user_id": user_id}, {"password_hash": 0})
